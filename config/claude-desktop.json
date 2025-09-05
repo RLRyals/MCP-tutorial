@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "series-manager": {
+      "command": "node",
+      "args": [
+        "FULL:/PATH/TO/YOUR/MCP/FILE/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "DATABASE_URL": "postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:5432/POSTGRES_DB"
+      }
+    },
+    "book-manager": {
+      "command": "node",
+      "args": [
+        "FULL:/PATH/TO/YOUR/MCP/FILE/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "DATABASE_URL": "postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:5432/POSTGRES_DB"
+      }
+    }
+  }
+}

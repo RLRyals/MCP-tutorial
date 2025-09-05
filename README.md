@@ -104,16 +104,44 @@ A simple launcher for quick database startup when Docker Desktop is already runn
 ### `scripts/start-database.bat`
 A batch file alternative for users who prefer .bat files over PowerShell scripts.
 
+## MCP Server Setup
+
+This tutorial demonstrates dual-transport MCP servers that work with both Claude Projects and web-based tools.
+
+### Quick Start Commands
+
+**For Claude Projects (Recommended):**
+- **Database:** `.\scripts\start-database.ps1` 
+- **MCP Configuration:** Point Claude Desktop to your server files
+- **⚠️ Do NOT manually start MCP servers** - Claude Desktop manages them automatically
+
+**For Web Tools (Typing Mind, etc.):**
+```bash
+.\scripts\start-database.ps1  # Start database first
+npm run start:http           # Then start HTTP server on port 3001
+# or individual HTTP servers
+npm run start:author:http    # Individual HTTP servers
+```
+
+### Available MCP Servers
+
+- **Author Management** - Create and manage authors
+- **Series Management** - Organize book series 
+- **Book Management** - Track individual books
+- **Timeline Management** - Series timeline tracking
+- **Metadata Management** - Flexible metadata storage
+
 ## Tutorial Steps
 
 The tutorial is organized into branches, each representing a different stage of development:
 
 1. `main` - Basic setup and project structure
-2. `character-server` - Implementing the character management server
-3. `world-server` - Adding world-building functionality
-4. `plot-server` - Creating the plot management system
-5. `writing-server` - Implementing writing progress tracking
-6. `research-server` - Adding research management capabilities
+2. `MCP_1_Series_Management` - Core series management MCPs
+3. `Step_2_MCP_character` - Character management system
+4. `Step_3_MCP_plot` - Plot and story structure
+5. `Step_4_MCP_research` - Research and continuity tracking
+6. `Step_5_MCP_writing` - Writing production management
+7. `Step_6_MCP_persona_voice` - AI personas and voice integration
 
 Each branch builds upon the previous one, gradually introducing new concepts and functionality.
 
@@ -123,6 +151,8 @@ For detailed information about the project, please refer to the following docume
 
 - [Core Series Schema](docs/core-series-schema.md)
 - [Project Structure Guide](docs/mcp-tutorial-structure.md)
+- [Dual Transport Setup](docs/dual-transport-setup.md)
+- [MCP Series Management](docs/MCP_1_Series_management.md)
 
 ## License
 

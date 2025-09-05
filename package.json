@@ -7,7 +7,20 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/stdio-server.js",
+    "start:stdio": "node src/stdio-server.js",
+    "start:http": "node src/http-server.js",
+    "start:author": "node src/mcps/author-server.js --stdio",
+    "start:author:http": "node src/mcps/author-server.js --http --port 3002",
+    "start:series": "node src/mcps/series-server.js --stdio", 
+    "start:series:http": "node src/mcps/series-server.js --http --port 3003",
+    "start:book": "node src/mcps/book-server.js --stdio",
+    "start:book:http": "node src/mcps/book-server.js --http --port 3004",
+    "start:timeline": "node src/mcps/timeline-server.js --stdio",
+    "start:timeline:http": "node src/mcps/timeline-server.js --http --port 3005",
+    "start:metadata": "node src/mcps/metadata-server.js --stdio",
+    "start:metadata:http": "node src/mcps/metadata-server.js --http --port 3006"
   },
   "repository": {
     "type": "git",

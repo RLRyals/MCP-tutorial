@@ -1,0 +1,59 @@
+{
+  "mcpServers": {
+    "author-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/author-server/index.js"
+      ],
+      "cwd": "{{MCP_TUTORIAL_PATH}}",
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "DATABASE_URL": "{{DATABASE_URL}}"
+      }
+    },
+    "series-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/series-server/index.js"
+      ],
+      "cwd": "{{MCP_TUTORIAL_PATH}}",
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "DATABASE_URL": "{{DATABASE_URL}}"
+      }
+    },
+    "book-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/book-server/index.js"
+      ],
+      "cwd": "{{MCP_TUTORIAL_PATH}}",
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "DATABASE_URL": "{{DATABASE_URL}}"
+      }
+    },
+    "timeline-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/timeline-server/index.js"
+      ],
+      "cwd": "{{MCP_TUTORIAL_PATH}}",
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "DATABASE_URL": "{{DATABASE_URL}}"
+      }
+    },
+    "metadata-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/metadata-server/index.js"
+      ],
+      "cwd": "{{MCP_TUTORIAL_PATH}}",
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "DATABASE_URL": "{{DATABASE_URL}}"
+      }
+    }
+  }
+}
