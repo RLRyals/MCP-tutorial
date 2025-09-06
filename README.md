@@ -55,6 +55,13 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    node src/shared/run-migration.js 001_create_core_schema.sql
    ```
 
+6. Switch to the Series Management MCP branch:
+   ```bash
+   git checkout MCP_1_Series_Management
+   ```
+   This branch implements the first Model Context Protocol for managing book series data.
+   Follow the updated instructions in this branch to set up the Series Management functionality.
+
 ## Project Structure
 ```
 mcp-tutorial/
