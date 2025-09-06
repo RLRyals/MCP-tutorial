@@ -145,6 +145,13 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    - For HTTP mode: Check that the port isn't already in use
    - If you get "Author not found" errors, create some authors first using direct database inserts or author MCP tools
 
+6. Switch to the Series Management MCP branch:
+   ```bash
+   git checkout MCP_1_Series_Management
+   ```
+   This branch implements the first Model Context Protocol for managing book series data.
+   Follow the updated instructions in this branch to set up the Series Management functionality.
+
 ## Project Structure
 ```
 mcp-tutorial/
