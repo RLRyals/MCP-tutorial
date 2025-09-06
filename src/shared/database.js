@@ -1,6 +1,5 @@
 // src/shared/database.js - Shared database connection and utilities
-import pkg from 'pg';
-const { Pool } = pkg;
+import { Pool } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
