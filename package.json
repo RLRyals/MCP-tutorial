@@ -29,9 +29,13 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/RLRyals/MCP-tutorial/issues"
   },
-  "homepage": "https://github.com/RLRyals/MCP-tutorial#readme"
+  "homepage": "https://github.com/RLRyals/MCP-tutorial#readme",
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "pg": "^8.16.3"
+  }
 }

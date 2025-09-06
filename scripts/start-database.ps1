@@ -38,12 +38,19 @@ $SuccessColor = "Green"
 $InfoColor = "Cyan"
 
 function Write-ColorOutput($Message, $Color = "White") {
-    Write-Host $Message -ForegroundColor $Color
+    try {
+        Write-Host $Message -ForegroundColor $Color
+    }
+    catch {
+        # Fallback to regular Write-Host if color output fails
+        Write-Host $Message
+    }
 }
 
 function Test-DockerDesktop {
     try {
-        $dockerInfo = docker info 2>$null
+        # Try a simple docker command that should work quickly
+        docker ps --quiet 2>$null | Out-Null
         return $?
     }
     catch {
@@ -51,8 +58,30 @@ function Test-DockerDesktop {
     }
 }
 
+function Test-DockerProcess {
+    $dockerProcesses = Get-Process "Docker Desktop" -ErrorAction SilentlyContinue
+    return ($null -ne $dockerProcesses -and $dockerProcesses.Count -gt 0)
+}
+
 function Start-DockerDesktop {
-    Write-ColorOutput "Docker Desktop is not running. Attempting to start it..." $InfoColor
+    Write-ColorOutput "Docker Desktop is not running. Checking existing processes..." $InfoColor
+    
+    # Check if Docker Desktop process is already running
+    if (Test-DockerProcess) {
+        Write-ColorOutput "WARNING: Docker Desktop process found but not responding." $WarningColor
+        Write-ColorOutput "Attempting to stop existing Docker Desktop processes..." $InfoColor
+        
+        try {
+            Stop-Process -Name "Docker Desktop" -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 5  # Give it time to shut down
+        }
+        catch {
+            Write-ColorOutput "ERROR: Failed to stop existing Docker Desktop process. Please stop it manually." $ErrorColor
+            exit 1
+        }
+    }
+    
+    Write-ColorOutput "Attempting to start Docker Desktop..." $InfoColor
     
     # Common Docker Desktop installation paths
     $dockerPaths = @(
@@ -86,25 +115,30 @@ function Start-DockerDesktop {
     Write-ColorOutput "Starting Docker Desktop..." $InfoColor
     Start-Process -FilePath $dockerExe -WindowStyle Hidden
     
-    # Wait for Docker Desktop to start
-    Write-ColorOutput "Waiting for Docker Desktop to start (this may take 30-60 seconds)..." $InfoColor
-    $timeout = 120 # 2 minutes timeout
+    Write-ColorOutput "Waiting for Docker Desktop to initialize (timeout: 60 seconds)..." $InfoColor
+    $timeout = 60 # 1 minute timeout
     $elapsed = 0
+    $checkInterval = 3 # Check every 3 seconds
     
-    while (-not (Test-DockerDesktop) -and $elapsed -lt $timeout) {
-        Start-Sleep -Seconds 5
-        $elapsed += 5
+    while ($elapsed -lt $timeout) {
+        if (Test-DockerProcess) {
+            # Once process exists, check if Docker is responsive
+            if (Test-DockerDesktop) {
+                Write-ColorOutput "Docker Desktop is ready!" $SuccessColor
+                Start-Sleep -Seconds 2  # Brief pause to ensure stability
+                return
+            }
+        }
+        
+        Start-Sleep -Seconds $checkInterval
+        $elapsed += $checkInterval
         Write-Host "." -NoNewline -ForegroundColor $InfoColor
     }
     Write-Host ""
     
-    if (-not (Test-DockerDesktop)) {
-        Write-ColorOutput "ERROR: Docker Desktop failed to start within $timeout seconds." $ErrorColor
-        Write-ColorOutput "Please start Docker Desktop manually and run this script again." $WarningColor
-        exit 1
-    }
-    
-    Write-ColorOutput "Docker Desktop is now running!" $SuccessColor
+    Write-ColorOutput "ERROR: Docker Desktop failed to start within 60 seconds." $ErrorColor
+    Write-ColorOutput "Please start Docker Desktop manually and run this script again." $WarningColor
+    exit 1
 }
 
 function Test-EnvironmentFile {
@@ -183,6 +217,46 @@ try {
         Write-ColorOutput "SUCCESS: Database services started!" $SuccessColor
         Write-ColorOutput "=" * 70 $SuccessColor
         
+        # Verify all services are running
+        Write-ColorOutput "`nVerifying services..." $InfoColor
+        $services = docker-compose ps --services
+        
+        if (-not $services) {
+            Write-ColorOutput "ERROR: No services found in docker-compose configuration!" $ErrorColor
+            Write-ColorOutput "Check your docker-compose.yml file." $ErrorColor
+            exit 1
+        }
+        
+        $allServicesRunning = $true
+        $failedServices = @()
+        
+        foreach ($service in $services) {
+            $containerStatus = docker-compose ps --format json 2>$null | ConvertFrom-Json | Where-Object { $_.Service -eq $service }
+            
+            if (-not $containerStatus) {
+                $allServicesRunning = $false
+                $failedServices += $service
+            } else {
+                # Check if container is running or starting (it might take time to fully start)
+                if ($containerStatus.State -notmatch "running|starting") {
+                    $allServicesRunning = $false
+                    $failedServices += $service
+                }
+            }
+        }
+        
+        if (-not $allServicesRunning) {
+            Write-ColorOutput "`nERROR: Some services failed to start:" $ErrorColor
+            foreach ($service in $failedServices) {
+                Write-ColorOutput "- $service" $ErrorColor
+                Write-ColorOutput ("Logs for " + $service + ":") $InfoColor
+                docker-compose logs $service 2>&1
+            }
+            Write-ColorOutput "`nPlease check the logs above for errors." $ErrorColor
+            Write-ColorOutput "You may need to run 'docker-compose down' and try again." $WarningColor
+            exit 1
+        }
+        
         # Show service status
         Write-ColorOutput "`nService Status:" $InfoColor
         docker-compose ps
@@ -195,24 +269,65 @@ try {
         Write-ColorOutput "`nTo view logs: docker-compose logs -f" $InfoColor
         Write-ColorOutput "To stop services: docker-compose down" $InfoColor
         
-        # Check database health
-        Write-ColorOutput "`nWaiting for database to be ready..." $InfoColor
+        # Check database health and container status
+        Write-ColorOutput "`nWaiting for services to be fully ready..." $InfoColor
         $healthTimeout = 30
         $healthElapsed = 0
         
+        # Keep track of which services have become healthy
+        $healthyServices = @{}
+        
         while ($healthElapsed -lt $healthTimeout) {
-            $health = docker-compose ps --format json | ConvertFrom-Json | Where-Object { $_.Service -eq "postgres" } | Select-Object -ExpandProperty Health -ErrorAction SilentlyContinue
-            if ($health -eq "healthy") {
-                Write-ColorOutput "Database is healthy and ready for connections!" $SuccessColor
+            $pendingServices = @()
+            
+            foreach ($service in $services) {
+                # Skip if we already know this service is healthy
+                if ($healthyServices[$service]) { continue }
+                
+                $containerInfo = docker-compose ps --format json 2>$null | ConvertFrom-Json | 
+                    Where-Object { $_.Service -eq $service }
+                
+                if ($containerInfo) {
+                    # For services with health checks
+                    if ($containerInfo.PSObject.Properties.Name -contains "Health") {
+                        if ($containerInfo.Health -eq "healthy") {
+                            $healthyServices[$service] = $true
+                            Write-ColorOutput "Service '$service' is healthy!" $SuccessColor
+                        } else {
+                            $pendingServices += $service
+                        }
+                    }
+                    # For services without health checks, just check if they're running
+                    elseif ($containerInfo.State -eq "running") {
+                        $healthyServices[$service] = $true
+                        Write-ColorOutput "Service '$service' is running!" $SuccessColor
+                    } else {
+                        $pendingServices += $service
+                    }
+                } else {
+                    $pendingServices += $service
+                }
+            }
+            
+            # If all services are healthy, we're done
+            if ($pendingServices.Count -eq 0) {
+                Write-ColorOutput "All services are ready!" $SuccessColor
                 break
             }
+            
             Start-Sleep -Seconds 2
             $healthElapsed += 2
             Write-Host "." -NoNewline -ForegroundColor $InfoColor
         }
         
         if ($healthElapsed -ge $healthTimeout) {
-            Write-ColorOutput "`nWARNING: Database health check timed out. Check logs with: docker-compose logs postgres" $WarningColor
+            Write-ColorOutput "`nWARNING: Some services are still initializing:" $WarningColor
+            foreach ($service in $services) {
+                if (-not $healthyServices[$service]) {
+                    Write-ColorOutput "- $service" $WarningColor
+                }
+            }
+            Write-ColorOutput "Services may still be starting. Check status with: docker-compose ps" $InfoColor
         }
         
     } else {

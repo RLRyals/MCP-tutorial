@@ -1,4 +1,12 @@
 // src/shared/run-migration.js - Utility to run a specific migration file
+console.error('=== Script starting ===');
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -12,13 +20,17 @@ const migrationFile = process.argv[2];
 
 // Export the runMigration function for use in test scripts
 export async function runMigration(migrationPath) {
+    console.error('Creating database manager...');
     const db = new DatabaseManager();
     
     try {
         console.error(`Running migration: ${path.basename(migrationPath)}`);
+        console.error('Database URL:', process.env.DATABASE_URL.replace(/:[^:@]+@/, ':****@')); // Hide password in logs
         
+        console.error('Reading migration file...');
         // Read the migration SQL if a path is provided
         const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
+        console.error('Migration file loaded successfully');
         
         // Execute the migration within a transaction
         await db.transaction(async (client) => {
@@ -50,7 +62,7 @@ export async function runMigration(migrationPath) {
             
             // Record this migration
             await client.query(
-                'INSERT INTO migrations (name) VALUES ($1)',
+                'INSERT INTO migrations (filename) VALUES ($1)',
                 [path.basename(migrationPath)]
             );
         });
@@ -65,24 +77,56 @@ export async function runMigration(migrationPath) {
 }
 
 // Run migration if called directly (not imported)
-if (import.meta.url === `file://${process.argv[1]}`) {
-    if (!migrationFile) {
-        console.error('Please provide a migration file name');
+if (fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+    try {
+        console.error('Migration script started...');
+        console.error('Working directory:', process.cwd());
+        console.error('__dirname:', __dirname);
+        console.error('Arguments:', process.argv);
+        console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+
+        if (!migrationFile) {
+            console.error('Error: Please provide a migration file name');
+            process.exit(1);
+        }
+    } catch (error) {
+        console.error('Error in initial setup:', error);
         process.exit(1);
     }
 
     const migrationPathFromCLI = path.resolve(__dirname, '../../migrations', migrationFile);
+    console.error('Full migration path:', migrationPathFromCLI);
 
     // Check if the file exists
     if (!fs.existsSync(migrationPathFromCLI)) {
-        console.error(`Migration file not found: ${migrationPathFromCLI}`);
+        console.error(`Error: Migration file not found: ${migrationPathFromCLI}`);
         process.exit(1);
     }
     
+    console.error('Found migration file, attempting to run...');
+    
+    // Check for DATABASE_URL
+    if (!process.env.DATABASE_URL) {
+        console.error('Error: DATABASE_URL environment variable is not set');
+        console.error('Please ensure your .env file is set up correctly');
+        process.exit(1);
+    }
+
     runMigration(migrationPathFromCLI)
-        .then(() => console.error('Migration completed successfully'))
+        .then(() => {
+            console.error('Migration completed successfully');
+            process.exit(0);
+        })
         .catch(err => {
-            console.error('Migration failed:', err);
+            console.error('Migration failed with error:');
+            console.error('--------------------');
+            console.error(err);
+            console.error('--------------------');
+            if (err.code === 'ECONNREFUSED') {
+                console.error('Could not connect to the database. Please check if:');
+                console.error('1. The database is running');
+                console.error('2. DATABASE_URL is correct in your .env file');
+            }
             process.exit(1);
         });
 }
