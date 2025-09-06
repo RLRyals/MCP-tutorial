@@ -52,7 +52,7 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 
 5. Run database migrations:
    ```bash
-   node src/shared/run-migration.js
+   node src/shared/run-migration.js 001_create_core_schema.sql
    ```
 
 ## Project Structure

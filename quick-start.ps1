@@ -6,7 +6,8 @@
 Write-Host "Starting MCP Tutorial Database..." -ForegroundColor Green
 
 # Check if Docker is running, start services
-if (docker info 2>$null) {
+docker info >$null 2>&1
+if ($LASTEXITCODE -eq 0) {
     Write-Host "Docker is running, starting services..." -ForegroundColor Cyan
     docker-compose up -d
     if ($LASTEXITCODE -eq 0) {

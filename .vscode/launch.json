@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Migration Script",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/src/shared/run-migration.js",
+            "args": ["001_create_core_schema.sql"],
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Database Manager",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${input:scriptPath}",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "scriptPath",
+            "type": "promptString",
+            "description": "Path to the script to debug",
+            "default": "${workspaceFolder}/path/to/your/script.js"
+        }
+    ]
+}

@@ -4,6 +4,13 @@
 
 BEGIN;
 
+-- Migrations table to track applied migrations
+CREATE TABLE IF NOT EXISTS migrations (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Authors table
 CREATE TABLE authors (
     author_id SERIAL PRIMARY KEY,
