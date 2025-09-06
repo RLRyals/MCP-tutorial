@@ -1,4 +1,12 @@
 // src/shared/run-migration.js - Utility to run a specific migration file
+console.error('=== Script starting ===');
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+});
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -66,23 +74,49 @@ export async function runMigration(migrationPath) {
 
 // Run migration if called directly (not imported)
 if (import.meta.url === `file://${process.argv[1]}`) {
+    console.error('Migration script started...');
+    console.error('Working directory:', process.cwd());
+    console.error('__dirname:', __dirname);
+    console.error('Arguments:', process.argv);
+
     if (!migrationFile) {
-        console.error('Please provide a migration file name');
+        console.error('Error: Please provide a migration file name');
         process.exit(1);
     }
 
     const migrationPathFromCLI = path.resolve(__dirname, '../../migrations', migrationFile);
+    console.error('Full migration path:', migrationPathFromCLI);
 
     // Check if the file exists
     if (!fs.existsSync(migrationPathFromCLI)) {
-        console.error(`Migration file not found: ${migrationPathFromCLI}`);
+        console.error(`Error: Migration file not found: ${migrationPathFromCLI}`);
         process.exit(1);
     }
     
+    console.error('Found migration file, attempting to run...');
+    
+    // Check for DATABASE_URL
+    if (!process.env.DATABASE_URL) {
+        console.error('Error: DATABASE_URL environment variable is not set');
+        console.error('Please ensure your .env file is set up correctly');
+        process.exit(1);
+    }
+
     runMigration(migrationPathFromCLI)
-        .then(() => console.error('Migration completed successfully'))
+        .then(() => {
+            console.error('Migration completed successfully');
+            process.exit(0);
+        })
         .catch(err => {
-            console.error('Migration failed:', err);
+            console.error('Migration failed with error:');
+            console.error('--------------------');
+            console.error(err);
+            console.error('--------------------');
+            if (err.code === 'ECONNREFUSED') {
+                console.error('Could not connect to the database. Please check if:');
+                console.error('1. The database is running');
+                console.error('2. DATABASE_URL is correct in your .env file');
+            }
             process.exit(1);
         });
 }
