@@ -1,9 +1,23 @@
 // src/mcps/book-server/index.js
+
+// Protect stdout from any pollution in MCP stdio mode
+if (process.env.MCP_STDIO_MODE === 'true') {
+    const originalWrite = process.stdout.write;
+    process.stdout.write = function() { return true; };
+    
+    // Restore stdout after module loading is complete
+    process.nextTick(() => {
+        process.stdout.write = originalWrite;
+    });
+}
+
 import { BaseMCPServer } from '../../shared/base-server.js';
 
 class BookMCPServer extends BaseMCPServer {
     constructor() {
         super('book-manager', '1.0.0');
+        // Initialize tools after base constructor
+        this.tools = this.getTools();
     }
 
     getTools() {
@@ -39,10 +53,13 @@ class BookMCPServer extends BaseMCPServer {
                         title: { type: 'string', description: 'Book title' },
                         series_id: { type: 'integer', description: 'ID of the series this book belongs to' },
                         book_number: { type: 'integer', description: 'Position in the series' },
+                        status: { type: 'string', description: 'Book status (planned, in_progress, draft, editing, published)', default: 'planned' },
+                        target_word_count: { type: 'integer', description: 'Target word count for the book' },
+                        actual_word_count: { type: 'integer', description: 'Current word count of the book', default: 0 },
                         publication_year: { type: 'integer', description: 'Year of publication' },
+                        description: { type: 'string', description: 'Book description/summary' },
                         isbn: { type: 'string', description: 'ISBN number' },
-                        page_count: { type: 'integer', description: 'Number of pages' },
-                        description: { type: 'string', description: 'Book description/summary' }
+                        page_count: { type: 'integer', description: 'Number of pages' }
                     },
                     required: ['title', 'series_id', 'book_number']
                 }
@@ -65,6 +82,16 @@ class BookMCPServer extends BaseMCPServer {
                 }
             }
         ];
+    }
+
+    getToolHandler(toolName) {
+        const handlers = {
+            'list_books': this.handleListBooks,
+            'get_book': this.handleGetBook,
+            'create_book': this.handleCreateBook,
+            'update_book': this.handleUpdateBook
+        };
+        return handlers[toolName];
     }
 
     async handleListBooks(args) {
@@ -172,11 +199,33 @@ class BookMCPServer extends BaseMCPServer {
             }
             
             const query = `
-                INSERT INTO books (title, series_id, book_number, publication_year, isbn, page_count, description) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7) 
+                INSERT INTO books (
+                    title, 
+                    series_id, 
+                    book_number,
+                    status,
+                    target_word_count,
+                    actual_word_count,
+                    publication_year,
+                    description,
+                    isbn,
+                    page_count
+                ) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
                 RETURNING *
             `;
-            const result = await this.db.query(query, [title, series_id, book_number, publication_year, isbn, page_count, description]);
+            const result = await this.db.query(query, [
+                title, 
+                series_id, 
+                book_number,
+                args.status || 'planned',
+                args.target_word_count || null,
+                args.actual_word_count || 0,
+                args.publication_year || null,
+                args.description || null,
+                args.isbn || null,
+                args.page_count || null
+            ]);
             const book = result.rows[0];
             
             // Get series and author info for display
@@ -198,6 +247,9 @@ class BookMCPServer extends BaseMCPServer {
                               `Title: ${book.title}\n` +
                               `Series: ${info.series_title || 'Unknown'} (#${book.book_number})\n` +
                               `Author: ${info.author_name || 'Unknown'}\n` +
+                              `Status: ${book.status}\n` +
+                              `Target Word Count: ${book.target_word_count || 'Not specified'}\n` +
+                              `Current Word Count: ${book.actual_word_count}\n` +
                               `Published: ${book.publication_year || 'Not specified'}\n` +
                               `Pages: ${book.page_count || 'Not specified'}\n` +
                               `ISBN: ${book.isbn || 'Not specified'}\n` +
@@ -331,9 +383,28 @@ class BookMCPServer extends BaseMCPServer {
 
 export { BookMCPServer };
 
-// CLI runner when called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
     const { CLIRunner } = await import('../../shared/cli-runner.js');
     const runner = new CLIRunner(BookMCPServer);
     await runner.run();
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[BOOK-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new BookMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[BOOK-SERVER] Failed to start MCP server:', error.message);
+        console.error('[BOOK-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
 }

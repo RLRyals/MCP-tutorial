@@ -1,9 +1,54 @@
 // src/mcps/series-server/index.js
+// Protect stdout from debug logging in MCP stdio mode
+if (process.env.MCP_STDIO_MODE === 'true') {
+    const originalConsoleError = console.error;
+    console.error = function() {
+        // Keep the original console.error functionality but write to stderr instead
+        process.stderr.write(Array.from(arguments).join(' ') + '\n');
+    };
+}
+
 import { BaseMCPServer } from '../../shared/base-server.js';
 
 class SeriesMCPServer extends BaseMCPServer {
     constructor() {
         super('series-manager', '1.0.0');
+        // Initialize tools after base constructor
+        this.tools = this.getTools();
+        
+        // Defensive check to ensure tools are properly initialized
+        if (!this.tools || !Array.isArray(this.tools) || this.tools.length === 0) {
+            console.error('[SERIES-SERVER] WARNING: Tools not properly initialized!');
+            this.tools = this.getTools(); // Try again
+        }
+        
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error(`[SERIES-SERVER] Initialized with ${this.tools.length} tools`);
+        }
+        
+        // Test database connection on startup (don't wait for it, just start it)
+        this.testDatabaseConnection();
+    }
+    
+    async testDatabaseConnection() {
+        try {
+            if (this.db) {
+                // Quick health check with timeout
+                const healthPromise = this.db.healthCheck();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Database health check timed out')), 5000)
+                );
+                
+                const health = await Promise.race([healthPromise, timeoutPromise]);
+                if (health.healthy) {
+                    console.error('[SERIES-SERVER] Database connection verified');
+                } else {
+                    console.error('[SERIES-SERVER] Database health check failed:', health.error);
+                }
+            }
+        } catch (error) {
+            console.error('[SERIES-SERVER] Database connection test failed:', error.message);
+        }
     }
 
     getTools() {
@@ -63,15 +108,36 @@ class SeriesMCPServer extends BaseMCPServer {
         ];
     }
 
+    getToolHandler(toolName) {
+        const handlers = {
+            'list_series': this.handleListSeries,
+            'get_series': this.handleGetSeries,
+            'create_series': this.handleCreateSeries,
+            'update_series': this.handleUpdateSeries
+        };
+        return handlers[toolName];
+    }
+
     async handleListSeries(args) {
         try {
-            const query = `
+            // Check if database is available
+            if (!this.db) {
+                throw new Error('Database not initialized');
+            }
+            
+            // Add timeout to prevent hanging
+            const queryPromise = this.db.query(`
                 SELECT s.*, a.name as author_name 
                 FROM series s 
                 JOIN authors a ON s.author_id = a.id 
                 ORDER BY s.title
-            `;
-            const result = await this.db.query(query);
+            `);
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
+            );
+            
+            const result = await Promise.race([queryPromise, timeoutPromise]);
             
             return {
                 content: [
@@ -91,6 +157,7 @@ class SeriesMCPServer extends BaseMCPServer {
                 ]
             };
         } catch (error) {
+            console.error('[SERIES-SERVER] handleListSeries error:', error);
             throw new Error(`Failed to list series: ${error.message}`);
         }
     }
@@ -98,13 +165,20 @@ class SeriesMCPServer extends BaseMCPServer {
     async handleGetSeries(args) {
         try {
             const { series_id } = args;
-            const query = `
+            
+            // Add timeout to prevent hanging
+            const queryPromise = this.db.query(`
                 SELECT s.*, a.name as author_name 
                 FROM series s 
                 JOIN authors a ON s.author_id = a.id 
                 WHERE s.id = $1
-            `;
-            const result = await this.db.query(query, [series_id]);
+            `, [series_id]);
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
+            );
+            
+            const result = await Promise.race([queryPromise, timeoutPromise]);
             
             if (result.rows.length === 0) {
                 return {
@@ -144,12 +218,19 @@ class SeriesMCPServer extends BaseMCPServer {
     async handleCreateSeries(args) {
         try {
             const { title, author_id, description, genre, start_year, status } = args;
-            const query = `
+            
+            // Add timeout to prevent hanging
+            const queryPromise = this.db.query(`
                 INSERT INTO series (title, author_id, description, genre, start_year, status) 
                 VALUES ($1, $2, $3, $4, $5, $6) 
                 RETURNING *
-            `;
-            const result = await this.db.query(query, [title, author_id, description, genre, start_year, status]);
+            `, [title, author_id, description, genre, start_year, status]);
+            
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
+            );
+            
+            const result = await Promise.race([queryPromise, timeoutPromise]);
             const series = result.rows[0];
             
             // Get author name for display
@@ -268,9 +349,70 @@ class SeriesMCPServer extends BaseMCPServer {
 
 export { SeriesMCPServer };
 
-// CLI runner when called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-    const { CLIRunner } = await import('../../shared/cli-runner.js');
-    const runner = new CLIRunner(SeriesMCPServer);
-    await runner.run();
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
+
+// Only log debug info if not in stdio mode
+if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[SERIES-SERVER] Module loaded');
+    console.error('[SERIES-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
+    console.error('[SERIES-SERVER] import.meta.url:', import.meta.url);
+    console.error('[SERIES-SERVER] process.argv[1]:', process.argv[1]);
+}
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[SERIES-SERVER] normalized script path:', normalizedScriptPath);
+    console.error('[SERIES-SERVER] is direct execution:', isDirectExecution);
+}
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
+    if (process.env.MCP_STDIO_MODE !== 'true') {
+        console.error('[SERIES-SERVER] Starting CLI runner...');
+    }
+    try {
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(SeriesMCPServer);
+        await runner.run();
+    } catch (error) {
+        console.error('[SERIES-SERVER] CLI runner failed:', error.message);
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error('[SERIES-SERVER] CLI runner stack:', error.stack);
+        }
+        throw error;
+    }
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[SERIES-SERVER] Running in MCP stdio mode - starting server...');
+    
+    // When in MCP stdio mode, ensure clean stdout for JSON messages
+    if (process.env.MCP_STDIO_MODE === 'true') {
+        console.error('[SERIES-SERVER] Setting up stdio mode handlers');
+        // Redirect all console.log to stderr
+        console.log = function(...args) {
+            console.error('[SERIES-SERVER]', ...args);
+        };
+    }
+    
+    try {
+        console.error('[SERIES-SERVER] Creating server instance...');
+        const server = new SeriesMCPServer();
+        console.error('[SERIES-SERVER] Server instance created, starting run()...');
+        await server.run();
+        console.error('[SERIES-SERVER] Server run() completed successfully');
+    } catch (error) {
+        console.error('[SERIES-SERVER] Failed to start MCP server:', error.message);
+        console.error('[SERIES-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
+} else {
+    if (process.env.MCP_STDIO_MODE !== 'true') {
+        console.error('[SERIES-SERVER] Module imported - not starting server');
+        console.error('[SERIES-SERVER] Module export completed');
+    }
 }

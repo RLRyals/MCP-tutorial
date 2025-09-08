@@ -1,52 +1,106 @@
 // src/shared/base-server.js - Base class for all MCP servers
-import dotenv from 'dotenv';
-dotenv.config();
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema, InitializeRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { DatabaseManager } from './database.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import dotenv from 'dotenv';
+
+dotenv.config({ 
+    path: 'C:/github/MCP-tutorial/.env',
+    silent: true , debug: false, quiet: true
+});
+
+if (!process.env.DATABASE_URL) {
+    // Completely suppress dotenv output in MCP stdio mode
+    if (process.env.MCP_STDIO_MODE === 'true') {
+        // Temporarily redirect stdout to prevent dotenv pollution
+        const originalWrite = process.stdout.write;
+        process.stdout.write = () => true;
+        
+        try {
+            dotenv.config({ silent: true , debug: false, quiet: true });
+        } finally {
+            // Restore stdout
+            process.stdout.write = originalWrite;
+        }
+    } else {
+        dotenv.config({ silent: true });
+    }
+}
 
 export class BaseMCPServer {
     constructor(serverName, serverVersion = '1.0.0') {
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error(`[${serverName}] BaseMCPServer constructor starting...`);
+        }
+        
         this.serverName = serverName;
         this.serverVersion = serverVersion;
-        
-        // Initialize MCP Server
-        this.server = new Server(
-            {
-                name: serverName,
-                version: serverVersion,
-            },
-            {
-                capabilities: {
-                    tools: {},
-                },
-            }
-        );
+        this.databaseReady = false;
 
-        // Initialize database
-        this.db = new DatabaseManager();
+        // Initialize HTTP server for health checks if not Claude MCP stdio mode
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            this.httpApp = express();
+            this.setupHttpServer();
+        }
         
-        // Initialize HTTP server for health checks
-        this.httpApp = express();
-        this.setupHttpServer();
+        try {
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${serverName}] Initializing MCP Server...`);
+            }
+            
+            // Initialize MCP Server
+            this.server = new Server(
+                {
+                    name: serverName,
+                    version: serverVersion,
+                },
+                {
+                    capabilities: {
+                        tools: {},
+                    },
+                }
+            );
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${serverName}] MCP Server initialized`);
+                console.error(`[${serverName}] Initializing database...`);
+            }
+            
+            // Initialize database (only once)
+            this.db = new DatabaseManager();
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${serverName}] Database manager created`);
+            }
+
+            // Initialize minimal properties for immediate MCP functionality
+            this.tools = []; // Empty tools initially - will be populated by child class
+                    
+            this.setupErrorHandling();
         
-        // Tool definitions (to be overridden by child classes)
-        this.tools = [];
-        
-        this.setupErrorHandling();
-        this.setupBaseHandlers();
+            this.setupBaseHandlers();
+
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${serverName}] Minimal initialization completed for MCP handshake`);
+                console.error(`[${serverName}] BaseMCPServer constructor completed successfully`);
+            }
+        } catch (error) {
+            console.error(`[${serverName}] BaseMCPServer constructor failed:`, error.message);
+            console.error(`[${serverName}] Stack:`, error.stack);
+            throw error;
+        }
     }
 
     setupHttpServer() {
-
         // Skip HTTP server when running as MCP server (stdio mode)
         // MCP servers communicate via stdin/stdout, not HTTP
         if (!process.stdout.isTTY || process.env.MCP_SERVER_MODE) {
-            console.error(`${this.serverName} running as MCP server - skipping HTTP setup`);
+            // Don't output to console during stdio mode - it interferes with MCP communication
             return;
         }
         this.httpApp.use(helmet());
@@ -56,10 +110,17 @@ export class BaseMCPServer {
         // Health check endpoint
         this.httpApp.get('/health', async (req, res) => {
             try {
-                const dbHealth = await this.db.healthCheck();
+                // Only check database if it's initialized
+                let dbHealth = { status: 'initializing' };
+                if (this.db && this.databaseReady) {
+                    dbHealth = await this.db.healthCheck();
+                } else if (this.db) {
+                    dbHealth = { status: 'connecting' };
+                }
+                
                 res.json({
                     server: this.serverName,
-                    status: 'healthy',
+                    status: this.databaseReady ? 'healthy' : 'starting',
                     timestamp: new Date().toISOString(),
                     database: dbHealth
                 });
@@ -112,28 +173,84 @@ export class BaseMCPServer {
     }
 
     setupBaseHandlers() {
-        // List tools handler
-        this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-            return { tools: this.tools };
-        });
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error(`[${this.serverName}] Setting up base handlers...`);
+        }
+        
+        try {
+            // Initialize handler - CRITICAL for MCP handshake
+            console.error(`[${this.serverName}] Registering InitializeRequestSchema handler...`);
+            this.server.setRequestHandler(InitializeRequestSchema, async (request) => {
+                console.error(`[${this.serverName}] Initialize request received from ${request.params?.clientInfo?.name || 'unknown client'}`);
+                return {
+                    protocolVersion: "2025-06-18",
+                    capabilities: {
+                        tools: {}
+                    },
+                    serverInfo: {
+                        name: this.serverName,
+                        version: this.serverVersion
+                    }
+                };
+            });
+            console.error(`[${this.serverName}] InitializeRequestSchema handler registered successfully`);
+            
+            // List tools handler
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${this.serverName}] Registering ListToolsRequestSchema handler...`);
+            }
+            
+            this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+                console.error(`[${this.serverName}] ListTools request received, returning ${this.tools.length} tools`);
+                return { tools: this.tools };
+            });
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${this.serverName}] ListToolsRequestSchema handler registered successfully`);
+                console.error(`[${this.serverName}] Registering CallToolRequestSchema handler...`);
+            }
 
-        // Call tool handler
-        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-            const { name, arguments: args } = request.params;
-
-            try {
-                const handler = this.getToolHandler(name);
-                if (!handler) {
-                    throw new Error(`Unknown tool: ${name}`);
+            // Call tool handler
+            this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+                const { name, arguments: args } = request.params;
+                
+                // Only log in non-stdio mode to avoid JSON pollution
+                if (process.env.MCP_STDIO_MODE !== 'true') {
+                    console.error(`[${this.serverName}] CallTool request received for: ${name}`);
                 }
 
-                const result = await handler.call(this, args);
-                return this.formatSuccess(result);
-            } catch (error) {
-                console.error(`Error executing tool ${name}:`, error);
-                return this.formatError(name, error);
+                try {
+                    const handler = this.getToolHandler(name);
+                    if (!handler) {
+                        throw new Error(`Unknown tool: ${name}`);
+                    }
+
+                    const result = await handler.call(this, args);
+                    
+                    if (process.env.MCP_STDIO_MODE !== 'true') {
+                        console.error(`[${this.serverName}] Tool ${name} executed successfully`);
+                    }
+                    
+                    return this.formatSuccess(result);
+                } catch (error) {
+                    console.error(`[${this.serverName}] Error executing tool ${name}:`, error);
+                    return this.formatError(name, error);
+                }
+            });
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error(`[${this.serverName}] CallToolRequestSchema handler registered successfully`);
+                console.error(`[${this.serverName}] Base handlers setup completed`);
             }
-        });
+        } catch (error) {
+            console.error(`[${this.serverName}] Error setting up base handlers:`, error);
+            throw error;
+        }
+    }
+
+    // To be overridden by child classes
+    getTools() {
+        return [];
     }
 
     // To be overridden by child classes
@@ -243,23 +360,50 @@ export class BaseMCPServer {
 
     async run() {
         try {
-            // Test database connection
-            const healthCheck = await this.db.healthCheck();
-            if (!healthCheck.healthy) {
-                throw new Error(`Database health check failed: ${healthCheck.error}`);
-            }
+            // Start MCP server first (don't wait for database)
+            console.error(`[${this.serverName}] Starting MCP server...`);
             
-            console.error(`${this.serverName} database connection established`);
-            
-            // Start MCP server
+            console.error(`[${this.serverName}] Creating transport...`);
             const transport = new StdioServerTransport();
+            
+            console.error(`[${this.serverName}] Connecting server to transport...`);
             await this.server.connect(transport);
-            console.error(`${this.serverName} MCP Server running on stdio`);
+            
+            console.error(`[${this.serverName}] MCP Server running on stdio`);
             
         } catch (error) {
             console.error(`Failed to start ${this.serverName}:`, error);
+            console.error(`Error details:`, error.stack);
             await this.cleanup();
             process.exit(1);
+        }
+    }
+    
+    async testDatabaseConnection() {
+        try {
+            // Wait for database to be initialized in deferred initialization
+            if (!this.db) {
+                console.error(`${this.serverName} waiting for database initialization...`);
+                return;
+            }
+            
+            console.error(`${this.serverName} testing database connection...`);
+            const healthCheckPromise = this.db.healthCheck();
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Database health check timed out after 10 seconds')), 10000)
+            );
+            
+            const healthCheck = await Promise.race([healthCheckPromise, timeoutPromise]);
+            if (healthCheck.healthy) {
+                console.error(`${this.serverName} database connection established`);
+                this.databaseReady = true;
+            } else {
+                console.error(`${this.serverName} database health check failed: ${healthCheck.error}`);
+                this.databaseReady = false;
+            }
+        } catch (error) {
+            console.error(`${this.serverName} database connection failed: ${error.message}`);
+            this.databaseReady = false;
         }
     }
 }

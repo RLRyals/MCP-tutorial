@@ -14,10 +14,15 @@ export async function runMCPServer(mcpServer, argv = process.argv) {
     });
     
     if (useStdio) {
-        console.error(`Starting ${mcpServer.server.name} with stdio transport...`);
+        // Set environment flag to indicate MCP stdio mode
+        process.env.MCP_STDIO_MODE = 'true';
+        
+        // Suppress all stdout to prevent JSON pollution in MCP communication
+        const originalWrite = process.stdout.write;
+        process.stdout.write = function() { return true; };
+        
         const transport = new StdioServerTransport();
         await mcpServer.server.connect(transport);
-        console.error(`${mcpServer.server.name} running with stdio transport`);
     } else {
         console.error(`Starting ${mcpServer.server.name} with HTTP transport on port ${port}...`);
         const app = express();
@@ -78,4 +83,23 @@ function getPortFromArgs(argv, defaultPort) {
         }
     }
     return defaultPort;
+}
+
+// CLI runner class for individual MCP servers
+export class CLIRunner {
+    constructor(ServerClass) {
+        this.ServerClass = ServerClass;
+    }
+
+    async run(argv = process.argv) {
+        try {
+            const server = new this.ServerClass();
+            await runMCPServer(server, argv);
+        } catch (error) {
+            if (process.stdout.isTTY && !process.env.MCP_SERVER_MODE) {
+                console.error('Failed to start server:', error);
+            }
+            process.exit(1);
+        }
+    }
 }

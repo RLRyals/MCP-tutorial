@@ -1,9 +1,23 @@
 // src/mcps/timeline-server/index.js
+
+// Protect stdout from any pollution in MCP stdio mode
+if (process.env.MCP_STDIO_MODE === 'true') {
+    const originalWrite = process.stdout.write;
+    process.stdout.write = function() { return true; };
+    
+    // Restore stdout after module loading is complete
+    process.nextTick(() => {
+        process.stdout.write = originalWrite;
+    });
+}
+
 import { BaseMCPServer } from '../../shared/base-server.js';
 
 class TimelineMCPServer extends BaseMCPServer {
     constructor() {
         super('timeline-manager', '1.0.0');
+         // Initialize tools after base constructor
+        this.tools = this.getTools();
     }
 
     getTools() {
@@ -63,6 +77,16 @@ class TimelineMCPServer extends BaseMCPServer {
                 }
             }
         ];
+    }
+
+    getToolHandler(toolName) {
+        const handlers = {
+            'list_timeline_events': this.handleListTimelineEvents,
+            'get_timeline_event': this.handleGetTimelineEvent,
+            'create_timeline_event': this.handleCreateTimelineEvent,
+            'update_timeline_event': this.handleUpdateTimelineEvent
+        };
+        return handlers[toolName];
     }
 
     async handleListTimelineEvents(args) {
@@ -304,9 +328,28 @@ class TimelineMCPServer extends BaseMCPServer {
 
 export { TimelineMCPServer };
 
-// CLI runner when called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
     const { CLIRunner } = await import('../../shared/cli-runner.js');
     const runner = new CLIRunner(TimelineMCPServer);
     await runner.run();
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[TIMELINE-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new TimelineMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[TIMELINE-SERVER] Failed to start MCP server:', error.message);
+        console.error('[TIMELINE-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
 }

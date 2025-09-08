@@ -1,30 +1,75 @@
 // src/shared/database.js - Shared database connection and utilities
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-
-dotenv.config();
+if (!process.env.DATABASE_URL) {
+    // Completely suppress dotenv output in MCP stdio mode
+    if (process.env.MCP_STDIO_MODE === 'true') {
+        // Temporarily redirect stdout to prevent dotenv pollution
+        const originalWrite = process.stdout.write;
+        process.stdout.write = () => true;
+        
+        try {
+            dotenv.config({ silent: true, debug: false });
+        } finally {
+            // Restore stdout
+            process.stdout.write = originalWrite;
+        }
+    } else {
+        dotenv.config({ silent: true });
+    }
+}
 
 export class DatabaseManager {
     constructor() {
-        // Debug environment variables when MCP server starts
-           console.error('=== DATABASE DEBUG ===');
-           console.error('NODE_ENV:', process.env.NODE_ENV);
-           console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL);
-           console.error('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
-           console.error('DATABASE_URL preview:', process.env.DATABASE_URL?.substring(0, 30) + '...' || 'undefined');
-           console.error('Working directory:', process.cwd());
-           console.error('====================');
-        this.pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-            max: 20,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 2000,
-        });
+        try {
+            // Only log errors and critical info during MCP stdio mode
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Constructor starting...');
+                
+                // Debug environment variables when MCP server starts
+                console.error('=== DATABASE DEBUG ===');
+                console.error('NODE_ENV:', process.env.NODE_ENV);
+                console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+                console.error('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
+                console.error('DATABASE_URL preview:', process.env.DATABASE_URL?.substring(0, 30) + '...' || 'undefined');
+                console.error('Working directory:', process.cwd());
+                console.error('====================');
+            }
+            
+            if (!process.env.DATABASE_URL) {
+                throw new Error('DATABASE_URL environment variable is not set');
+            }
+            
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Creating connection pool...');
+            }
+            
+            this.pool = new Pool({
+                connectionString: process.env.DATABASE_URL,
+                ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+                max: 20,
+                idleTimeoutMillis: 30000,
+                connectionTimeoutMillis: 2000,
+            });
 
-        this.pool.on('error', (err) => {
-            console.error('Database pool error:', err);
-        });
+            this.pool.on('error', (err) => {
+                console.error('[DATABASE] Pool error:', err);
+            });
+            
+            // Reduce connection logging in stdio mode
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                this.pool.on('connect', () => {
+                    console.error('[DATABASE] New client connected to pool');
+                });
+                console.error('[DATABASE] Constructor completed successfully');
+            }
+        } catch (error) {
+            console.error('[DATABASE] Constructor failed:', error.message);
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Stack:', error.stack);
+            }
+            throw error;
+        }
     }
 
     async query(text, params = []) {

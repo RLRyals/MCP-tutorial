@@ -1,26 +1,34 @@
 {
   "mcpServers": {
-    "series-manager": {
-      "command": "node",
-      "args": [
-        "FULL:/PATH/TO/YOUR/MCP/FILE/index.js"
-      ],
-      "env": {
-        "NODE_ENV": "development",
-        "DATABASE_URL": "postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:5432/POSTGRES_DB",
-        "MCP_PORT": "3500"
-      }
+    "mcp-tutorial-author-server": {
+      "url": "http://localhost:3500/author-server",
+      "name": "Author Server",
+      "description": "Manage author server functionality"
     },
-    "book-manager": {
-      "command": "node",
-      "args": [
-        "FULL:/PATH/TO/YOUR/MCP/FILE/index.js"
-      ],
-      "env": {
-        "NODE_ENV": "development",
-        "DATABASE_URL": "postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:5432/POSTGRES_DB",
-        "MCP_PORT": "3500"
-      }
+    "mcp-tutorial-book-server": {
+      "url": "http://localhost:3500/book-server",
+      "name": "Book Server",
+      "description": "Manage book server functionality"
+    },
+    "mcp-tutorial-metadata-server": {
+      "url": "http://localhost:3500/metadata-server",
+      "name": "Metadata Server",
+      "description": "Manage metadata server functionality"
+    },
+    "mcp-tutorial-series-server": {
+      "url": "http://localhost:3500/series-server",
+      "name": "Series Server",
+      "description": "Manage series server functionality"
+    },
+    "mcp-tutorial-timeline-server": {
+      "url": "http://localhost:3500/timeline-server",
+      "name": "Timeline Server",
+      "description": "Manage timeline server functionality"
+    },
+    "mcp-tutorial-composite": {
+      "url": "http://localhost:3500/composite/message",
+      "name": "Series Management Composite",
+      "description": "All series management tools in one server"
     }
   }
 }

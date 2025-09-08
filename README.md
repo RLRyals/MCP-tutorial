@@ -54,6 +54,81 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    ```bash
    node src/shared/run-migration.js 001_create_core_schema.sql
    ```
+6. Switch to the Series Management MCP branch:
+   ```bash
+   git checkout MCP_1_Series_Management
+   ```
+   This branch implements the first Model Context Protocol for managing book series data.
+   Follow the updated instructions in this branch to set up the Series Management functionality.
+
+7. some step I need to jam in here 
+
+8. Run database migrations:
+   ```bash
+   node src/shared/run-migration.js 002_update_series_schema.sql
+   ```
+
+7. **Configure and Test the MCP Servers:**
+
+   **For Claude Desktop Users:**
+   
+   a. Configure Claude Desktop to use your MCP servers:
+   ```bash
+   # Generate configuration files
+   .\scripts\generate-configs.ps1 -Claude
+   ```
+   
+   b. The script will create a `claude-desktop.json` configuration pointing to your MCP servers.
+   Copy the generated configuration to your Claude Desktop config location:
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+   c. Restart Claude Desktop to load the new MCP servers.
+
+   d. Test the Series MCP by asking Claude:
+   ```
+   "Can you list all the series in my database?"
+   "Create a new series called 'The Starfire Chronicles' by author ID 1"
+   "Show me details for series ID 1"
+   ```
+
+   **For Typing Mind and Web-based Tools:**
+   
+   a. Start the HTTP server for the Series MCP:
+   ```bash
+   # Start the series MCP in HTTP mode
+   node src/mcps/series-server/index.js --http --port 3500
+   ```
+   
+   b. The MCP server will be available at `http://localhost:3500`
+   
+   c. Test the HTTP endpoints:
+   ```bash
+   # Health check
+   curl http://localhost:3500/health
+   
+   # Server info
+   curl http://localhost:3500/info
+   ```
+
+   d. In Typing Mind, configure the MCP connection to point to `http://localhost:3500`
+
+   
+   - **Create Sample Data:** Add some test data to work with
+   ```bash
+   # You can create sample authors and series using the database directly, or
+   # Use Claude Desktop/Typing Mind to test the create_series functionality
+   # Example: "Create a new author named 'Marina Blackwood'" (if you have author MCP)
+   # Then: "Create a series called 'The Crystal Realm Saga' by that author"
+   ```
+
+   **Troubleshooting:**
+   - Ensure Docker Desktop is running and the database is healthy
+   - Check that your `.env` file has the correct `DATABASE_URL` 
+   - Verify Node.js dependencies are installed with `npm install`
+   - For Claude Desktop: Ensure the config file path is correct and restart Claude
+   - For HTTP mode: Check that the port isn't already in use
+   - If you get "Author not found" errors, create some authors first using direct database inserts or author MCP tools
 
 ## Project Structure
 ```
@@ -110,17 +185,25 @@ This tutorial demonstrates dual-transport MCP servers that work with both Claude
 
 ### Quick Start Commands
 
-**For Claude Projects (Recommended):**
+**For Claude Desktop (Recommended):**
 - **Database:** `.\scripts\start-database.ps1` 
-- **MCP Configuration:** Point Claude Desktop to your server files
-- **⚠️ Do NOT manually start MCP servers** - Claude Desktop manages them automatically
+- **MCP Configuration:** Generate and install config with `.\scripts\generate-configs.ps1`
+- **⚠️ Do NOT manually start MCP servers** - Claude Desktop manages them automatically via stdio transport
 
 **For Web Tools (Typing Mind, etc.):**
 ```bash
-.\scripts\start-database.ps1  # Start database first
-npm run start:http           # Then start HTTP server on port 3001
-# or individual HTTP servers
-npm run start:author:http    # Individual HTTP servers
+.\scripts\start-database.ps1                         # Start database first
+node src/mcps/series-server/index.js --http --port 3500  # Start series MCP in HTTP mode
+# Test with: curl http://localhost:3500/health
+```
+
+**Testing Your MCPs:**
+```bash
+# Quick database health check
+node -e "import('./src/shared/database.js').then(({DatabaseManager}) => { const db = new DatabaseManager(); db.healthCheck().then(console.log).finally(() => db.close()); });"
+
+# Test MCP server stdio mode (simulates Claude Desktop)
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | node src/mcps/series-server/index.js
 ```
 
 ### Available MCP Servers

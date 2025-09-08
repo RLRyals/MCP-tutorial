@@ -12,7 +12,7 @@ const projectRoot = path.join(__dirname, '..');
 // Load environment variables from .env file
 const envPath = path.join(projectRoot, '.env');
 if (fs.existsSync(envPath)) {
-    dotenv.config({ path: envPath });
+    dotenv.config({ path: envPath },{ silent: true });
 } else {
     console.warn('No .env file found. Using template.env as reference and environment variables.');
 }
@@ -22,9 +22,8 @@ const config = {
     // Core paths
     MCP_TUTORIAL_PATH: process.env.MCP_TUTORIAL_PATH || process.cwd(),
     
-    // Database settings
+    // Environment settings
     NODE_ENV: process.env.NODE_ENV || 'development',
-    DATABASE_URL: process.env.DATABASE_URL || 'postgresql://your_db_user:your_secure_password@localhost:5432/mcp_series',
     
     // HTTP server settings for Typing Mind
     MCP_SERVER_HOST: process.env.MCP_SERVER_HOST || 'localhost',
@@ -79,7 +78,14 @@ function replacePlaceholders(template, replacements) {
     let result = template;
     for (const [key, value] of Object.entries(replacements)) {
         const placeholder = `{{${key}}}`;
-        result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), value);
+        // For path-related values, normalize to forward slashes for cross-platform compatibility
+        let processedValue = value;
+        if (typeof value === 'string' && (key.includes('PATH') || key.includes('DIR'))) {
+            processedValue = value.replace(/\\/g, '/');
+        }
+        // Escape any remaining backslashes for JSON compatibility
+        processedValue = typeof processedValue === 'string' ? processedValue.replace(/\\/g, '\\\\') : processedValue;
+        result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), processedValue);
     }
     return result;
 }
@@ -93,13 +99,30 @@ function generateClaudeDesktopConfig() {
         return false;
     }
     
-    const template = fs.readFileSync(templatePath, 'utf8');
-    const generated = replacePlaceholders(template, config);
-    
-    // Parse and pretty-print the JSON
     try {
-        const parsed = JSON.parse(generated);
-        const formatted = JSON.stringify(parsed, null, 2);
+        // Start with an empty config structure
+        const dynamicConfig = {
+            mcpServers: {}
+        };
+        
+        // Add each discovered MCP server to the config
+        mcpServers.forEach(server => {
+            // Ensure consistent forward slashes for Claude Desktop
+            const scriptPath = path.join(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, 'index.js')
+                .replace(/\\/g, '/');
+            
+            dynamicConfig.mcpServers[server.name] = {
+                command: 'node',
+                args: [scriptPath],
+                env: {
+                    NODE_ENV: config.NODE_ENV,
+                    MCP_STDIO_MODE: 'true'
+                }
+            };
+        });
+        
+        // Write the formatted config
+        const formatted = JSON.stringify(dynamicConfig, null, 2);
         fs.writeFileSync(outputPath, formatted);
         console.log(`✅ Generated Claude Desktop config: ${outputPath}`);
         return true;
@@ -226,6 +249,11 @@ function main() {
     console.log('🚀 MCP Configuration Generator');
     console.log('=' .repeat(50));
     
+    // Debug: Show current config values
+    console.log(`📂 Project Path: ${config.MCP_TUTORIAL_PATH}`);
+    console.log(`🌐 Environment: ${config.NODE_ENV}`);
+    console.log('=' .repeat(50));
+    
     let success = true;
     
     if (args.includes('--claude')) {
@@ -262,7 +290,7 @@ function main() {
 }
 
 // Run if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
     main();
 }
 

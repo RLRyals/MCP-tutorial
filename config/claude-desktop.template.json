@@ -5,10 +5,9 @@
       "args": [
         "{{MCP_TUTORIAL_PATH}}/src/mcps/author-server/index.js"
       ],
-      "cwd": "{{MCP_TUTORIAL_PATH}}",
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
-        "DATABASE_URL": "{{DATABASE_URL}}"
+        "MCP_STDIO_MODE": "true"
       }
     },
     "series-server": {
@@ -16,10 +15,9 @@
       "args": [
         "{{MCP_TUTORIAL_PATH}}/src/mcps/series-server/index.js"
       ],
-      "cwd": "{{MCP_TUTORIAL_PATH}}",
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
-        "DATABASE_URL": "{{DATABASE_URL}}"
+        "MCP_STDIO_MODE": "true"
       }
     },
     "book-server": {
@@ -27,10 +25,9 @@
       "args": [
         "{{MCP_TUTORIAL_PATH}}/src/mcps/book-server/index.js"
       ],
-      "cwd": "{{MCP_TUTORIAL_PATH}}",
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
-        "DATABASE_URL": "{{DATABASE_URL}}"
+        "MCP_STDIO_MODE": "true"
       }
     },
     "timeline-server": {
@@ -38,10 +35,9 @@
       "args": [
         "{{MCP_TUTORIAL_PATH}}/src/mcps/timeline-server/index.js"
       ],
-      "cwd": "{{MCP_TUTORIAL_PATH}}",
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
-        "DATABASE_URL": "{{DATABASE_URL}}"
+        "MCP_STDIO_MODE": "true"
       }
     },
     "metadata-server": {
@@ -49,10 +45,9 @@
       "args": [
         "{{MCP_TUTORIAL_PATH}}/src/mcps/metadata-server/index.js"
       ],
-      "cwd": "{{MCP_TUTORIAL_PATH}}",
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
-        "DATABASE_URL": "{{DATABASE_URL}}"
+        "MCP_STDIO_MODE": "true"
       }
     }
   }

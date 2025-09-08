@@ -1,9 +1,29 @@
 // src/mcps/author-server/index.js
+
+// Protect stdout from debug logging in MCP stdio mode
+if (process.env.MCP_STDIO_MODE === 'true') {
+    const originalConsoleError = console.error;
+    console.error = function() {
+        // Keep the original console.error functionality but write to stderr instead
+        process.stderr.write(Array.from(arguments).join(' ') + '\n');
+    };
+}
+
 import { BaseMCPServer } from '../../shared/base-server.js';
 
 class AuthorMCPServer extends BaseMCPServer {
     constructor() {
-        super('author-manager', '1.0.0');
+        console.error('[AUTHOR-SERVER] Constructor starting...');
+        try {
+            super('author-manager', '1.0.0');
+            console.error('[AUTHOR-SERVER] Constructor completed successfully');
+        } catch (error) {
+            console.error('[AUTHOR-SERVER] Constructor failed:', error.message);
+            console.error('[AUTHOR-SERVER] Stack:', error.stack);
+            throw error;
+        }
+         // Initialize tools after base constructor
+        this.tools = this.getTools();
     }
 
     getTools() {
@@ -35,9 +55,9 @@ class AuthorMCPServer extends BaseMCPServer {
                     type: 'object',
                     properties: {
                         name: { type: 'string', description: 'Full name of the author' },
+                        email: { type: 'string', description: 'Author\'s email address' },
                         bio: { type: 'string', description: 'Author biography' },
-                        birth_year: { type: 'integer', description: 'Year of birth' },
-                        nationality: { type: 'string', description: 'Author nationality' }
+                        birth_year: { type: 'integer', description: 'Year of birth' }
                     },
                     required: ['name']
                 }
@@ -51,13 +71,22 @@ class AuthorMCPServer extends BaseMCPServer {
                         author_id: { type: 'integer', description: 'The ID of the author to update' },
                         name: { type: 'string', description: 'Full name of the author' },
                         bio: { type: 'string', description: 'Author biography' },
-                        birth_year: { type: 'integer', description: 'Year of birth' },
-                        nationality: { type: 'string', description: 'Author nationality' }
+                        birth_year: { type: 'integer', description: 'Year of birth' }
                     },
                     required: ['author_id']
                 }
             }
         ];
+    }
+
+    getToolHandler(toolName) {
+        const handlers = {
+            'list_authors': this.handleListAuthors,
+            'get_author': this.handleGetAuthor,
+            'create_author': this.handleCreateAuthor,
+            'update_author': this.handleUpdateAuthor
+        };
+        return handlers[toolName];
     }
 
     async handleListAuthors(args) {
@@ -74,7 +103,6 @@ class AuthorMCPServer extends BaseMCPServer {
                                   `ID: ${author.id}\n` +
                                   `Name: ${author.name}\n` +
                                   `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                                  `Nationality: ${author.nationality || 'Unknown'}\n` +
                                   `Bio: ${author.bio || 'No biography available'}\n`
                               ).join('\n---\n\n')
                     }
@@ -112,7 +140,6 @@ class AuthorMCPServer extends BaseMCPServer {
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Nationality: ${author.nationality || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography available'}\n` +
                               `Created: ${author.created_at}\n` +
                               `Updated: ${author.updated_at}`
@@ -126,13 +153,18 @@ class AuthorMCPServer extends BaseMCPServer {
 
     async handleCreateAuthor(args) {
         try {
-            const { name, bio, birth_year, nationality } = args;
+            const { name, email, bio, birth_year } = args;
             const query = `
-                INSERT INTO authors (name, bio, birth_year, nationality) 
+                INSERT INTO authors (name, email, bio, birth_year) 
                 VALUES ($1, $2, $3, $4) 
                 RETURNING *
             `;
-            const result = await this.db.query(query, [name, bio, birth_year, nationality]);
+            const result = await this.db.query(query, [
+                name,
+                email || null,
+                bio || null,
+                birth_year || null
+            ]);
             const author = result.rows[0];
             
             return {
@@ -143,7 +175,6 @@ class AuthorMCPServer extends BaseMCPServer {
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Nationality: ${author.nationality || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography provided'}`
                     }
                 ]
@@ -155,7 +186,7 @@ class AuthorMCPServer extends BaseMCPServer {
 
     async handleUpdateAuthor(args) {
         try {
-            const { author_id, name, bio, birth_year, nationality } = args;
+            const { author_id, name, bio, birth_year } = args;
             
             // Build dynamic update query
             const updates = [];
@@ -173,10 +204,6 @@ class AuthorMCPServer extends BaseMCPServer {
             if (birth_year !== undefined) {
                 updates.push(`birth_year = $${paramCount++}`);
                 values.push(birth_year);
-            }
-            if (nationality !== undefined) {
-                updates.push(`nationality = $${paramCount++}`);
-                values.push(nationality);
             }
             
             if (updates.length === 0) {
@@ -216,7 +243,6 @@ class AuthorMCPServer extends BaseMCPServer {
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Nationality: ${author.nationality || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography available'}\n` +
                               `Updated: ${author.updated_at}`
                     }
@@ -230,9 +256,46 @@ class AuthorMCPServer extends BaseMCPServer {
 
 export { AuthorMCPServer };
 
-// CLI runner when called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-    const { CLIRunner } = await import('../../shared/cli-runner.js');
-    const runner = new CLIRunner(AuthorMCPServer);
-    await runner.run();
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
+
+console.error('[AUTHOR-SERVER] Module loaded');
+console.error('[AUTHOR-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
+console.error('[AUTHOR-SERVER] import.meta.url:', import.meta.url);
+console.error('[AUTHOR-SERVER] process.argv[1]:', process.argv[1]);
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+console.error('[AUTHOR-SERVER] normalized script path:', normalizedScriptPath);
+console.error('[AUTHOR-SERVER] is direct execution:', isDirectExecution);
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
+    console.error('[AUTHOR-SERVER] Starting CLI runner...');
+    try {
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(AuthorMCPServer);
+        await runner.run();
+    } catch (error) {
+        console.error('[AUTHOR-SERVER] CLI runner failed:', error.message);
+        console.error('[AUTHOR-SERVER] CLI runner stack:', error.stack);
+        throw error;
+    }
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[AUTHOR-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new AuthorMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[AUTHOR-SERVER] Failed to start MCP server:', error.message);
+        console.error('[AUTHOR-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
+} else {
+    console.error('[AUTHOR-SERVER] Module imported - not starting server');
+    console.error('[AUTHOR-SERVER] Module export completed');
 }

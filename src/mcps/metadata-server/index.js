@@ -1,9 +1,23 @@
 // src/mcps/metadata-server/index.js
+
+// Protect stdout from any pollution in MCP stdio mode
+if (process.env.MCP_STDIO_MODE === 'true') {
+    const originalWrite = process.stdout.write;
+    process.stdout.write = function() { return true; };
+    
+    // Restore stdout after module loading is complete
+    process.nextTick(() => {
+        process.stdout.write = originalWrite;
+    });
+}
+
 import { BaseMCPServer } from '../../shared/base-server.js';
 
 class MetadataMCPServer extends BaseMCPServer {
     constructor() {
         super('metadata-manager', '1.0.0');
+        // Initialize tools after base constructor
+        this.tools = this.getTools();
     }
 
     getTools() {
@@ -72,6 +86,17 @@ class MetadataMCPServer extends BaseMCPServer {
                 }
             }
         ];
+    }
+
+    getToolHandler(toolName) {
+        const handlers = {
+            'list_metadata': this.handleListMetadata,
+            'get_metadata': this.handleGetMetadata,
+            'create_metadata': this.handleCreateMetadata,
+            'update_metadata': this.handleUpdateMetadata,
+            'delete_metadata': this.handleDeleteMetadata
+        };
+        return handlers[toolName];
     }
 
     async handleListMetadata(args) {
@@ -390,9 +415,28 @@ class MetadataMCPServer extends BaseMCPServer {
 
 export { MetadataMCPServer };
 
-// CLI runner when called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
     const { CLIRunner } = await import('../../shared/cli-runner.js');
     const runner = new CLIRunner(MetadataMCPServer);
     await runner.run();
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[METADATA-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new MetadataMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[METADATA-SERVER] Failed to start MCP server:', error.message);
+        console.error('[METADATA-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
 }
