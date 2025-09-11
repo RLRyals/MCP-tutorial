@@ -94,6 +94,14 @@ Open Claude Desktop and try these commands:
 
 If you get an "Author not found" error, you'll need to create an author first. You can do this directly in the database or wait for the Author Management tutorial step.
 
+### Step 6: continue with the next brances in order
+#### 6.1 switch to next branch
+#### 6.2 run migration script
+#### 6.3 run generate Claude config
+#### 6.4 Load new Cluade Desktop config, Exit Cluade and restart
+#### 6.5 test new MCPs in Claude Desktop
+
+
 ## Alternative Setup: For Web-Based Tools (Typing Mind, etc.)
 
 If you're using Typing Mind or other web-based AI tools instead of Claude Desktop:

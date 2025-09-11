@@ -92,6 +92,14 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    "Show me details for series ID 1"
    ```
 
+   ### Step 6: continue with the next brances in order
+   #### 6.1 switch to next branch
+   #### 6.2 run migration script
+   #### 6.3 run generate Claude config
+   #### 6.4 Load new Cluade Desktop config, Exit Cluade and restart
+   #### 6.5 test new MCPs in Claude Desktop
+
+
    **For Typing Mind and Web-based Tools:**
    
    a. Start the HTTP server for the Series MCP:
