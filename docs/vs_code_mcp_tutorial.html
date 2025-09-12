@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VS Code MCP Writing Tools Setup Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f8fafc;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007acc, #0066cc);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .vs-code-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 8px 16px;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            color: #007acc;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 1.8em;
+        }
+
+        h3 {
+            color: #334155;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .step-section {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .vs-code-highlight {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border-left: 4px solid #007acc;
+        }
+
+        .command-block {
+            position: relative;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            overflow-x: auto;
+            border-left: 4px solid #007acc;
+        }
+
+        .command-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #3c3c3c;
+        }
+
+        .command-title {
+            color: #569cd6;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .terminal-tab {
+            color: #d7ba7d;
+            font-size: 0.8em;
+            background: #2d2d30;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        .copy-btn {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #005a9e;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        .command-text {
+            color: #9cdcfe;
+            font-weight: 500;
+            white-space: pre-wrap;
+        }
+
+        .vs-code-step {
+            background: #1e1e1e;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #d4d4d4;
+        }
+
+        .vs-code-step h4 {
+            color: #007acc;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .vs-code-icon {
+            width: 20px;
+            height: 20px;
+            background: #007acc;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .file-explorer {
+            background: #2d2d30;
+            border-radius: 4px;
+            padding: 12px;
+            margin: 10px 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .file-tree {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .file-tree li {
+            margin: 2px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .file-tree li::before {
+            content: "📁";
+            position: absolute;
+            left: 0;
+        }
+
+        .file-tree .file::before {
+            content: "📄";
+        }
+
+        .platform-tabs {
+            display: flex;
+            background: #2d2d30;
+            border-radius: 8px;
+            padding: 4px;
+            margin: 15px 0;
+        }
+
+        .platform-tab {
+            flex: 1;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: transparent;
+            border: none;
+            color: #d4d4d4;
+            font-weight: 500;
+        }
+
+        .platform-tab.active {
+            background: #007acc;
+            color: white;
+        }
+
+        .platform-content {
+            display: none;
+        }
+
+        .platform-content.active {
+            display: block;
+        }
+
+        .note {
+            background: #0f3460;
+            border: 1px solid #007acc;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #e3f2fd;
+        }
+
+        .warning {
+            background: #2d1b0e;
+            border: 1px solid #ff9800;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #fff3e0;
+        }
+
+        .success {
+            background: #0f2027;
+            border: 1px solid #4caf50;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #e8f5e8;
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .checklist li:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #007acc;
+            border-radius: 4px;
+            margin-right: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .checkbox.checked {
+            background: #007acc;
+            color: white;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #007acc;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        .terminal-showcase {
+            background: #1e1e1e;
+            border: 2px solid #007acc;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .terminal-header {
+            background: #2d2d30;
+            color: #d4d4d4;
+            padding: 8px 12px;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-buttons {
+            display: flex;
+            gap: 4px;
+        }
+
+        .terminal-button {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .close-btn { background: #ff5f56; }
+        .minimize-btn { background: #ffbd2e; }
+        .maximize-btn { background: #27ca3f; }
+
+        .terminal-body {
+            padding: 15px;
+            color: #d4d4d4;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            min-height: 100px;
+        }
+
+        .vs-code-sidebar {
+            background: #2d2d30;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 0.9em;
+            color: #d4d4d4;
+        }
+
+        .sidebar-section {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-title {
+            color: #007acc;
+            font-weight: 600;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            font-size: 0.8em;
+        }
+
+        .config-section {
+            background: #2d1810;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #fff3e0;
+        }
+
+        .keyboard-shortcut {
+            display: inline-block;
+            background: #2d2d30;
+            color: #d4d4d4;
+            border: 1px solid #3c3c3c;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            margin: 0 2px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .platform-tabs {
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="vs-code-badge">VS Code Integrated Tutorial</div>
+            <h1>MCP Writing Tools Setup Guide</h1>
+            <p>Build your AI writing system directly in Visual Studio Code</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="note">
+                <strong>Prerequisites:</strong> Make sure you've completed the software installation guide. You should have Node.js, Git, Docker Desktop, VS Code with extensions, and Claude Desktop installed.
+            </div>
+
+            <div class="vs-code-step">
+                <h4><span class="vs-code-icon"></span> Open VS Code First</h4>
+                <p>Before we start, let's open Visual Studio Code - this will be your primary workspace for the entire tutorial:</p>
+                
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('open-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('open-mac')">Mac</button>
+                </div>
+
+                <div class="platform-content active" id="open-windows">
+                    <p><strong>Windows Options:</strong></p>
+                    <ul>
+                        <li><strong>Start Menu:</strong> Click Start → type "Visual Studio Code"</li>
+                        <li><strong>Desktop:</strong> Double-click VS Code icon if you have one</li>
+                        <li><strong>Quick:</strong> Press <span class="keyboard-shortcut">Win</span> + <span class="keyboard-shortcut">R</span>, type "code", press Enter</li>
+                    </ul>
+                </div>
+
+                <div class="platform-content" id="open-mac">
+                    <p><strong>Mac Options:</strong></p>
+                    <ul>
+                        <li><strong>Spotlight:</strong> Press <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Space</span>, type "Visual Studio Code"</li>
+                        <li><strong>Applications:</strong> Finder → Applications → Visual Studio Code</li>
+                        <li><strong>Dock:</strong> Click VS Code in your dock if pinned</li>
+                    </ul>
+                </div>
+
+                <div class="success">
+                    <strong>You've successfully set up a professional MCP development environment!</strong> You now have VS Code configured as your command center with your first AI writing tool working with Claude Desktop.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function copyCommand(button, command) {
+            navigator.clipboard.writeText(command).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                button.textContent = 'Failed';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+
+        function showPlatform(platform) {
+            // Hide all platform content
+            document.querySelectorAll('.platform-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs in the same container
+            const clickedTab = event.target;
+            const tabContainer = clickedTab.parentElement;
+            tabContainer.querySelectorAll('.platform-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected platform content
+            const targetContent = document.getElementById(platform);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+            
+            // Add active class to clicked tab
+            clickedTab.classList.add('active');
+        }
+
+        function toggleCheck(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+            } else {
+                checkbox.innerHTML = '';
+            }
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const totalChecks = document.querySelectorAll('.checkbox').length;
+            const checkedItems = document.querySelectorAll('.checkbox.checked').length;
+            const progress = (checkedItems / totalChecks) * 100;
+            
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize progress bar
+        document.addEventListener('DOMContentLoaded', () => {
+            updateProgress();
+            
+            // Add keyboard navigation for platform tabs
+            document.addEventListener('keydown', function(e) {
+                if (e.target.classList.contains('platform-tab')) {
+                    const tabs = Array.from(e.target.parentElement.querySelectorAll('.platform-tab'));
+                    const currentIndex = tabs.indexOf(e.target);
+                    
+                    let nextIndex;
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        nextIndex = (currentIndex + 1) % tabs.length;
+                    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+                    } else if (e.key === 'Home') {
+                        e.preventDefault();
+                        nextIndex = 0;
+                    } else if (e.key === 'End') {
+                        e.preventDefault();
+                        nextIndex = tabs.length - 1;
+                    }
+                    
+                    if (nextIndex !== undefined) {
+                        tabs[nextIndex].focus();
+                        tabs[nextIndex].click();
+                    }
+                }
+            });
+        });
+
+        // Add visual feedback for successful steps
+        function markStepComplete(stepNumber) {
+            const stepElement = document.querySelector(`.step-section:nth-of-type(${stepNumber})`);
+            if (stepElement) {
+                stepElement.style.borderLeft = '4px solid #4caf50';
+                stepElement.style.backgroundColor = '#f0fdf4';
+            }
+        }
+
+        // Auto-scroll to next uncompleted step
+        function scrollToNextStep() {
+            const incompleteSteps = document.querySelectorAll('.step-section:not(.completed)');
+            if (incompleteSteps.length > 0) {
+                incompleteSteps[0].scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+
+        // Enhanced progress tracking with step completion
+        function updateProgressWithSteps() {
+            const stepSections = document.querySelectorAll('.step-section');
+            let completedSteps = 0;
+            
+            stepSections.forEach((section, index) => {
+                const checkboxes = section.querySelectorAll('.checkbox');
+                const checkedBoxes = section.querySelectorAll('.checkbox.checked');
+                
+                if (checkboxes.length === checkedBoxes.length && checkboxes.length > 0) {
+                    section.classList.add('completed');
+                    section.style.borderLeft = '4px solid #4caf50';
+                    completedSteps++;
+                } else {
+                    section.classList.remove('completed');
+                    section.style.borderLeft = '';
+                }
+            });
+            
+            const progress = (completedSteps / stepSections.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // Update header with completion status
+            const header = document.querySelector('.header p');
+            if (completedSteps === stepSections.length) {
+                header.textContent = '🎉 Setup Complete! Your MCP writing system is ready.';
+                header.style.color = '#4caf50';
+                header.style.fontWeight = 'bold';
+            } else {
+                header.textContent = `Step ${completedSteps + 1} of ${stepSections.length} - Build your AI writing system directly in Visual Studio Code`;
+            }
+        }
+
+        // Override the original updateProgress function
+        updateProgress = updateProgressWithSteps;
+
+        // Add copy-all functionality for power users
+        function copyAllCommands() {
+            const commands = Array.from(document.querySelectorAll('.command-text')).map(el => el.textContent);
+            const allCommands = commands.join('\n');
+            
+            navigator.clipboard.writeText(allCommands).then(() => {
+                console.log('All commands copied to clipboard');
+            });
+        }
+
+        // Add command history for reference
+        let commandHistory = [];
+        
+        function addToHistory(command) {
+            commandHistory.push(command);
+            localStorage.setItem('mcp-tutorial-history', JSON.stringify(commandHistory));
+        }
+
+        // Enhanced copy function with history
+        function copyCommandWithHistory(button, command) {
+            copyCommand(button, command);
+            addToHistory(command);
+        }
+
+        // Replace all copy button onclick handlers
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.copy-btn').forEach(button => {
+                const command = button.onclick.toString().match(/copyCommand\(this,\s*'([^']+)'\)/);
+                if (command) {
+                    button.onclick = () => copyCommandWithHistory(button, command[1]);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+                    <strong>VS Code Should Open:</strong> You'll see the VS Code welcome screen with dark theme (default) and various panels like Explorer, Extensions, etc. in the sidebar.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>VS Code is open and ready</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>I can see the sidebar with Explorer, Search, etc.</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">1</span>Choose Your Project Location in VS Code</h2>
+                <p>Instead of using a separate terminal, we'll use VS Code's integrated workspace. Let's choose where to store your MCP project:</p>
+                
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Open a Folder in VS Code</h4>
+                    
+                    <div class="platform-tabs">
+                        <button class="platform-tab active" onclick="showPlatform('folder-windows')">Windows</button>
+                        <button class="platform-tab" onclick="showPlatform('folder-mac')">Mac</button>
+                    </div>
+
+                    <div class="platform-content active" id="folder-windows">
+                        <p><strong>Windows Steps:</strong></p>
+                        <ol>
+                            <li>In VS Code: <span class="keyboard-shortcut">Ctrl</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">E</span> to open Explorer</li>
+                            <li>Click <strong>"Open Folder"</strong> button</li>
+                            <li>Navigate to <strong>Desktop</strong> or <strong>Documents</strong></li>
+                            <li>Click <strong>"Select Folder"</strong> (this sets your workspace)</li>
+                        </ol>
+                    </div>
+
+                    <div class="platform-content" id="folder-mac">
+                        <p><strong>Mac Steps:</strong></p>
+                        <ol>
+                            <li>In VS Code: <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">E</span> to open Explorer</li>
+                            <li>Click <strong>"Open Folder"</strong> button</li>
+                            <li>Navigate to <strong>Desktop</strong> or <strong>Documents</strong></li>
+                            <li>Click <strong>"Open"</strong> (this sets your workspace)</li>
+                        </ol>
+                    </div>
+
+                    <div class="note">
+                        <strong>Why do this?</strong> Opening a folder in VS Code sets up your workspace. This makes VS Code your project hub where you can see files, run commands, and manage everything from one place.
+                    </div>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Opened Desktop or Documents folder in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>VS Code Explorer shows the folder contents</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">2</span>Open VS Code's Integrated Terminal</h2>
+                <p>Now we'll open VS Code's built-in terminal - this is where we'll run all our commands:</p>
+                
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Open Terminal in VS Code</h4>
+                    
+                    <p><strong>Multiple ways to open the terminal:</strong></p>
+                    <ul>
+                        <li><strong>Keyboard shortcut:</strong> <span class="keyboard-shortcut">Ctrl</span> + <span class="keyboard-shortcut">`</span> (Windows) or <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">`</span> (Mac)</li>
+                        <li><strong>Menu:</strong> Terminal → New Terminal</li>
+                        <li><strong>Command Palette:</strong> <span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">P</span> → type "Terminal: Create New Terminal"</li>
+                    </ul>
+
+                    <div class="terminal-showcase">
+                        <div class="terminal-header">
+                            <div class="terminal-buttons">
+                                <div class="terminal-button close-btn"></div>
+                                <div class="terminal-button minimize-btn"></div>
+                                <div class="terminal-button maximize-btn"></div>
+                            </div>
+                            <span class="terminal-tab">PowerShell</span>
+                            <span style="margin-left: auto; color: #569cd6;">VS Code Integrated Terminal</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div style="color: #569cd6;">PS C:\Users\YourName\Desktop></div>
+                            <div style="color: #d4d4d4; margin-top: 5px;">Ready for commands...</div>
+                        </div>
+                    </div>
+
+                    <div class="success">
+                        <strong>What You Should See:</strong> A terminal panel opens at the bottom of VS Code. The prompt shows your current location (Desktop or Documents folder you opened).
+                    </div>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal opened in VS Code (panel at bottom)</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal prompt shows current folder path</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can type in the terminal</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">3</span>Clone Repository Using VS Code Terminal</h2>
+                
+                <div class="note">
+                    <strong>What is "cloning"?</strong> Cloning downloads a copy of the project code from GitHub to your computer. Think of it like downloading a ZIP file, but with special version control features.
+                </div>
+
+                <p>Now let's download the MCP tutorial code using the VS Code terminal:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Clone the MCP tutorial repository</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'git clone https://github.com/RLRyals/MCP-tutorial.git')">Copy</button>
+                    </div>
+                    <div class="command-text">git clone https://github.com/RLRyals/MCP-tutorial.git</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> What Happens in VS Code</h4>
+                    <p>After running the command, watch for these changes:</p>
+                    
+                    <div class="vs-code-sidebar">
+                        <div class="sidebar-section">
+                            <div class="sidebar-title">Explorer (Before)</div>
+                            <ul class="file-tree">
+                                <li>📁 Documents (or Desktop)</li>
+                                <li style="padding-left: 32px;">📄 (your existing files)</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="sidebar-section">
+                            <div class="sidebar-title">Explorer (After Cloning)</div>
+                            <ul class="file-tree">
+                                <li>📁 Documents (or Desktop)</li>
+                                <li style="padding-left: 32px;">📁 <strong>MCP-tutorial</strong> ← New folder appears!</li>
+                                <li style="padding-left: 32px;">📄 (your existing files)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="success">
+                        <strong>Success Signs:</strong>
+                        <ul>
+                            <li>Terminal shows "Cloning into 'MCP-tutorial'..."</li>
+                            <li><strong>MCP-tutorial</strong> folder appears in VS Code Explorer</li>
+                            <li>Terminal prompt returns (you can type again)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>If you get an error:</strong>
+                    <ul>
+                        <li>Check your internet connection</li>
+                        <li>Verify Git is installed: type <code>git --version</code> in the terminal</li>
+                        <li>Try the command again (sometimes network hiccups occur)</li>
+                    </ul>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Cloning command completed without errors</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>MCP-tutorial folder appears in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal prompt returned (ready for next command)</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">4</span>Open the Project in VS Code</h2>
+                <p>Now let's open the MCP-tutorial project properly in VS Code:</p>
+                
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Open the MCP-tutorial Folder</h4>
+                    
+                    <p><strong>Method 1: Using VS Code Explorer</strong></p>
+                    <ol>
+                        <li>In VS Code Explorer, <strong>double-click</strong> the "MCP-tutorial" folder</li>
+                        <li>OR right-click "MCP-tutorial" → <strong>"Open in New Window"</strong></li>
+                    </ol>
+
+                    <p><strong>Method 2: Using Menu</strong></p>
+                    <ol>
+                        <li>File → Open Folder</li>
+                        <li>Navigate to and select the MCP-tutorial folder</li>
+                        <li>Click "Open"</li>
+                    </ol>
+
+                    <div class="file-explorer">
+                        <div class="sidebar-title">VS Code Explorer Should Now Show:</div>
+                        <ul class="file-tree">
+                            <li>📁 MCP-tutorial</li>
+                            <li style="padding-left: 32px;" class="file">📄 README.md</li>
+                            <li style="padding-left: 32px;" class="file">📄 package.json</li>
+                            <li style="padding-left: 32px;" class="file">📄 docker-compose.yml</li>
+                            <li style="padding-left: 32px;" class="file">📄 template.env</li>
+                            <li style="padding-left: 32px;">📁 scripts</li>
+                            <li style="padding-left: 32px;">📁 src</li>
+                            <li style="padding-left: 32px;">📁 migrations</li>
+                            <li style="padding-left: 32px;">📁 docs</li>
+                        </ul>
+                    </div>
+
+                    <div class="success">
+                        <strong>Perfect!</strong> VS Code now shows the MCP-tutorial project files in the Explorer. This is your project workspace.
+                    </div>
+                </div>
+
+                <p><strong>Update the terminal location:</strong></p>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Navigate into project directory</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'cd MCP-tutorial')">Copy</button>
+                    </div>
+                    <div class="command-text">cd MCP-tutorial</div>
+                </div>
+
+                <div class="note">
+                    <strong>Pro Tip:</strong> After running <code>cd MCP-tutorial</code>, your terminal prompt should show that you're inside the project folder. All future commands will run from here.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>MCP-tutorial project is open in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see project files in Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal is in the MCP-tutorial directory</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">5</span>Install Dependencies</h2>
+                
+                <div class="note">
+                    <strong>What are dependencies?</strong> These are pre-written code libraries that our MCP tools need to work. NPM (Node Package Manager) automatically downloads and installs them for us.
+                </div>
+
+                <p>Install the required Node.js packages using VS Code terminal:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Install Node.js dependencies</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'npm install')">Copy</button>
+                    </div>
+                    <div class="command-text">npm install</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Watch VS Code During Installation</h4>
+                    
+                    <p><strong>What you'll see in VS Code:</strong></p>
+                    <ul>
+                        <li><strong>Terminal:</strong> Lots of text scrolling as packages download (2-5 minutes)</li>
+                        <li><strong>Explorer:</strong> A new <strong>node_modules</strong> folder appears (may take a moment)</li>
+                        <li><strong>Files:</strong> A <strong>package-lock.json</strong> file gets created</li>
+                    </ul>
+
+                    <div class="terminal-showcase">
+                        <div class="terminal-header">
+                            <span class="terminal-tab">Installing...</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div style="color: #4caf50;">npm WARN deprecated ...</div>
+                            <div style="color: #d4d4d4;">added 1247 packages in 3m 15s</div>
+                            <div style="color: #569cd6;">PS C:\...\MCP-tutorial></div>
+                        </div>
+                    </div>
+
+                    <div class="success">
+                        <strong>Success indicators:</strong> Terminal shows "added X packages", VS Code Explorer shows node_modules folder, and your terminal prompt returns.
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>If you see yellow warnings:</strong> These are usually safe to ignore. Red errors mean there's a problem - try running the command again.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Command completed (saw "added X packages")</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>node_modules folder appears in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>No red error messages in terminal</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">6</span>Environment Setup</h2>
+                
+                <div class="note">
+                    <strong>What is an environment file?</strong> The .env file contains configuration settings like database connection details. It's like a settings menu for our MCP tools.
+                </div>
+
+                <p>Create your environment configuration file:</p>
+                
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('env-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('env-mac')">Mac/Linux</button>
+                </div>
+
+                <div class="platform-content active" id="env-windows">
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Copy environment template (Windows)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'copy template.env .env')">Copy</button>
+                        </div>
+                        <div class="command-text">copy template.env .env</div>
+                    </div>
+                </div>
+
+                <div class="platform-content" id="env-mac">
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Copy environment template (Mac/Linux)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'cp template.env .env')">Copy</button>
+                        </div>
+                        <div class="command-text">cp template.env .env</div>
+                    </div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Watch the File Appear in VS Code</h4>
+                    
+                    <p>After running the command, you should see a new <strong>.env</strong> file appear in your VS Code Explorer! You can:</p>
+                    <ul>
+                        <li><strong>Click on .env</strong> in the Explorer to open and view it</li>
+                        <li>See the default database settings (usually perfect as-is)</li>
+                        <li>Notice it appears alongside template.env in your file list</li>
+                    </ul>
+
+                    <div class="note">
+                        <strong>What this file contains:</strong> Database connection settings, port numbers, and other configuration. The template has good defaults that work for most setups.
+                    </div>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>.env file appears in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can open and view the .env file in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>No error messages in terminal</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">7</span>Start the Database</h2>
+                
+                <div class="note">
+                    <strong>What is a database?</strong> Think of it as a digital filing cabinet for all your writing data - characters, plot points, series information, etc. We use PostgreSQL running in Docker so you don't need to install database software directly.
+                </div>
+
+                <div class="warning">
+                    <strong>IMPORTANT: Check Docker Desktop First!</strong>
+                    <ul>
+                        <li>Look for the Docker whale icon in your system tray (Windows) or menu bar (Mac)</li>
+                        <li>If not visible, open Docker Desktop and wait for it to start (can take 1-2 minutes)</li>
+                        <li>Wait for "Docker Desktop is running" status</li>
+                    </ul>
+                </div>
+
+                <p>Start your PostgreSQL database using VS Code terminal:</p>
+                
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('docker-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('docker-mac')">Mac/Linux</button>
+                </div>
+
+                <div class="platform-content active" id="docker-windows">
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Start database (Windows PowerShell)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, '.\\scripts\\start-database.ps1')">Copy</button>
+                        </div>
+                        <div class="command-text">.\scripts\start-database.ps1</div>
+                    </div>
+
+                    <div class="note">
+                        <strong>This PowerShell script:</strong>
+                        <ul>
+                            <li>Checks if Docker Desktop is running</li>
+                            <li>Starts your PostgreSQL database container</li>
+                            <li>Sets up proper database configuration</li>
+                            <li>Provides helpful status messages</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="platform-content" id="docker-mac">
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Start database (Mac/Linux)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'docker-compose up -d')">Copy</button>
+                        </div>
+                        <div class="command-text">docker-compose up -d</div>
+                    </div>
+
+                    <div class="note">
+                        <strong>This command:</strong>
+                        <ul>
+                            <li>Starts services defined in docker-compose.yml</li>
+                            <li>Runs in background (-d = detached mode)</li>
+                            <li>Sets up PostgreSQL database for the project</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> What Happens in Your VS Code Terminal</h4>
+                    
+                    <div class="terminal-showcase">
+                        <div class="terminal-header">
+                            <span class="terminal-tab">Starting Database...</span>
+                        </div>
+                        <div class="terminal-body">
+                            <div style="color: #4caf50;">Creating network "mcp-tutorial_default"...</div>
+                            <div style="color: #4caf50;">Creating mcp-tutorial_db_1...</div>
+                            <div style="color: #d4d4d4;">Database is healthy and ready!</div>
+                            <div style="color: #569cd6;">PS C:\...\MCP-tutorial></div>
+                        </div>
+                    </div>
+
+                    <p><strong>First time may take longer:</strong> Docker needs to download the PostgreSQL image (2-3 minutes). Subsequent starts are much faster.</p>
+                </div>
+
+                <p><strong>Verify database is running:</strong></p>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Check running containers</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'docker ps')">Copy</button>
+                    </div>
+                    <div class="command-text">docker ps</div>
+                </div>
+
+                <div class="success">
+                    <strong>Success indicators:</strong> You should see a container with "postgres" in the name, and status showing "Up" or "healthy".
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Docker Desktop was running before command</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Database started without errors</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see postgres container with "docker ps"</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">8</span>Create Database Schema</h2>
+                
+                <div class="note">
+                    <strong>What is a database schema?</strong> It's the blueprint that defines what tables (like spreadsheet tabs) and columns (like spreadsheet headers) your database has. A migration script builds these tables automatically.
+                </div>
+
+                <p>Run the migration to create your database structure:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run core schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 001_create_core_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 001_create_core_schema.sql</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Explore the Migration File in VS Code</h4>
+                    
+                    <p>While the migration runs, you can explore what it's doing:</p>
+                    <ul>
+                        <li><strong>In Explorer:</strong> Navigate to migrations → 001_create_core_schema.sql</li>
+                        <li><strong>Click the file</strong> to open it and see the SQL code</li>
+                        <li><strong>Notice:</strong> It creates tables for authors, series, books, timeline, metadata</li>
+                    </ul>
+
+                    <div class="success">
+                        <strong>What the migration creates:</strong> Tables for organizing your writing projects, with proper relationships and indexes for good performance.
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>Common issues:</strong>
+                    <ul>
+                        <li><strong>"Database connection failed":</strong> Ensure database is running (check with docker ps)</li>
+                        <li><strong>"Migration already applied":</strong> This is fine! Means tables already exist</li>
+                        <li><strong>"Permission denied":</strong> Check your .env file settings</li>
+                    </ul>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Migration completed without errors</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Saw success message in terminal</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can view migration file in VS Code</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">9</span>Switch to Series Management Branch</h2>
+                
+                <div class="note">
+                    <strong>What are Git branches?</strong> Think of them as different versions of the project. Each tutorial branch adds new features. You're currently on "main" (basic setup), and we're switching to the branch with Series Management tools.
+                </div>
+
+                <p>Switch to the branch with Series Management MCP functionality:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Switch to Series Management branch</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_1_Series_Management')">Copy</button>
+                    </div>
+                    <div class="command-text">git checkout MCP_1_Series_Management</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Watch VS Code Update</h4>
+                    
+                    <p><strong>After switching branches, VS Code will show:</strong></p>
+                    <ul>
+                        <li><strong>New files appear</strong> in the Explorer (MCP server code!)</li>
+                        <li><strong>Branch indicator</strong> in VS Code status bar shows current branch</li>
+                        <li><strong>File changes</strong> - some files may be updated with new content</li>
+                    </ul>
+
+                    <div class="file-explorer">
+                        <div class="sidebar-title">New Files You Should See:</div>
+                        <ul class="file-tree">
+                            <li>📁 src</li>
+                            <li style="padding-left: 32px;">📁 mcps</li>
+                            <li style="padding-left: 48px;">📁 series-server</li>
+                            <li style="padding-left: 64px;" class="file">📄 index.js ← Series MCP Server!</li>
+                            <li style="padding-left: 48px;">📁 author-server</li>
+                            <li style="padding-left: 64px;" class="file">📄 index.js ← Author MCP Server!</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <p>Run the additional migration for series management:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run series schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 002_update_series_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 002_update_series_schema.sql</div>
+                </div>
+
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (status, publication info, author bios) and updates table relationships.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Series Management branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Series schema migration completed successfully</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">10</span>Generate Claude Desktop Configuration</h2>
+                
+                <div class="note">
+                    <strong>What is this configuration?</strong> Claude Desktop needs to know where your MCP tools are located so it can use them. Think of it like installing browser extensions - you need to tell the browser which ones to load.
+                </div>
+
+                <p>Generate the configuration file for Claude Desktop:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Generate Claude Desktop configuration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, '.\\scripts\\generate-configs.ps1 -Claude')">Copy</button>
+                    </div>
+                    <div class="command-text">.\scripts\generate-configs.ps1 -Claude</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Watch the Configuration File Appear</h4>
+                    
+                    <p>After running the script, you'll see a new file in VS Code:</p>
+                    <ul>
+                        <li><strong>claude-desktop.json</strong> appears in your Explorer</li>
+                        <li><strong>Click on it</strong> to open and view the configuration</li>
+                        <li><strong>See the MCP servers</strong> it configures (author-server, series-server, etc.)</li>
+                    </ul>
+
+                    <div class="file-explorer">
+                        <div class="sidebar-title">Configuration File Contents (preview):</div>
+                        <div style="background: #2d2d30; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 0.8em;">
+                            {<br>
+                            &nbsp;&nbsp;"mcpServers": {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"author-server": { ... },<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;"series-server": { ... }<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="config-section">
+                    <h3>Manual Installation Required</h3>
+                    
+                    <p>The script generates the file, but you need to install it in Claude Desktop's configuration folder:</p>
+                    
+                    <div class="platform-tabs">
+                        <button class="platform-tab active" onclick="showPlatform('config-windows')">Windows Installation</button>
+                        <button class="platform-tab" onclick="showPlatform('config-mac')">Mac Installation</button>
+                    </div>
+
+                    <div class="platform-content active" id="config-windows">
+                        <p><strong>Using VS Code for Windows:</strong></p>
+                        <ol>
+                            <li><strong>In VS Code Explorer:</strong> Right-click "claude-desktop.json" → "Copy"</li>
+                            <li><strong>Open File Explorer:</strong> Press <span class="keyboard-shortcut">Win</span> + <span class="keyboard-shortcut">E</span></li>
+                            <li><strong>Navigate to config folder:</strong> Type <code>%APPDATA%\Claude</code> in address bar, press Enter</li>
+                            <li><strong>Paste and rename:</strong> Right-click → Paste, then rename to <strong>"claude_desktop_config.json"</strong></li>
+                        </ol>
+                    </div>
+
+                    <div class="platform-content" id="config-mac">
+                        <p><strong>Using VS Code for Mac:</strong></p>
+                        <ol>
+                            <li><strong>In VS Code Explorer:</strong> Right-click "claude-desktop.json" → "Copy"</li>
+                            <li><strong>Open Finder:</strong> Click Finder icon</li>
+                            <li><strong>Navigate to config folder:</strong> Press <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">G</span>, type <code>~/Library/Application Support/Claude</code></li>
+                            <li><strong>Paste and rename:</strong> Right-click → Paste, then rename to <strong>"claude_desktop_config.json"</strong></li>
+                        </ol>
+                    </div>
+
+                    <div class="warning">
+                        <strong>CRITICAL: Restart Claude Desktop</strong><br>
+                        After copying the config file:
+                        <ol>
+                            <li>Completely quit Claude Desktop (not minimize - actually quit)</li>
+                            <li>Wait 5 seconds</li>
+                            <li>Open Claude Desktop again</li>
+                            <li>Sign in if prompted</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>claude-desktop.json file appears in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can view configuration file contents in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Configuration copied to Claude Desktop folder</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>File renamed to "claude_desktop_config.json"</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Claude Desktop completely restarted</li>
+                </ul>
+            </div>
+
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">11</span>Test Your Setup</h2>
+                
+                <div class="success">
+                    <strong>Time to test everything!</strong> If setup was successful, Claude Desktop should now have access to your writing tools and database.
+                </div>
+
+                <p>Open Claude Desktop and test with these queries:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Test 1: Check database connection</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'Can you list all the series in my database?')">Copy</button>
+                    </div>
+                    <div class="command-text">Can you list all the series in my database?</div>
+                </div>
+
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Test 2: Create data</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'Create a new author named &quot;Marina Blackwood&quot; and then create a series called &quot;The Starfire Chronicles&quot; by that author.')">Copy</button>
+                    </div>
+                    <div class="command-text">Create a new author named "Marina Blackwood" and then create a series called "The Starfire Chronicles" by that author.</div>
+                </div>
+
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Test 3: Retrieve data</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'Show me all the authors in my database with their series.')">Copy</button>
+                    </div>
+                    <div class="command-text">Show me all the authors in my database with their series.</div>
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Monitor Your Database While Testing</h4>
+                    
+                    <p>While testing in Claude Desktop, you can monitor your setup in VS Code:</p>
+                    <ul>
+                        <li><strong>Check database status:</strong> Run <code>docker ps</code> in VS Code terminal</li>
+                        <li><strong>View logs if needed:</strong> Run <code>docker-compose logs</code></li>
+                        <li><strong>Explore your data:</strong> You could add database viewing extensions to VS Code</li>
+                    </ul>
+                </div>
+
+                <div class="success">
+                    <strong>Signs of Success:</strong>
+                    <ul>
+                        <li>Claude responds with database information (not errors)</li>
+                        <li>Claude can create new authors and series</li>
+                        <li>Claude can retrieve and display your data</li>
+                        <li>No "unable to connect" or "tool not available" errors</li>
+                    </ul>
+                </div>
+
+                <div class="warning">
+                    <strong>If Claude can't access your database:</strong>
+                    <ol>
+                        <li>Check database is running: <code>docker ps</code> in VS Code terminal</li>
+                        <li>Verify Claude Desktop was restarted after config installation</li>
+                        <li>Confirm config file is in correct location with correct name</li>
+                        <li>Try restarting Claude Desktop one more time</li>
+                    </ol>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Claude Desktop loads and connects normally</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Claude can access and query the database</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Claude can create new authors and series</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Claude can retrieve and display data correctly</li>
+                </ul>
+            </div>
+
+            <div class="step-section">
+                <h2>Next Steps - Continue Your Journey</h2>
+                
+                <div class="success">
+                    <strong>Congratulations!</strong> You've successfully set up your first MCP writing tool using VS Code as your development environment. You now have a working Series Management system.
+                </div>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Your VS Code Workspace is Ready</h4>
+                    
+                    <p>Your VS Code setup is now perfectly configured for continuing the tutorial:</p>
+                    <ul>
+                        <li><strong>Project is open</strong> and ready for the next branches</li>
+                        <li><strong>Terminal is configured</strong> in the right directory</li>
+                        <li><strong>Database is running</strong> and accessible</li>
+                        <li><strong>All tools are installed</strong> and working</li>
+                    </ul>
+                </div>
+
+                <p><strong>The tutorial continues with additional branches that add more powerful features:</strong></p>
+
+                <div class="note">
+                    <strong>Upcoming tutorial branches:</strong>
+                    <ul>
+                        <li><strong>Step_2_MCP_character</strong> - Character management and tracking</li>
+                        <li><strong>Step_3_MCP_plot</strong> - Plot structure and story arcs</li>
+                        <li><strong>Step_4_MCP_research</strong> - Research and continuity tracking</li>
+                        <li><strong>Step_5_MCP_writing</strong> - Writing production management</li>
+                        <li><strong>Step_6_MCP_persona_voice</strong> - AI writing personas and voice</li>
+                    </ul>
+                </div>
+
+                <p><strong>To continue to Character Management:</strong></p>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Switch to Character Management branch</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'git checkout Step_2_MCP_character')">Copy</button>
+                    </div>
+                    <div class="command-text">git checkout Step_2_MCP_character</div>
+                </div>
+
+                <p><strong>Follow the same pattern for each new branch:</strong></p>
+                <ol>
+                    <li>Switch branches using VS Code terminal</li>
+                    <li>Run any new migration scripts</li>
+                    <li>Generate updated Claude Desktop config</li>
+                    <li>Copy new config to Claude Desktop folder</li>
+                    <li>Restart Claude Desktop</li>
+                    <li>Test the new features!</li>
+                </ol>
+
+                <div class="warning">
+                    <strong>Pro Tips:</strong>
+                    <ul>
+                        <li>Keep VS Code open - it's your command center for the entire tutorial</li>
+                        <li>Database stays running between sessions</li>
+                        <li>Each branch adds new MCPs without breaking existing ones</li>
+                        <li>Always restart Claude Desktop after config updates</li>
+                        <li>Use VS Code's integrated terminal for all commands</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step-section">
+                <h2>VS Code Tips and Troubleshooting</h2>
+
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Useful VS Code Features for This Project</h4>
+                    
+                    <p><strong>Terminal Management:</strong></p>
+                    <ul>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">`</span> - Toggle terminal</li>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">`</span> - New terminal</li>
+                        <li>Click the "+" in terminal tab bar to add multiple terminals</li>
+                    </ul>
+
+                    <p><strong>File Navigation:</strong></p>
+                    <ul>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">P</span> - Quick file search</li>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">E</span> - Focus Explorer</li>
+                        <li>Double-click files in Explorer to open them</li>
+                    </ul>
+
+                    <p><strong>Search and Replace:</strong></p>
+                    <ul>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">F</span> - Search in current file</li>
+                        <li><span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">F</span> - Search across all files</li>
+                    </ul>
+                </div>
+
+                <h3>Quick Health Checks</h3>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Check database status</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'docker ps')">Copy</button>
+                    </div>
+                    <div class="command-text">docker ps</div>
+                </div>
+
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">View database logs</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'docker-compose logs')">Copy</button>
+                    </div>
+                    <div class="command-text">docker-compose logs</div>
+                </div>
+
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Restart database if needed</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'docker-compose restart')">Copy</button>
+                    </div>
+                    <div class="command-text">docker-compose restart</div>
+                </div>
+
+                <div class="warning">
+                    <strong>Common VS Code Issues:</strong>
+                    <ul>
+                        <li><strong>Terminal not in right directory:</strong> Check the path in terminal prompt, use <code>cd</code> to navigate</li>
+                        <li><strong>Files not updating:</strong> Try refreshing Explorer with <span class="keyboard-shortcut">F5</span></li>
+                        <li><strong>Terminal commands fail:</strong> Ensure you're in the MCP-tutorial project folder</li>
+                        <li><strong>Git branch confusion:</strong> Check current branch in VS Code status bar</li>
+                    </ul>
+                </div>
+
+                <div class="success">
