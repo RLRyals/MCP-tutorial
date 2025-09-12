@@ -46,6 +46,10 @@ Database focus:
 - character_relationships table
 - character_locations table (references locations)
 - character_arcs table
+- chapters table (primary)
+- chapter_plot_points
+- chapter_relationships
+- chapter_scenes
 
 ### Step_3_MCP_plot
 Integrates characters and world:
