@@ -20,6 +20,16 @@
         "MCP_STDIO_MODE": "true"
       }
     },
+    "character-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/character-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
     "metadata-server": {
       "command": "node",
       "args": [
