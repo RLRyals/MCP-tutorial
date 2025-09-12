@@ -7,9 +7,13 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 - Git
 - A code editor (VS Code recommended)
 
-## Link to html tutorial guide
+## 🚀 START HERE: Interactive Tutorial Guide
 
-📖 **[VS Code MCP Writing Tools Setup Guide](docs/vs_code_mcp_tutorial.html)** - A comprehensive, interactive tutorial guide specifically designed for VS Code users. This HTML guide provides step-by-step instructions with visual aids, code blocks, and troubleshooting tips for setting up your MCP writing tools directly within VS Code.
+**📖 CLICK TO START:** **[VS Code MCP Writing Tools Setup Guide](https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/vs_code_mcp_tutorial.html)** 
+
+👆 **Students: Click this link first!** This opens an interactive, step-by-step tutorial that guides you through the entire setup process. It has copy buttons for all commands and works in any browser - no cloning required!
+
+**After cloning the repo:** You can also double-click `open-tutorial.bat` in the project folder to open the same tutorial locally.
 
 ## Quick Start
 
