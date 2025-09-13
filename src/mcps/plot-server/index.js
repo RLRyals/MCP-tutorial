@@ -1,6 +1,6 @@
 // src/mcps/plot-server/index.js
-// Complete Plot MCP Server for universal plot management
-// Handles plot threads, timeline events, tropes, story structure, and story frameworks
+// Modular Plot MCP Server following the guide architecture
+// Combines handler modules for plot threads, story analysis, and genre extensions
 
 // Protect stdout from debug logging in MCP stdio mode
 if (process.env.MCP_STDIO_MODE === 'true') {
@@ -11,6 +11,10 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 }
 
 import { BaseMCPServer } from '../../shared/base-server.js';
+import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
+import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
+import { GenreExtensions } from './handlers/genre-extensions.js';
+import { lookupSystemToolsSchema } from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
     constructor() {
@@ -22,6 +26,16 @@ class PlotMCPServer extends BaseMCPServer {
             console.error('[PLOT-SERVER] Constructor failed:', error.message);
             throw error;
         }
+        
+        // Initialize handler modules
+        this.plotThreadHandlers = new PlotThreadHandlers(this.db);
+        this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
+        this.genreExtensions = new GenreExtensions(this.db);
+        
+        // Mix in handler methods to this class
+        Object.assign(this, this.plotThreadHandlers);
+        Object.assign(this, this.storyAnalysisHandlers);
+        Object.assign(this, this.genreExtensions);
         
         this.tools = this.getTools();
         
@@ -58,154 +72,23 @@ class PlotMCPServer extends BaseMCPServer {
     }
 
     // =============================================
-    // COMPLETE TOOL DEFINITIONS (all categories)
+    // ALL TOOLS ALWAYS AVAILABLE (NO GENRE FILTERING)
     // =============================================
     getTools() {
         return [
-            // ===== LOOKUP TABLE TOOLS =====
-            {
-                name: 'get_available_options',
-                description: 'Get available options from lookup tables (genres, tropes, categories, etc.)',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        option_type: {
-                            type: 'string',
-                            enum: ['genres', 'trope_categories', 'story_tropes', 'genre_templates'],
-                            description: 'Type of options to retrieve'
-                        },
-                        genre_filter: { 
-                            type: 'string', 
-                            description: 'Filter by specific genre name (optional)' 
-                        },
-                        active_only: { 
-                            type: 'boolean', 
-                            default: true, 
-                            description: 'Only return active/available options'
-                        }
-                    },
-                    required: ['option_type']
-                }
-            },
-
-            // ===== PLOT THREAD MANAGEMENT TOOLS =====
-            {
-                name: 'create_plot_thread',
-                description: 'Create a new plot thread (story arc, subplot, character arc)',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        series_id: { type: 'integer', description: 'Series ID' },
-                        title: { type: 'string', description: 'Plot thread title' },
-                        description: { type: 'string', description: 'Plot thread description' },
-                        thread_type: { 
-                            type: 'string', 
-                            enum: ['series_arc', 'mini_arc', 'main_case', 'subplot', 'character_arc', 'mystery_element'],
-                            description: 'Type of plot thread'
-                        },
-                        importance_level: { 
-                            type: 'integer', 
-                            minimum: 1, 
-                            maximum: 10, 
-                            default: 5,
-                            description: 'Importance level (1-10)'
-                        },
-                        complexity_level: { 
-                            type: 'integer', 
-                            minimum: 1, 
-                            maximum: 10, 
-                            default: 5,
-                            description: 'Complexity level (1-10)'
-                        },
-                        start_book: { type: 'integer', description: 'Starting book number' },
-                        end_book: { type: 'integer', description: 'Ending book number (optional for ongoing threads)' },
-                        related_characters: { 
-                            type: 'array', 
-                            items: { type: 'integer' },
-                            description: 'Array of related character IDs'
-                        },
-                        parent_thread_id: { type: 'integer', description: 'Parent thread ID for sub-threads' }
-                    },
-                    required: ['series_id', 'title', 'description', 'thread_type']
-                }
-            },
-            {
-                name: 'update_plot_thread',
-                description: 'Update plot thread information and status',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        thread_id: { type: 'integer', description: 'Plot thread ID' },
-                        title: { type: 'string', description: 'Plot thread title' },
-                        description: { type: 'string', description: 'Plot thread description' },
-                        current_status: { 
-                            type: 'string', 
-                            enum: ['active', 'resolved', 'on_hold', 'abandoned'],
-                            description: 'Thread status'
-                        },
-                        end_book: { type: 'integer', description: 'Ending book number' },
-                        resolution_notes: { type: 'string', description: 'Resolution details' },
-                        resolution_book: { type: 'integer', description: 'Book where resolved' }
-                    },
-                    required: ['thread_id']
-                }
-            },
-            {
-                name: 'get_plot_threads',
-                description: 'Get plot threads for a series with filtering options',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        series_id: { type: 'integer', description: 'Series ID' },
-                        thread_type: { type: 'string', description: 'Filter by thread type' },
-                        current_status: { type: 'string', description: 'Filter by status' },
-                        book_number: { type: 'integer', description: 'Filter threads active in specific book' },
-                        importance_min: { type: 'integer', description: 'Minimum importance level' }
-                    },
-                    required: ['series_id']
-                }
-            },
-
-            // ===== STORY STRUCTURE TOOLS =====
-            {
-                name: 'create_story_structure',
-                description: 'Create or update story structure analysis for a book',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        book_id: { type: 'integer', description: 'Book ID' },
-                        structure_type: { 
-                            type: 'string', 
-                            enum: ['three_act', 'hero_journey', 'dramatica', 'custom'],
-                            default: 'three_act',
-                            description: 'Type of story structure'
-                        },
-                        structure_data: { 
-                            type: 'object', 
-                            description: 'Structure-specific data (acts, beats, etc.)'
-                        },
-                        key_beats: { 
-                            type: 'array', 
-                            items: { type: 'string' },
-                            description: 'Important story beats'
-                        },
-                        pacing_notes: { type: 'string', description: 'Notes about pacing' },
-                        structure_notes: { type: 'string', description: 'Notes about structure' }
-                    },
-                    required: ['book_id']
-                }
-            },
-            {
-                name: 'get_story_structure',
-                description: 'Get story structure analysis for a book',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        book_id: { type: 'integer', description: 'Book ID' }
-                    },
-                    required: ['book_id']
-                }
-            }
+            // Lookup system tools
+            ...lookupSystemToolsSchema,
+            
+            // Core plot thread tools
+            ...this.plotThreadHandlers.getPlotThreadTools(),
+            
+            // Story analysis tools  
+            ...this.storyAnalysisHandlers.getStoryAnalysisTools(),
+            
+            // ALL genre-specific tools (always available for multi-genre support)
+            ...this.genreExtensions.getGenreSpecificTools('mystery'),
+            ...this.genreExtensions.getGenreSpecificTools('romance'),
+            ...this.genreExtensions.getGenreSpecificTools('fantasy')
         ];
     }
 
@@ -217,14 +100,31 @@ class PlotMCPServer extends BaseMCPServer {
             // Lookup System Handlers
             'get_available_options': this.handleGetAvailableOptions,
             
-            // Plot Thread Handlers
+            // Plot Thread Handlers (from PlotThreadHandlers)
             'create_plot_thread': this.handleCreatePlotThread,
             'update_plot_thread': this.handleUpdatePlotThread,
             'get_plot_threads': this.handleGetPlotThreads,
+            'link_plot_threads': this.handleLinkPlotThreads,
+            'resolve_plot_thread': this.handleResolvePlotThread,
             
-            // Story Structure Handlers
-            'create_story_structure': this.handleCreateStoryStructure,
-            'get_story_structure': this.handleGetStoryStructure
+            // Story Analysis Handlers (from StoryAnalysisHandlers)
+            'analyze_story_dynamics': this.handleAnalyzeStoryDynamics,
+            'track_character_throughlines': this.handleTrackCharacterThroughlines,
+            'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
+            'map_problem_solutions': this.handleMapProblemSolutions,
+            
+            // Mystery Genre Handlers (from GenreExtensions)
+            'create_case': this.handleCreateCase,
+            'add_evidence': this.handleAddEvidence,
+            'track_clues': this.handleTrackClues,
+            
+            // Romance Genre Handlers (from GenreExtensions)
+            'create_relationship_arc': this.handleCreateRelationshipArc,
+            'track_romantic_tension': this.handleTrackRomanticTension,
+            
+            // Fantasy Genre Handlers (from GenreExtensions)
+            'define_magic_system': this.handleDefineMagicSystem,
+            'track_power_progression': this.handleTrackPowerProgression
         };
         return handlers[toolName];
     }
@@ -234,139 +134,100 @@ class PlotMCPServer extends BaseMCPServer {
     // =============================================
     async handleGetAvailableOptions(args) {
         try {
-            const { option_type, genre_filter, active_only = true } = args;
+            const { option_type } = args;
             
-            // For now, return basic genre information since we're working with the existing schema
-            if (option_type === 'genres') {
-                // Return basic genre list - this can be expanded when plot schema is added
+            // Map option types to their corresponding lookup tables
+            const lookupTables = {
+                'genres': { table: 'genres', nameCol: 'genre_name', descCol: 'genre_description' },
+                'plot_thread_types': { table: 'plot_thread_types', nameCol: 'type_name', descCol: 'type_description' },
+                'plot_thread_statuses': { table: 'plot_thread_statuses', nameCol: 'status_name', descCol: 'status_description' },
+                'relationship_types': { table: 'relationship_types', nameCol: 'type_name', descCol: 'type_description' },
+                'story_concerns': { table: 'story_concerns', nameCol: 'concern_name', descCol: 'concern_description' },
+                'story_outcomes': { table: 'story_outcomes', nameCol: 'outcome_name', descCol: 'outcome_description' },
+                'story_judgments': { table: 'story_judgments', nameCol: 'judgment_name', descCol: 'judgment_description' }
+            };
+            
+            const lookupInfo = lookupTables[option_type];
+            if (!lookupInfo) {
                 return {
                     content: [
                         {
                             type: 'text',
-                            text: `Available Genres (Basic List):\n\n` +
-                                  `**Mystery** - Crime solving and investigation stories\n` +
-                                  `**Romance** - Love and relationship focused stories\n` +
-                                  `**Fantasy** - Magical and supernatural worlds\n` +
-                                  `**Science Fiction** - Futuristic and technological stories\n` +
-                                  `**Urban Fantasy** - Modern world with supernatural elements\n` +
-                                  `**Thriller** - Suspense and tension driven stories\n\n` +
-                                  `Note: This is a basic list. Full genre management requires plot schema migration.`
+                            text: `Unknown option type: ${option_type}\n\n` +
+                                  `Available types: ${Object.keys(lookupTables).join(', ')}`
                         }
                     ]
                 };
             }
             
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Plot management features require additional database schema. ` +
-                              `Currently only basic genre information is available. ` +
-                              `Run the plot schema migration to enable full functionality.`
-                    }
-                ]
-            };
-            
-        } catch (error) {
+            try {
+                const query = `
+                    SELECT ${lookupInfo.nameCol}, ${lookupInfo.descCol} 
+                    FROM ${lookupInfo.table} 
+                    WHERE is_active = true 
+                    ORDER BY ${lookupInfo.nameCol}
+                `;
+                
+                const result = await this.db.query(query);
+                
+                if (result.rows.length > 0) {
+                    let output = `# Available ${option_type.replace('_', ' ').toUpperCase()}\n\n`;
+                    result.rows.forEach(row => {
+                        const name = row[lookupInfo.nameCol];
+                        const desc = row[lookupInfo.descCol];
+                        output += `**${name}** - ${desc || 'No description'}\n`;
+                    });
+                    
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: output
+                            }
+                        ]
+                    };
+                } else {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: `No active ${option_type.replace('_', ' ')} found in lookup table.`
+                            }
+                        ]
+                    };
+                }
+                
+            } catch (dbError) {
+                // Fallback if lookup table doesn't exist
+                if (option_type === 'genres') {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: `# Available Genres (Fallback List)\n\n` +
+                                      `**mystery** - Crime solving and investigation stories\n` +
+                                      `**romance** - Love and relationship focused stories\n` +
+                                      `**fantasy** - Magical and supernatural worlds\n` +
+                                      `**science_fiction** - Futuristic and technological stories\n` +
+                                      `**thriller** - Suspense and tension driven stories\n\n` +
+                                      `*Note: Run migration 004_plot_structure_and_universal_framework_fixed.sql for full lookup table support.*`
+                            }
+                        ]
+                    };
+                }
+                
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `Lookup table for ${option_type} not available.\n\n` +
+                                  `Run migration 004_plot_structure_and_universal_framework_fixed.sql to enable all lookup tables.\n\n` +
+                                  `Error: ${dbError.message}`
+                        }
+                    ]
+                };
+            }        } catch (error) {
             throw new Error(`Failed to get available options: ${error.message}`);
-        }
-    }
-
-    // =============================================
-    // PLOT THREAD HANDLERS
-    // =============================================
-    async handleCreatePlotThread(args) {
-        try {
-            // For now, return a message indicating schema is needed
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Plot thread creation requires additional database schema. ` +
-                              `Please run the plot management migration to enable this functionality.\n\n` +
-                              `Requested thread details:\n` +
-                              `- Title: ${args.title}\n` +
-                              `- Type: ${args.thread_type}\n` +
-                              `- Series ID: ${args.series_id}\n` +
-                              `- Description: ${args.description}`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to create plot thread: ${error.message}`);
-        }
-    }
-
-    async handleUpdatePlotThread(args) {
-        try {
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Plot thread updates require additional database schema. ` +
-                              `Please run the plot management migration to enable this functionality.`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to update plot thread: ${error.message}`);
-        }
-    }
-
-    async handleGetPlotThreads(args) {
-        try {
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Plot thread retrieval requires additional database schema. ` +
-                              `Please run the plot management migration to enable this functionality.\n\n` +
-                              `Requested for Series ID: ${args.series_id}`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to get plot threads: ${error.message}`);
-        }
-    }
-
-    // =============================================
-    // STORY STRUCTURE HANDLERS
-    // =============================================
-    async handleCreateStoryStructure(args) {
-        try {
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Story structure management requires additional database schema. ` +
-                              `Please run the plot management migration to enable this functionality.\n\n` +
-                              `Requested structure:\n` +
-                              `- Book ID: ${args.book_id}\n` +
-                              `- Structure Type: ${args.structure_type || 'three_act'}\n` +
-                              `- Key Beats: ${args.key_beats ? args.key_beats.length : 0} defined`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to create story structure: ${error.message}`);
-        }
-    }
-
-    async handleGetStoryStructure(args) {
-        try {
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Story structure retrieval requires additional database schema. ` +
-                              `Please run the plot management migration to enable this functionality.\n\n` +
-                              `Requested for Book ID: ${args.book_id}`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to get story structure: ${error.message}`);
         }
     }
 }
