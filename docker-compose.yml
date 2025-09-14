@@ -35,9 +35,9 @@ services:
   #   environment:
   #     NODE_ENV: ${NODE_ENV}
   #     DATABASE_URL: ${DATABASE_URL}
-  #     MCP_PORT: 3000
+  #     MCP_PORT: ${MCP_SERVER_PORT}
   #   ports:
-  #     - "3000:3000"
+  #     - "${MCP_SERVER_PORT}:${MCP_SERVER_PORT}"
   #   volumes:
   #     - ./src:/app/src
   #     - ./migrations:/app/migrations
