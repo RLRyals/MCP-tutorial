@@ -229,19 +229,19 @@ CREATE TABLE character_chapter_presence (
 );
 
 -- Chapter relationships - how chapters connect to each other
-CREATE TABLE chapter_relationships (
-    relationship_id SERIAL PRIMARY KEY,
-    chapter_a_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
-    chapter_b_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+-- CREATE TABLE chapter_relationships (
+--     relationship_id SERIAL PRIMARY KEY,
+--     chapter_a_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+--     chapter_b_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
     
-    relationship_type VARCHAR(50), -- sequel, prequel, parallel, flashback, callback
-    connection_description TEXT, -- how they're connected
-    dependency_level VARCHAR(50), -- must_read_first, helpful_context, standalone
+--     relationship_type VARCHAR(50), -- sequel, prequel, parallel, flashback, callback
+--     connection_description TEXT, -- how they're connected
+--     dependency_level VARCHAR(50), -- must_read_first, helpful_context, standalone
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CHECK (chapter_a_id != chapter_b_id)
-);
+--     CHECK (chapter_a_id != chapter_b_id)
+-- );
 
 -- Chapter plot points - key events that happen (foundation for Plot-Timeline MCP)
 CREATE TABLE chapter_plot_points (
@@ -290,10 +290,10 @@ CREATE TRIGGER update_character_details_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-CREATE TRIGGER update_character_relationships_timestamp
-    BEFORE UPDATE ON character_relationships
-    FOR EACH ROW
-    EXECUTE FUNCTION update_timestamp();
+-- CREATE TRIGGER update_character_relationships_timestamp
+--     BEFORE UPDATE ON character_relationships
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_timestamp();
 
 CREATE TRIGGER update_character_arcs_timestamp
     BEFORE UPDATE ON character_arcs
@@ -340,9 +340,9 @@ CREATE INDEX idx_character_details_character_id ON character_details(character_i
 CREATE INDEX idx_character_details_category ON character_details(category);
 CREATE INDEX idx_character_details_category_attribute ON character_details(character_id, category, attribute);
 
-CREATE INDEX idx_character_relationships_character_a ON character_relationships(character_a_id);
-CREATE INDEX idx_character_relationships_character_b ON character_relationships(character_b_id);
-CREATE INDEX idx_character_relationships_type ON character_relationships(relationship_type);
+-- CREATE INDEX idx_character_relationships_character_a ON character_relationships(character_a_id);
+-- CREATE INDEX idx_character_relationships_character_b ON character_relationships(character_b_id);
+-- CREATE INDEX idx_character_relationships_type ON character_relationships(relationship_type);
 
 CREATE INDEX idx_character_arcs_character_id ON character_arcs(character_id);
 CREATE INDEX idx_character_arcs_book_id ON character_arcs(book_id);
@@ -363,8 +363,8 @@ CREATE INDEX idx_character_chapter_presence_character ON character_chapter_prese
 CREATE INDEX idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
 CREATE INDEX idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
 
-CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
-CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
+-- CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
+-- CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
 
 CREATE INDEX idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
 CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);
