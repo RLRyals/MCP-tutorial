@@ -79,6 +79,16 @@
         "NODE_ENV": "development",
         "MCP_STDIO_MODE": "true"
       }
+    },
+    "writing-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/writing-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
     }
   }
 }
