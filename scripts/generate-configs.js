@@ -44,10 +44,24 @@ function discoverMCPServers() {
         for (const entry of entries) {
             if (entry.isDirectory()) {
                 const serverPath = path.join(mcpsDir, entry.name);
-                const indexPath = path.join(serverPath, 'index.js');
+                // Try different possible index file names
+                const possibleNames = [
+                    'index.js',
+                    `${entry.name}_index.js`,
+                    `${entry.name.replace('-', '_')}_index.js`  // handle world-server -> world_server
+                ];
                 
-                // Check if the directory has an index.js file
-                if (fs.existsSync(indexPath)) {
+                let foundIndexPath = null;
+                for (const name of possibleNames) {
+                    const testPath = path.join(serverPath, name);
+                    if (fs.existsSync(testPath)) {
+                        foundIndexPath = testPath;
+                        break;
+                    }
+                }
+                
+                // Check if we found a valid index file
+                if (foundIndexPath) {
                     // Convert directory name to display name
                     const displayName = entry.name
                         .replace(/-/g, ' ')
@@ -91,13 +105,7 @@ function replacePlaceholders(template, replacements) {
 }
 
 function generateClaudeDesktopConfig() {
-    const templatePath = path.join(projectRoot, 'config', 'claude-desktop.template.json');
     const outputPath = path.join(projectRoot, 'config', 'claude-desktop.json');
-    
-    if (!fs.existsSync(templatePath)) {
-        console.error(`Template not found: ${templatePath}`);
-        return false;
-    }
     
     try {
         // Start with an empty config structure
@@ -107,10 +115,28 @@ function generateClaudeDesktopConfig() {
         
         // Add each discovered MCP server to the config
         mcpServers.forEach(server => {
-            // Ensure consistent forward slashes for Claude Desktop
-            const scriptPath = path.join(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, 'index.js')
+            // Get the correct index file path
+            let indexFileName = 'index.js';
+            
+            // Check for alternative index file naming patterns
+            const alternativeNames = [
+                `${server.name}_index.js`,
+                `${server.name.replace('-', '_')}_index.js`
+            ];
+            
+            for (const altName of alternativeNames) {
+                const testPath = path.join(projectRoot, 'src', 'mcps', server.name, altName);
+                if (fs.existsSync(testPath)) {
+                    indexFileName = altName;
+                    break;
+                }
+            }
+            
+            // Normalize path with forward slashes
+            const scriptPath = path.join(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, indexFileName)
                 .replace(/\\/g, '/');
             
+            // Add server configuration using the standard pattern
             dynamicConfig.mcpServers[server.name] = {
                 command: 'node',
                 args: [scriptPath],

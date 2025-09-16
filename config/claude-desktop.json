@@ -69,6 +69,16 @@
         "NODE_ENV": "development",
         "MCP_STDIO_MODE": "true"
       }
+    },
+    "world-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/world-server/world_server_index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
     }
   }
 }

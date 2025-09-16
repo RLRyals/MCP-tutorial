@@ -1,9 +1,9 @@
 {
   "mcpServers": {
-    "author-server": {
+    "{{mcps-server}}": {
       "command": "node",
       "args": [
-        "{{MCP_TUTORIAL_PATH}}/src/mcps/author-server/index.js"
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/{{mcp-server}}/index.js"
       ],
       "env": {
         "NODE_ENV": "{{NODE_ENV}}",
