@@ -657,7 +657,7 @@ export class EventChapterMappingHandlers {
         try {
             // Verify book exists
             const bookResult = await this.db.query(
-                'SELECT title, book_number FROM books WHERE book_id = $1',
+                'SELECT title, book_number FROM books WHERE id = $1',
                 [book_id]
             );
             
