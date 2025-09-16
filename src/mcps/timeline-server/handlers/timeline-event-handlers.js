@@ -199,21 +199,21 @@ export class TimelineEventHandlers {
                     t.is_public_knowledge,
                     t.created_at,
                     t.updated_at,
-                    s.series_id,
+                    s.id as series_id,
                     s.title AS series_title,
-                    b.book_id,
+                    b.id as book_id,
                     b.title AS book_title,
                     array_agg(DISTINCT c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
                     array_agg(DISTINCT c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
                 FROM 
                     timeline_events t
-                    JOIN series s ON t.series_id = s.series_id
-                    LEFT JOIN books b ON t.book_id = b.book_id
+                    JOIN series s ON t.series_id = s.id
+                    LEFT JOIN books b ON t.book_id = b.id
                     LEFT JOIN event_participants ep ON t.id = ep.event_id
                     LEFT JOIN characters c ON ep.character_id = c.character_id
                 ${whereClause}
                 GROUP BY 
-                    t.id, s.series_id, b.book_id
+                    t.id, s.id, b.id
                 ORDER BY 
                     t.sort_order,
                     t.event_date
@@ -280,22 +280,22 @@ export class TimelineEventHandlers {
                     t.is_public_knowledge,
                     t.created_at,
                     t.updated_at,
-                    s.series_id,
+                    s.id as series_id,
                     s.title AS series_title,
-                    b.book_id,
+                    b.id as book_id,
                     b.title AS book_title,
                     array_agg(DISTINCT c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
                     array_agg(DISTINCT c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
                 FROM 
                     timeline_events t
-                    JOIN series s ON t.series_id = s.series_id
-                    LEFT JOIN books b ON t.book_id = b.book_id
+                    JOIN series s ON t.series_id = s.id
+                    LEFT JOIN books b ON t.book_id = b.id
                     LEFT JOIN event_participants ep ON t.id = ep.event_id
                     LEFT JOIN characters c ON ep.character_id = c.character_id
                 WHERE 
                     t.id = $1
                 GROUP BY 
-                    t.id, s.series_id, b.book_id
+                    t.id, s.id, b.id
             `;
             
             const result = await this.db.query(query, [event_id]);
@@ -464,9 +464,9 @@ export class TimelineEventHandlers {
                     b.title AS book_title
                 FROM 
                     series s
-                    LEFT JOIN books b ON b.book_id = $2
+                    LEFT JOIN books b ON b.id = $2
                 WHERE 
-                    s.series_id = $1
+                    s.id = $1
             `;
             
             const infoResult = await this.db.query(infoQuery, [series_id, book_id]);
@@ -663,9 +663,9 @@ export class TimelineEventHandlers {
                     b.title AS book_title
                 FROM 
                     series s
-                    LEFT JOIN books b ON b.book_id = $2
+                    LEFT JOIN books b ON b.id = $2
                 WHERE 
-                    s.series_id = $1
+                    s.id = $1
             `;
             
             const infoResult = await this.db.query(infoQuery, [seriesId, updatedEvent.book_id]);
@@ -764,7 +764,7 @@ export class TimelineEventHandlers {
                     s.title AS series_title
                 FROM 
                     timeline_events t
-                    JOIN series s ON t.series_id = s.series_id
+                    JOIN series s ON t.series_id = s.id
                 WHERE 
                     t.id = $1
             `;
@@ -862,9 +862,9 @@ export class TimelineEventHandlers {
                         t.significance,
                         t.is_public_knowledge,
                         t.created_at,
-                        s.series_id,
+                        s.id as series_id,
                         s.title AS series_title,
-                        b.book_id,
+                        b.id as book_id,
                         b.title AS book_title,
                         EXISTS (
                             SELECT 1 FROM event_participants ep 
@@ -872,8 +872,8 @@ export class TimelineEventHandlers {
                         ) AS is_participant
                     FROM 
                         timeline_events t
-                        JOIN series s ON t.series_id = s.series_id
-                        LEFT JOIN books b ON t.book_id = b.book_id
+                        JOIN series s ON t.series_id = s.id
+                        LEFT JOIN books b ON t.book_id = b.id
                     WHERE 
                         (EXISTS (
                             SELECT 1 FROM event_participants ep 
@@ -895,15 +895,15 @@ export class TimelineEventHandlers {
                         t.significance,
                         t.is_public_knowledge,
                         t.created_at,
-                        s.series_id,
+                        s.id as series_id,
                         s.title AS series_title,
-                        b.book_id,
+                        b.id as book_id,
                         b.title AS book_title,
                         TRUE AS is_participant
                     FROM 
                         timeline_events t
-                        JOIN series s ON t.series_id = s.series_id
-                        LEFT JOIN books b ON t.book_id = b.book_id
+                        JOIN series s ON t.series_id = s.id
+                        LEFT JOIN books b ON t.book_id = b.id
                         JOIN event_participants ep ON t.id = ep.event_id
                     WHERE 
                         ep.character_id = $1
@@ -1062,7 +1062,7 @@ export class TimelineEventHandlers {
                                 timeline_events t
                                 JOIN event_participants ep ON t.id = ep.event_id
                                 JOIN characters c ON ep.character_id = c.character_id
-                                LEFT JOIN books b ON t.book_id = b.book_id
+                                LEFT JOIN books b ON t.book_id = b.id
                             WHERE 
                                 t.series_id = $1
                         ),
@@ -1140,7 +1140,7 @@ export class TimelineEventHandlers {
                             timeline_events t
                             JOIN event_chapter_mappings m ON t.id = m.event_id
                             JOIN chapters c ON m.chapter_id = c.chapter_id
-                            JOIN books b ON c.book_id = b.book_id
+                            JOIN books b ON c.book_id = b.id
                         WHERE 
                             t.series_id = $1 AND
                             m.presentation_type = 'direct_scene'

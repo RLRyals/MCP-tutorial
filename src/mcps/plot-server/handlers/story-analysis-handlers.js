@@ -462,7 +462,7 @@ export class StoryAnalysisHandlers {
                     INSERT INTO problem_solutions (
                         book_id, problem, solution, problem_level, effectiveness
                     ) VALUES ($1, $2, $3, $4, $5)
-                    RETURNING solution_id, created_at
+                    RETURNING mapping_id, created_at
                 `;
                 
                 const result = await this.db.query(insertQuery, [
@@ -483,7 +483,7 @@ export class StoryAnalysisHandlers {
                                   `**Problem:** ${args.problem}\n` +
                                   `**Solution:** ${args.solution}\n` +
                                   `**Effectiveness:** ${args.effectiveness || 'unknown'}\n` +
-                                  `**Mapping ID:** ${result.rows[0].solution_id}\n` +
+                                  `**Mapping ID:** ${result.rows[0].mapping_id}\n` +
                                   `**Recorded:** ${new Date(result.rows[0].created_at).toLocaleString()}`
                         }
                     ]

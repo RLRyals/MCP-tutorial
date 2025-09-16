@@ -5,7 +5,7 @@
  * supporting non-linear storytelling and multiple POVs.
  */
 
-import { BaseMCPServer } from '../../shared/base-mcp-server.js';
+import { BaseMCPServer } from '../../shared/base-server.js';
 //import { DatabaseManager } from '../../shared/database.js';
 
 // Import handlers
@@ -17,7 +17,7 @@ class TimelineMCPServer extends BaseMCPServer {
         super('timeline-server', '1.0.0', 'Handles timeline events and their narrative presentation');
         
         // Set up database connection
-        this.db = new DatabaseManager();
+        //this.db = new DatabaseManager();
         
         // Create handler instances
         this.timelineEventHandlers = new TimelineEventHandlers(this.db);
@@ -40,6 +40,33 @@ class TimelineMCPServer extends BaseMCPServer {
         ];
     }
     
+       // =============================================
+    // COMPLETE TOOL HANDLER MAPPING
+    // =============================================
+    getToolHandler(toolName) {
+        const handlers = {
+            // Timeline event handlers
+            'list_timeline_events': this.handleListTimelineEvents,
+            'get_timeline_event': this.handleGetTimelineEvent,
+            'create_timeline_event': this.handleCreateTimelineEvent,
+            'update_timeline_event': this.handleUpdateTimelineEvent,
+            // Event-Chapter mapping handlers
+            'map_event_to_chapter': this.handleMapEventToChapter,
+            'get_event_mappings': this.handleGetEventMappings,
+            'get_chapter_events': this.handleGetChapterEvents,
+            'update_event_mapping': this.handleUpdateEventMapping,
+            'delete_event_mapping': this.handleDeleteEventMapping,
+            'analyze_narrative_structure': this.handleAnalyzeNarrativeStructure
+        };
+        return handlers[toolName] || null;
+    }
+
+    
+
+
+
+
+
     /**
      * Proper method binding to maintain context
      */
@@ -69,19 +96,60 @@ class TimelineMCPServer extends BaseMCPServer {
     }
 }
 
-// Create and start the server
-const server = new TimelineMCPServer();
-server.start();
+export { TimelineMCPServer };
 
-// Handle shutdown gracefully
-process.on('SIGINT', async () => {
-    console.log('Shutting down timeline-server...');
-    await server.cleanup();
-    process.exit(0);
-});
+// CLI runner when called directly (not when imported or run by MCP clients)
+import { fileURLToPath } from 'url';
 
-process.on('SIGTERM', async () => {
-    console.log('Shutting down timeline-server...');
-    await server.cleanup();
-    process.exit(0);
-});
+// Only log debug info if not in stdio mode
+if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[TIMELINE-SERVER] Module loaded');
+}
+
+// Convert paths to handle Windows path differences
+const currentModuleUrl = import.meta.url;
+const scriptPath = process.argv[1];
+const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+
+
+if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
+    console.error('[TIMELINE-SERVER] Starting CLI runner...');
+    try {
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(TimelineMCPServer);
+        await runner.run();
+    } catch (error) {
+        console.error('[TIMELINE-SERVER] CLI runner failed:', error.message);
+        process.exit(1);
+    }
+} else if (isDirectExecution) {
+    // When running directly as MCP server (via Claude Desktop)
+    console.error('[TIMELINE-SERVER] Running in MCP stdio mode - starting server...');
+    
+    // When in MCP stdio mode, ensure clean stdout for JSON messages
+    if (process.env.MCP_STDIO_MODE === 'true') {
+        console.error('[TIMELINE-SERVER] Setting up stdio mode handlers');
+        // Redirect all console.log to stderr
+        console.log = function(...args) {
+            console.error('[TIMELINE-SERVER]', ...args);
+        };
+    }
+    
+    try {
+        console.error('[TIMELINE-SERVER] Creating server instance...');
+        const server = new TimelineMCPServer();
+        console.error('[TIMELINE-SERVER] Server instance created, starting run()...');
+        await server.run();
+        console.error('[TIMELINE-SERVER] Server run() completed successfully');
+    } catch (error) {
+        console.error('[TIMELINE-SERVER] Failed to start MCP server:', error.message);
+        console.error('[TIMELINE-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
+} else {
+    if (process.env.MCP_STDIO_MODE !== 'true') {
+        console.error('[TIMELINE-SERVER] Module imported - not starting server');
+    }
+}

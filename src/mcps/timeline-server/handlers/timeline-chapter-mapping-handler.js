@@ -163,7 +163,7 @@ export class EventChapterMappingHandlers {
                  WHERE 
                     e.id = $1 AND 
                     c.chapter_id = $2 AND
-                    c.book_id = b.book_id`,
+                    c.book_id = b.id`,
                 [event_id, chapter_id]
             );
             
@@ -282,7 +282,7 @@ export class EventChapterMappingHandlers {
                     m.presentation_type, m.pov_character_id, m.event_aspect,
                     m.completeness, m.narrative_function,
                     c.chapter_number, c.title as chapter_title,
-                    b.title as book_title, b.book_id,
+                    b.title as book_title, b.id as book_id,
                     ch.name as character_name
                  FROM 
                     event_chapter_mappings m
@@ -338,9 +338,9 @@ export class EventChapterMappingHandlers {
         try {
             // Verify chapter exists
             const chapterResult = await this.db.query(
-                `SELECT c.chapter_number, c.title as chapter_title, b.title as book_title, b.book_id
+                `SELECT c.chapter_number, c.title as chapter_title, b.title as book_title, b.id as book_id
                  FROM chapters c
-                 JOIN books b ON c.book_id = b.book_id
+                 JOIN books b ON c.book_id = b.id
                  WHERE c.chapter_id = $1`,
                 [chapter_id]
             );
@@ -448,7 +448,7 @@ export class EventChapterMappingHandlers {
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
                     JOIN chapters c ON m.chapter_id = c.chapter_id
-                    JOIN books b ON c.book_id = b.book_id
+                    JOIN books b ON c.book_id = b.id
                  WHERE 
                     m.mapping_id = $1`,
                 [mapping_id]
@@ -557,7 +557,7 @@ export class EventChapterMappingHandlers {
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
                     JOIN chapters c ON m.chapter_id = c.chapter_id
-                    JOIN books b ON c.book_id = b.book_id
+                    JOIN books b ON c.book_id = b.id
                     LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
                  WHERE 
                     m.mapping_id = $1`,
@@ -615,7 +615,7 @@ export class EventChapterMappingHandlers {
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
                     JOIN chapters c ON m.chapter_id = c.chapter_id
-                    JOIN books b ON c.book_id = b.book_id
+                    JOIN books b ON c.book_id = b.id
                  WHERE 
                     m.mapping_id = $1`,
                 [mapping_id]
