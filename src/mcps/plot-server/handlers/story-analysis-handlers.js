@@ -45,25 +45,25 @@ export class StoryAnalysisHandlers {
                 // Update existing analysis
                 const updateQuery = `
                     UPDATE story_analysis 
-                    SET story_concern = COALESCE($1, story_concern),
+                    SET story_concern_id = COALESCE($1, story_concern_id),
                         main_character_problem = COALESCE($2, main_character_problem),
                         influence_character_impact = COALESCE($3, influence_character_impact),
-                        story_outcome = COALESCE($4, story_outcome),
-                        story_judgment = COALESCE($5, story_judgment),
+                        story_outcome_id = COALESCE($4, story_outcome_id),
+                        story_judgment_id = COALESCE($5, story_judgment_id),
                         thematic_elements = COALESCE($6, thematic_elements),
                         analysis_notes = COALESCE($7, analysis_notes),
                         updated_at = CURRENT_TIMESTAMP
                     WHERE book_id = $8
-                    RETURNING analysis_id, story_concern, main_character_problem, influence_character_impact,
-                             story_outcome, story_judgment, thematic_elements, analysis_notes, updated_at
+                    RETURNING analysis_id, story_concern_id, main_character_problem, influence_character_impact,
+                             story_outcome_id, story_judgment_id, thematic_elements, analysis_notes, updated_at
                 `;
                 
                 analysisResult = await this.db.query(updateQuery, [
-                    args.story_concern || null,
+                    args.story_concern_id || null,
                     args.main_character_problem || null,
                     args.influence_character_impact || null,
-                    args.story_outcome || null,
-                    args.story_judgment || null,
+                    args.story_outcome_id || null,
+                    args.story_judgment_id || null,
                     args.thematic_elements ? JSON.stringify(args.thematic_elements) : null,
                     args.analysis_notes || null,
                     args.book_id
@@ -73,20 +73,20 @@ export class StoryAnalysisHandlers {
                 // Create new analysis
                 const insertQuery = `
                     INSERT INTO story_analysis (
-                        book_id, story_concern, main_character_problem, influence_character_impact,
-                        story_outcome, story_judgment, thematic_elements, analysis_notes
+                        book_id, story_concern_id, main_character_problem, influence_character_impact,
+                        story_outcome_id, story_judgment_id, thematic_elements, analysis_notes
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                    RETURNING analysis_id, story_concern, main_character_problem, influence_character_impact,
-                             story_outcome, story_judgment, thematic_elements, analysis_notes, created_at
+                    RETURNING analysis_id, story_concern_id, main_character_problem, influence_character_impact,
+                             story_outcome_id, story_judgment_id, thematic_elements, analysis_notes, created_at
                 `;
                 
                 analysisResult = await this.db.query(insertQuery, [
                     args.book_id,
-                    args.story_concern || null,
+                    args.story_concern_id || null,
                     args.main_character_problem || null,
                     args.influence_character_impact || null,
-                    args.story_outcome || null,
-                    args.story_judgment || null,
+                    args.story_outcome_id || null,
+                    args.story_judgment_id || null,
                     args.thematic_elements ? JSON.stringify(args.thematic_elements) : null,
                     args.analysis_notes || null
                 ]);
@@ -94,12 +94,39 @@ export class StoryAnalysisHandlers {
             
             const analysis = analysisResult.rows[0];
             
+            // Get story concern name, outcome name, and judgment name if IDs are present
+            let storyConcernName, storyOutcomeName, storyJudgmentName;
+            
+            if (analysis.story_concern_id) {
+                const concernResult = await this.db.query(
+                    'SELECT concern_name FROM story_concerns WHERE concern_id = $1',
+                    [analysis.story_concern_id]
+                );
+                storyConcernName = concernResult.rows.length > 0 ? concernResult.rows[0].concern_name : null;
+            }
+            
+            if (analysis.story_outcome_id) {
+                const outcomeResult = await this.db.query(
+                    'SELECT outcome_name FROM story_outcomes WHERE outcome_id = $1',
+                    [analysis.story_outcome_id]
+                );
+                storyOutcomeName = outcomeResult.rows.length > 0 ? outcomeResult.rows[0].outcome_name : null;
+            }
+            
+            if (analysis.story_judgment_id) {
+                const judgmentResult = await this.db.query(
+                    'SELECT judgment_name FROM story_judgments WHERE judgment_id = $1',
+                    [analysis.story_judgment_id]
+                );
+                storyJudgmentName = judgmentResult.rows.length > 0 ? judgmentResult.rows[0].judgment_name : null;
+            }
+            
             let output = `# Story Dynamics Analysis\n\n`;
             output += `**Book:** "${book.title}" (${book.series_title})\n\n`;
             
-            if (analysis.story_concern) {
-                output += `## Story Concern: ${analysis.story_concern}\n`;
-                output += `This story is fundamentally about ${analysis.story_concern}.\n\n`;
+            if (storyConcernName) {
+                output += `## Story Concern: ${storyConcernName}\n`;
+                output += `This story is fundamentally about ${storyConcernName}.\n\n`;
             }
             
             if (analysis.main_character_problem) {
@@ -112,10 +139,10 @@ export class StoryAnalysisHandlers {
                 output += `${analysis.influence_character_impact}\n\n`;
             }
             
-            if (analysis.story_outcome && analysis.story_judgment) {
+            if (storyOutcomeName && storyJudgmentName) {
                 output += `## Story Resolution\n`;
-                output += `- **Outcome:** ${analysis.story_outcome} (goal achievement)\n`;
-                output += `- **Judgment:** ${analysis.story_judgment} (satisfaction with outcome)\n\n`;
+                output += `- **Outcome:** ${storyOutcomeName} (goal achievement)\n`;
+                output += `- **Judgment:** ${storyJudgmentName} (satisfaction with outcome)\n\n`;
             }
             
             if (analysis.thematic_elements) {

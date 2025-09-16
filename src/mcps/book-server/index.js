@@ -1,5 +1,5 @@
 // src/mcps/book-server/index.js
-// Modular Book MCP Server - Main coordinator that combines book, chapter, and scene management
+// FIXED VERSION - Modular Book MCP Server with proper method binding
 // Designed for AI Writing Teams to manage complete story structure
 
 // Protect stdout from any pollution in MCP stdio mode
@@ -31,12 +31,10 @@ class BookMCPServer extends BaseMCPServer {
         this.chapterHandlers = new ChapterHandlers(this.db);
         this.sceneHandlers = new SceneHandlers(this.db);
         
-        // Mix in handler methods to this class for direct access
-        Object.assign(this, this.bookHandlers);
-        Object.assign(this, this.chapterHandlers);
-        Object.assign(this, this.sceneHandlers);
+        // FIXED: Properly bind handler methods to maintain context
+        this.bindHandlerMethods();
         
-        // Initialize tools after handlers are mixed in
+        // Initialize tools after handlers are bound
         this.tools = this.getTools();
         
         // Defensive check to ensure tools are properly initialized
@@ -51,6 +49,28 @@ class BookMCPServer extends BaseMCPServer {
         
         // Test database connection on startup
         this.testDatabaseConnection();
+    }
+
+    // FIXED: Proper method binding to maintain context
+    bindHandlerMethods() {
+        // Bind book handler methods
+        this.handleListBooks = this.bookHandlers.handleListBooks.bind(this.bookHandlers);
+        this.handleGetBook = this.bookHandlers.handleGetBook.bind(this.bookHandlers);
+        this.handleCreateBook = this.bookHandlers.handleCreateBook.bind(this.bookHandlers);
+        this.handleUpdateBook = this.bookHandlers.handleUpdateBook.bind(this.bookHandlers);
+        this.handleDeleteBook = this.bookHandlers.handleDeleteBook.bind(this.bookHandlers);
+        
+        // Bind chapter handler methods
+        this.handleCreateChapter = this.chapterHandlers.handleCreateChapter.bind(this.chapterHandlers);
+        this.handleUpdateChapter = this.chapterHandlers.handleUpdateChapter.bind(this.chapterHandlers);
+        this.handleGetChapter = this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers);
+        this.handleListChapters = this.chapterHandlers.handleListChapters.bind(this.chapterHandlers);
+        this.handleDeleteChapter = this.chapterHandlers.handleDeleteChapter.bind(this.chapterHandlers);
+        this.handleReorderChapters = this.chapterHandlers.handleReorderChapters.bind(this.chapterHandlers);
+        
+        // Bind scene handler methods (when scene handlers are implemented)
+        // this.handleCreateScene = this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers);
+        // ... etc
     }
 
     async testDatabaseConnection() {
@@ -84,8 +104,8 @@ class BookMCPServer extends BaseMCPServer {
             // Chapter Management Tools  
             ...this.chapterHandlers.getChapterTools(),
             
-            // Scene Management Tools
-            ...this.sceneHandlers.getSceneTools()
+            // Scene Management Tools (when implemented)
+            // ...this.sceneHandlers.getSceneTools()
         ];
     }
 
@@ -109,14 +129,14 @@ class BookMCPServer extends BaseMCPServer {
             'delete_chapter': this.handleDeleteChapter,
             'reorder_chapters': this.handleReorderChapters,
             
-            // Scene Management Handlers
-            'create_scene': this.handleCreateScene,
-            'update_scene': this.handleUpdateScene,
-            'get_scene': this.handleGetScene,
-            'list_scenes': this.handleListScenes,
-            'delete_scene': this.handleDeleteScene,
-            'reorder_scenes': this.handleReorderScenes,
-            'analyze_scene_flow': this.handleAnalyzeSceneFlow,
+            // Scene Management Handlers (when implemented)
+            // 'create_scene': this.handleCreateScene,
+            // 'update_scene': this.handleUpdateScene,
+            // 'get_scene': this.handleGetScene,
+            // 'list_scenes': this.handleListScenes,
+            // 'delete_scene': this.handleDeleteScene,
+            // 'reorder_scenes': this.handleReorderScenes,
+            // 'analyze_scene_flow': this.handleAnalyzeSceneFlow,
             
             // Cross-component Analysis Tools
             'get_book_structure': this.handleGetBookStructure,
@@ -149,36 +169,30 @@ class BookMCPServer extends BaseMCPServer {
             // Get all chapters for this book
             const chapters = await this.chapterHandlers.getChaptersByBookId(book_id);
             
-            // Get scene counts per chapter
-            const structure = await Promise.all(
-                chapters.map(async (chapter) => {
-                    const scenes = await this.sceneHandlers.getScenesByChapterId(chapter.chapter_id);
-                    return {
-                        chapter_number: chapter.chapter_number,
-                        title: chapter.title,
-                        word_count: chapter.word_count || 0,
-                        scene_count: scenes.length,
-                        status: chapter.status
-                    };
-                })
-            );
+            // Build structure analysis
+            const structure = chapters.map(chapter => {
+                return {
+                    chapter_number: chapter.chapter_number,
+                    title: chapter.title,
+                    word_count: chapter.word_count || 0,
+                    status: chapter.status
+                };
+            });
             
             const totalWordCount = structure.reduce((sum, ch) => sum + ch.word_count, 0);
-            const totalScenes = structure.reduce((sum, ch) => sum + ch.scene_count, 0);
             
             return {
                 content: [{
                     type: 'text',
                     text: `Book Structure: ${book.title}\n\n` +
                           `Total Chapters: ${chapters.length}\n` +
-                          `Total Scenes: ${totalScenes}\n` +
                           `Total Word Count: ${totalWordCount}\n` +
                           `Target Word Count: ${book.target_word_count || 'Not specified'}\n` +
                           `Progress: ${book.target_word_count ? Math.round((totalWordCount / book.target_word_count) * 100) : 0}%\n\n` +
                           `Chapter Breakdown:\n` +
                           structure.map(ch => 
                               `Chapter ${ch.chapter_number}: ${ch.title || 'Untitled'}\n` +
-                              `  Words: ${ch.word_count} | Scenes: ${ch.scene_count} | Status: ${ch.status}`
+                              `  Words: ${ch.word_count} | Status: ${ch.status}`
                           ).join('\n')
                 }]
             };

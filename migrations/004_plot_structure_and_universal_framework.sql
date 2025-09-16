@@ -323,6 +323,8 @@ INSERT INTO story_judgments (judgment_name, judgment_description) VALUES
 ('neutral', 'No strong emotional judgment about the outcome'),
 ('cathartic', 'Emotionally cleansing or purifying outcome');
 
+
+
     -- Record this migration
     INSERT INTO migrations (filename) VALUES ('004_plot_structure_and_universal_framework_fixed.sql');
 

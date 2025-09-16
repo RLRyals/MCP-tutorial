@@ -229,19 +229,19 @@ CREATE TABLE character_chapter_presence (
 );
 
 -- Chapter relationships - how chapters connect to each other
-CREATE TABLE chapter_relationships (
-    relationship_id SERIAL PRIMARY KEY,
-    chapter_a_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
-    chapter_b_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+-- CREATE TABLE chapter_relationships (
+--     relationship_id SERIAL PRIMARY KEY,
+--     chapter_a_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+--     chapter_b_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
     
-    relationship_type VARCHAR(50), -- sequel, prequel, parallel, flashback, callback
-    connection_description TEXT, -- how they're connected
-    dependency_level VARCHAR(50), -- must_read_first, helpful_context, standalone
+--     relationship_type VARCHAR(50), -- sequel, prequel, parallel, flashback, callback
+--     connection_description TEXT, -- how they're connected
+--     dependency_level VARCHAR(50), -- must_read_first, helpful_context, standalone
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CHECK (chapter_a_id != chapter_b_id)
-);
+--     CHECK (chapter_a_id != chapter_b_id)
+-- );
 
 -- Chapter plot points - key events that happen (foundation for Plot-Timeline MCP)
 CREATE TABLE chapter_plot_points (
@@ -363,8 +363,8 @@ CREATE INDEX idx_character_chapter_presence_character ON character_chapter_prese
 CREATE INDEX idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
 CREATE INDEX idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
 
-CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
-CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
+--CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
+--CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
 
 CREATE INDEX idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
 CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);

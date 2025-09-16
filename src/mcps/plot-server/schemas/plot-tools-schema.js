@@ -1,5 +1,5 @@
 // src/mcps/plot-server/schemas/plot-tools-schema.js
-// Centralized tool schema definitions for the Plot MCP Server
+// FIXED VERSION - Centralized tool schema definitions for the Plot MCP Server
 
 // =============================================
 // PLOT THREAD TOOL SCHEMAS
@@ -16,7 +16,7 @@ export const plotThreadToolsSchema = [
                 description: { type: 'string', description: 'Plot thread description' },
                 thread_type: { 
                     type: 'string', 
-                    description: 'Type of plot thread (values from plot_thread_types lookup table)'
+                    description: 'Type of plot thread (use get_available_options with option_type="plot_thread_types" to see valid values)'
                 },
                 importance_level: { 
                     type: 'integer', 
@@ -90,7 +90,7 @@ export const plotThreadToolsSchema = [
                 thread_b_id: { type: 'integer', description: 'Second thread ID' },
                 relationship_type: { 
                     type: 'string', 
-                    description: 'Type of relationship (values from relationship_types lookup table)'
+                    description: 'Type of relationship (use get_available_options with option_type="relationship_types" to see valid values)'
                 },
                 relationship_description: { type: 'string', description: 'Description of the relationship' },
                 strength: { 
@@ -133,17 +133,17 @@ export const storyAnalysisToolsSchema = [
                 book_id: { type: 'integer', description: 'Book ID' },
                 story_concern: { 
                     type: 'string', 
-                    description: 'What the overall story is about (values from story_concerns lookup table)'
+                    description: 'What the overall story is about (use get_available_options with option_type="story_concerns" to see valid values)'
                 },
                 main_character_problem: { type: 'string', description: 'Personal issues driving the protagonist' },
                 influence_character_impact: { type: 'string', description: 'How other characters challenge the MC' },
                 story_outcome: { 
                     type: 'string', 
-                    description: 'Whether the story goal is achieved (values from story_outcomes lookup table)'
+                    description: 'Whether the story goal is achieved (use get_available_options with option_type="story_outcomes" to see valid values)'
                 },
                 story_judgment: { 
                     type: 'string', 
-                    description: 'Whether the outcome feels satisfying (values from story_judgments lookup table)'
+                    description: 'Whether the outcome feels satisfying (use get_available_options with option_type="story_judgments" to see valid values)'
                 },
                 thematic_elements: { 
                     type: 'object',
@@ -389,13 +389,13 @@ export const genreExtensionToolsSchema = {
 export const lookupSystemToolsSchema = [
     {
         name: 'get_available_options',
-        description: 'Get available options from lookup tables (genres, tropes, categories, etc.)',
+        description: 'Get available options from lookup tables (genres, plot thread types, story elements, etc.)',
         inputSchema: {
             type: 'object',
             properties: {
                 option_type: {
                     type: 'string',
-                    enum: ['genres', 'trope_categories', 'story_tropes', 'genre_templates'],
+                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
                     description: 'Type of options to retrieve'
                 },
                 genre_filter: { 

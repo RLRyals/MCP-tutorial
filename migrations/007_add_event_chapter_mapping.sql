@@ -1,0 +1,118 @@
+-- Migration to remove NOT NULL and UNIQUE constraints from email field in authors table
+BEGIN;
+
+-- Check if migration was already applied and execute migration if needed
+DO $$
+BEGIN
+    -- Check if migration was already applied
+    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '007_add_event_chapter_mapping.sql') THEN
+        RAISE NOTICE 'Migration 007_add_event_chapter_mapping.sql already applied, skipping.';
+        RETURN;
+    END IF;
+
+-- =============================================
+-- TIMELINE EVENTS TABLE ENHANCEMENTS
+-- =============================================
+
+-- Add new columns to timeline_events table
+ALTER TABLE timeline_events 
+    ADD COLUMN IF NOT EXISTS time_period VARCHAR(100),
+    ADD COLUMN IF NOT EXISTS significance VARCHAR(50) DEFAULT 'minor',
+    ADD COLUMN IF NOT EXISTS is_public_knowledge BOOLEAN DEFAULT TRUE;
+
+-- Create event participants table for many-to-many relationship
+CREATE TABLE IF NOT EXISTS event_participants (
+    participant_id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES timeline_events(id) ON DELETE CASCADE,
+    character_id INTEGER REFERENCES characters(character_id) ON DELETE CASCADE,
+    role_in_event VARCHAR(100), -- e.g., "witness", "victim", "perpetrator"
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, character_id)
+);
+
+-- =============================================
+-- EVENT-CHAPTER MAPPING TABLE
+-- =============================================
+
+-- Maps timeline events to their appearance in chapters
+CREATE TABLE event_chapter_mappings (
+    mapping_id SERIAL PRIMARY KEY,
+    event_id INTEGER REFERENCES timeline_events(id) ON DELETE CASCADE,
+    chapter_id INTEGER REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    scene_number INTEGER, -- Optional: specific scene within chapter
+    
+    -- How the event is presented
+    presentation_type VARCHAR(100), -- direct_scene, flashback, memory, reference, foreshadowing, dream, retelling
+    pov_character_id INTEGER REFERENCES characters(character_id), -- Who experiences/relates this event
+    
+    -- What portion of the event is shown
+    event_aspect VARCHAR(255), -- Which part or perspective of the event is shown
+    completeness VARCHAR(50), -- full, partial, glimpse
+    
+    -- Narrative purpose
+    narrative_function TEXT, -- Why this event appears here in the story
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =============================================
+-- TRIGGER FOR AUTOMATIC TIMESTAMP UPDATES
+-- =============================================
+
+CREATE TRIGGER update_event_chapter_mappings_timestamp
+    BEFORE UPDATE ON event_chapter_mappings
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp();
+
+-- =============================================
+-- INDICES FOR PERFORMANCE OPTIMIZATION
+-- =============================================
+
+-- Event mapping indices
+CREATE INDEX idx_event_chapter_mappings_event_id ON event_chapter_mappings(event_id);
+CREATE INDEX idx_event_chapter_mappings_chapter_id ON event_chapter_mappings(chapter_id);
+CREATE INDEX idx_event_chapter_mappings_presentation ON event_chapter_mappings(presentation_type);
+CREATE INDEX idx_event_chapter_mappings_pov ON event_chapter_mappings(pov_character_id);
+
+-- Add indices for new columns and relationships
+CREATE INDEX IF NOT EXISTS idx_timeline_events_time_period ON timeline_events(time_period);
+CREATE INDEX IF NOT EXISTS idx_timeline_events_significance ON timeline_events(significance);
+CREATE INDEX IF NOT EXISTS idx_timeline_events_public ON timeline_events(is_public_knowledge);
+
+CREATE INDEX IF NOT EXISTS idx_event_participants_event_id ON event_participants(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_participants_character_id ON event_participants(character_id);
+
+-- =============================================
+-- VIEWS FOR COMMON QUERIES
+-- =============================================
+
+-- Create view for events with participants
+CREATE OR REPLACE VIEW events_with_participants AS
+SELECT 
+    t.id as event_id,
+    t.event_name,
+    t.event_date,
+    t.event_description,
+    t.series_id,
+    t.book_id,
+    t.time_period,
+    t.significance,
+    t.is_public_knowledge,
+    array_agg(c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
+    array_agg(c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
+FROM 
+    timeline_events t
+    LEFT JOIN event_participants ep ON t.id = ep.event_id
+    LEFT JOIN characters c ON ep.character_id = c.character_id
+GROUP BY 
+    t.id;
+
+
+-- Record this migration
+    INSERT INTO migrations (filename) VALUES ('007_add_event_chapter_mapping.sql');
+
+END
+$$;
+
+COMMIT;

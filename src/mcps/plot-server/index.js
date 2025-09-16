@@ -1,5 +1,5 @@
 // src/mcps/plot-server/index.js
-// Modular Plot MCP Server following the guide architecture
+// COMPLETELY FIXED VERSION - Modular Plot MCP Server with proper method binding
 // Combines handler modules for plot threads, story analysis, and genre extensions
 
 // Protect stdout from debug logging in MCP stdio mode
@@ -14,7 +14,13 @@ import { BaseMCPServer } from '../../shared/base-server.js';
 import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
 import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
 import { GenreExtensions } from './handlers/genre-extensions.js';
-import { lookupSystemToolsSchema } from './schemas/plot-tools-schema.js';
+import { TropeHandlers } from './handlers/trope-handlers.js'; 
+import { 
+    lookupSystemToolsSchema, 
+    plotThreadToolsSchema, 
+    storyAnalysisToolsSchema,
+    genreExtensionToolsSchema 
+} from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
     constructor() {
@@ -27,21 +33,35 @@ class PlotMCPServer extends BaseMCPServer {
             throw error;
         }
         
-        // Initialize handler modules
-        this.plotThreadHandlers = new PlotThreadHandlers(this.db);
-        this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
-        this.genreExtensions = new GenreExtensions(this.db);
+        // Initialize handler modules with error handling
+        try {
+            this.plotThreadHandlers = new PlotThreadHandlers(this.db);
+            console.error('[PLOT-SERVER] Plot thread handlers initialized');
+            
+            this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
+            console.error('[PLOT-SERVER] Story analysis handlers initialized');
+            
+            this.genreExtensions = new GenreExtensions(this.db);
+            console.error('[PLOT-SERVER] Genre extensions initialized');
+
+            this.tropeHandlers = new TropeHandlers(this.db);
+            console.error('[PLOT-SERVER] Trope handlers initialized');
+       
+        } catch (error) {
+            console.error('[PLOT-SERVER] Handler initialization failed:', error.message);
+            throw error;
+        }
         
-        // Mix in handler methods to this class
-        Object.assign(this, this.plotThreadHandlers);
-        Object.assign(this, this.storyAnalysisHandlers);
-        Object.assign(this, this.genreExtensions);
+        // FIXED: Properly bind handler methods to maintain context
+        this.bindHandlerMethods();
         
+        // FIXED: Use direct schema imports instead of handler methods that might fail
         this.tools = this.getTools();
         
         if (!this.tools || !Array.isArray(this.tools) || this.tools.length === 0) {
             console.error('[PLOT-SERVER] WARNING: Tools not properly initialized!');
-            this.tools = this.getTools();
+            // Fallback to basic tools only
+            this.tools = [...lookupSystemToolsSchema];
         }
         
         if (process.env.MCP_STDIO_MODE !== 'true') {
@@ -49,6 +69,49 @@ class PlotMCPServer extends BaseMCPServer {
         }
         
         this.testDatabaseConnection();
+    }
+
+    // FIXED: Proper method binding to maintain context
+    bindHandlerMethods() {
+        try {
+            // Bind plot thread handler methods
+            this.handleCreatePlotThread = this.plotThreadHandlers.handleCreatePlotThread.bind(this.plotThreadHandlers);
+            this.handleUpdatePlotThread = this.plotThreadHandlers.handleUpdatePlotThread.bind(this.plotThreadHandlers);
+            this.handleGetPlotThreads = this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers);
+            this.handleLinkPlotThreads = this.plotThreadHandlers.handleLinkPlotThreads.bind(this.plotThreadHandlers);
+            this.handleResolvePlotThread = this.plotThreadHandlers.handleResolvePlotThread.bind(this.plotThreadHandlers);
+            
+            // Bind story analysis handler methods
+            this.handleAnalyzeStoryDynamics = this.storyAnalysisHandlers.handleAnalyzeStoryDynamics.bind(this.storyAnalysisHandlers);
+            this.handleTrackCharacterThroughlines = this.storyAnalysisHandlers.handleTrackCharacterThroughlines.bind(this.storyAnalysisHandlers);
+            this.handleIdentifyStoryAppreciations = this.storyAnalysisHandlers.handleIdentifyStoryAppreciations.bind(this.storyAnalysisHandlers);
+            this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
+            
+            // Bind genre extension methods
+            this.handleCreateCase = this.genreExtensions.handleCreateCase.bind(this.genreExtensions);
+            this.handleAddEvidence = this.genreExtensions.handleAddEvidence.bind(this.genreExtensions);
+            this.handleTrackClues = this.genreExtensions.handleTrackClues.bind(this.genreExtensions);
+            this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
+            this.handleTrackRomanticTension = this.genreExtensions.handleTrackRomanticTension.bind(this.genreExtensions);
+            this.handleDefineMagicSystem = this.genreExtensions.handleDefineMagicSystem.bind(this.genreExtensions);
+            this.handleTrackPowerProgression = this.genreExtensions.handleTrackPowerProgression.bind(this.genreExtensions);
+            
+            // Bind trope handler methods
+            this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);
+            this.handleGetTrope = this.tropeHandlers.handleGetTrope.bind(this.tropeHandlers);
+            this.handleListTropes = this.tropeHandlers.handleListTropes.bind(this.tropeHandlers);
+            this.handleCreateTropeInstance = this.tropeHandlers.handleCreateTropeInstance.bind(this.tropeHandlers);
+            this.handleGetTropeInstance = this.tropeHandlers.handleGetTropeInstance.bind(this.tropeHandlers);
+            this.handleListTropeInstances = this.tropeHandlers.handleListTropeInstances.bind(this.tropeHandlers);
+            this.handleImplementTropeScene = this.tropeHandlers.handleImplementTropeScene.bind(this.tropeHandlers);
+            this.handleGetTropeProgress = this.tropeHandlers.handleGetTropeProgress.bind(this.tropeHandlers);
+            this.handleAnalyzeTropePatterns = this.tropeHandlers.handleAnalyzeTropePatterns.bind(this.tropeHandlers);
+
+            console.error('[PLOT-SERVER] All handler methods bound successfully');
+        } catch (error) {
+            console.error('[PLOT-SERVER] Method binding failed:', error.message);
+            throw error;
+        }
     }
 
     async testDatabaseConnection() {
@@ -72,24 +135,33 @@ class PlotMCPServer extends BaseMCPServer {
     }
 
     // =============================================
-    // ALL TOOLS ALWAYS AVAILABLE (NO GENRE FILTERING)
+    // FIXED: Use direct schema imports for tools
     // =============================================
     getTools() {
-        return [
-            // Lookup system tools
-            ...lookupSystemToolsSchema,
+        try {
+            const tools = [
+                // Lookup system tools (always working)
+                ...lookupSystemToolsSchema,
+                
+                // Core plot thread tools
+                ...plotThreadToolsSchema,
+                
+                // Story analysis tools  
+                ...storyAnalysisToolsSchema,
+                
+                // Genre-specific tools (flatten all genre tools)
+                ...(genreExtensionToolsSchema.mystery || []),
+                ...(genreExtensionToolsSchema.romance || []),
+                ...(genreExtensionToolsSchema.fantasy || [])
+            ];
             
-            // Core plot thread tools
-            ...this.plotThreadHandlers.getPlotThreadTools(),
-            
-            // Story analysis tools  
-            ...this.storyAnalysisHandlers.getStoryAnalysisTools(),
-            
-            // ALL genre-specific tools (always available for multi-genre support)
-            ...this.genreExtensions.getGenreSpecificTools('mystery'),
-            ...this.genreExtensions.getGenreSpecificTools('romance'),
-            ...this.genreExtensions.getGenreSpecificTools('fantasy')
-        ];
+            console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);
+            return tools;
+        } catch (error) {
+            console.error('[PLOT-SERVER] Tool registration failed:', error.message);
+            // Return at least the working lookup tools
+            return [...lookupSystemToolsSchema];
+        }
     }
 
     // =============================================
@@ -100,33 +172,38 @@ class PlotMCPServer extends BaseMCPServer {
             // Lookup System Handlers
             'get_available_options': this.handleGetAvailableOptions,
             
-            // Plot Thread Handlers (from PlotThreadHandlers)
+            // Plot Thread Handlers
             'create_plot_thread': this.handleCreatePlotThread,
             'update_plot_thread': this.handleUpdatePlotThread,
             'get_plot_threads': this.handleGetPlotThreads,
             'link_plot_threads': this.handleLinkPlotThreads,
             'resolve_plot_thread': this.handleResolvePlotThread,
             
-            // Story Analysis Handlers (from StoryAnalysisHandlers)
+            // Story Analysis Handlers
             'analyze_story_dynamics': this.handleAnalyzeStoryDynamics,
             'track_character_throughlines': this.handleTrackCharacterThroughlines,
             'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
             'map_problem_solutions': this.handleMapProblemSolutions,
             
-            // Mystery Genre Handlers (from GenreExtensions)
+            // Mystery Genre Handlers
             'create_case': this.handleCreateCase,
             'add_evidence': this.handleAddEvidence,
             'track_clues': this.handleTrackClues,
             
-            // Romance Genre Handlers (from GenreExtensions)
+            // Romance Genre Handlers
             'create_relationship_arc': this.handleCreateRelationshipArc,
             'track_romantic_tension': this.handleTrackRomanticTension,
             
-            // Fantasy Genre Handlers (from GenreExtensions)
+            // Fantasy Genre Handlers
             'define_magic_system': this.handleDefineMagicSystem,
             'track_power_progression': this.handleTrackPowerProgression
         };
-        return handlers[toolName];
+        
+        const handler = handlers[toolName];
+        if (!handler) {
+            console.error(`[PLOT-SERVER] No handler found for tool: ${toolName}`);
+        }
+        return handler;
     }
 
     // =============================================
@@ -192,9 +269,9 @@ class PlotMCPServer extends BaseMCPServer {
                             {
                                 type: 'text',
                                 text: `No active ${option_type.replace('_', ' ')} found in lookup table.`
-                            }
-                        ]
-                    };
+                        }
+                    ]
+                };
                 }
                 
             } catch (dbError) {
@@ -204,13 +281,18 @@ class PlotMCPServer extends BaseMCPServer {
                         content: [
                             {
                                 type: 'text',
-                                text: `# Available Genres (Fallback List)\n\n` +
-                                      `**mystery** - Crime solving and investigation stories\n` +
-                                      `**romance** - Love and relationship focused stories\n` +
-                                      `**fantasy** - Magical and supernatural worlds\n` +
-                                      `**science_fiction** - Futuristic and technological stories\n` +
-                                      `**thriller** - Suspense and tension driven stories\n\n` +
-                                      `*Note: Run migration 004_plot_structure_and_universal_framework_fixed.sql for full lookup table support.*`
+                                text: `# Available GENRES\n\n` +
+                                      `**action_adventure** - Fast-paced stories with exciting adventures and conflicts\n` +
+                                      `**contemporary** - Stories set in the present day with realistic scenarios\n` +
+                                      `**fantasy** - Stories set in imaginary worlds with magical or supernatural elements\n` +
+                                      `**historical_fiction** - Stories set in the past with historical accuracy and detail\n` +
+                                      `**literary_fiction** - Character-driven stories with artistic and literary merit\n` +
+                                      `**mystery** - Stories involving puzzles, crimes, or unexplained events to be solved\n` +
+                                      `**romance** - Stories focused on romantic relationships and emotional connection\n` +
+                                      `**science_fiction** - Stories set in the future or alternative worlds with advanced technology\n` +
+                                      `**thriller** - Stories designed to create suspense, excitement, and tension\n` +
+                                      `**young_adult** - Stories targeted at teenage readers with coming-of-age themes\n\n` +
+                                      `*Note: This is a fallback list. Run the plot schema migration for full lookup table support.*`
                             }
                         ]
                     };
@@ -220,13 +302,13 @@ class PlotMCPServer extends BaseMCPServer {
                     content: [
                         {
                             type: 'text',
-                            text: `Lookup table for ${option_type} not available.\n\n` +
-                                  `Run migration 004_plot_structure_and_universal_framework_fixed.sql to enable all lookup tables.\n\n` +
+                            text: `Lookup table for ${option_type} not available. This requires the plot management database schema.\n\n` +
                                   `Error: ${dbError.message}`
                         }
                     ]
                 };
-            }        } catch (error) {
+            }
+        } catch (error) {
             throw new Error(`Failed to get available options: ${error.message}`);
         }
     }
@@ -240,9 +322,6 @@ import { fileURLToPath } from 'url';
 // Only log debug info if not in stdio mode
 if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[PLOT-SERVER] Module loaded');
-    console.error('[PLOT-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
-    console.error('[PLOT-SERVER] import.meta.url:', import.meta.url);
-    console.error('[PLOT-SERVER] process.argv[1]:', process.argv[1]);
 }
 
 // Convert paths to handle Windows path differences
@@ -251,25 +330,15 @@ const scriptPath = process.argv[1];
 const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
 const isDirectExecution = currentModuleUrl === normalizedScriptPath;
 
-if (process.env.MCP_STDIO_MODE !== 'true') {
-    console.error('[PLOT-SERVER] normalized script path:', normalizedScriptPath);
-    console.error('[PLOT-SERVER] is direct execution:', isDirectExecution);
-}
-
 if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
-    if (process.env.MCP_STDIO_MODE !== 'true') {
-        console.error('[PLOT-SERVER] Starting CLI runner...');
-    }
+    console.error('[PLOT-SERVER] Starting CLI runner...');
     try {
         const { CLIRunner } = await import('../../shared/cli-runner.js');
         const runner = new CLIRunner(PlotMCPServer);
         await runner.run();
     } catch (error) {
         console.error('[PLOT-SERVER] CLI runner failed:', error.message);
-        if (process.env.MCP_STDIO_MODE !== 'true') {
-            console.error('[PLOT-SERVER] CLI runner stack:', error.stack);
-        }
-        throw error;
+        process.exit(1);
     }
 } else if (isDirectExecution) {
     // When running directly as MCP server (via Claude Desktop)
@@ -298,6 +367,5 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
 } else {
     if (process.env.MCP_STDIO_MODE !== 'true') {
         console.error('[PLOT-SERVER] Module imported - not starting server');
-        console.error('[PLOT-SERVER] Module export completed');
     }
 }
