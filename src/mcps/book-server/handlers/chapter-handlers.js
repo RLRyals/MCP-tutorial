@@ -657,66 +657,66 @@ export class ChapterHandlers {
         }
     }
 
-    async handleReorderChapters(args) {
-        try {
-            const { book_id, chapter_order } = args;
+    // async handleReorderChapters(args) {
+    //     try {
+    //         const { book_id, chapter_order } = args;
             
-            // Start a transaction for atomic reordering
-            return await this.db.transaction(async (client) => {
-                // Verify all chapters belong to the specified book
-                const chapterIds = chapter_order.map(item => item.chapter_id);
-                const verifyQuery = `
-                    SELECT chapter_id FROM chapters 
-                    WHERE book_id = $1 AND chapter_id = ANY($2)
-                `;
-                const verifyResult = await client.query(verifyQuery, [book_id, chapterIds]);
+    //         // Start a transaction for atomic reordering
+    //         return await this.db.transaction(async (client) => {
+    //             // Verify all chapters belong to the specified book
+    //             const chapterIds = chapter_order.map(item => item.chapter_id);
+    //             const verifyQuery = `
+    //                 SELECT chapter_id FROM chapters 
+    //                 WHERE book_id = $1 AND chapter_id = ANY($2)
+    //             `;
+    //             const verifyResult = await client.query(verifyQuery, [book_id, chapterIds]);
                 
-                if (verifyResult.rows.length !== chapter_order.length) {
-                    throw new Error('One or more chapters do not belong to the specified book');
-                }
+    //             if (verifyResult.rows.length !== chapter_order.length) {
+    //                 throw new Error('One or more chapters do not belong to the specified book');
+    //             }
                 
-                // Check for duplicate chapter numbers
-                const newNumbers = chapter_order.map(item => item.new_chapter_number);
-                const uniqueNumbers = new Set(newNumbers);
-                if (uniqueNumbers.size !== newNumbers.length) {
-                    throw new Error('Duplicate chapter numbers detected in reorder request');
-                }
+    //             // Check for duplicate chapter numbers
+    //             const newNumbers = chapter_order.map(item => item.new_chapter_number);
+    //             const uniqueNumbers = new Set(newNumbers);
+    //             if (uniqueNumbers.size !== newNumbers.length) {
+    //                 throw new Error('Duplicate chapter numbers detected in reorder request');
+    //             }
                 
-                // Update each chapter's number
-                const updates = [];
-                for (const item of chapter_order) {
-                    const updateQuery = `
-                        UPDATE chapters 
-                        SET chapter_number = $1, updated_at = CURRENT_TIMESTAMP 
-                        WHERE chapter_id = $2
-                        RETURNING chapter_id, chapter_number, title
-                    `;
-                    const updateResult = await client.query(updateQuery, [item.new_chapter_number, item.chapter_id]);
-                    updates.push(updateResult.rows[0]);
-                }
+    //             // Update each chapter's number
+    //             const updates = [];
+    //             for (const item of chapter_order) {
+    //                 const updateQuery = `
+    //                     UPDATE chapters 
+    //                     SET chapter_number = $1, updated_at = CURRENT_TIMESTAMP 
+    //                     WHERE chapter_id = $2
+    //                     RETURNING chapter_id, chapter_number, title
+    //                 `;
+    //                 const updateResult = await client.query(updateQuery, [item.new_chapter_number, item.chapter_id]);
+    //                 updates.push(updateResult.rows[0]);
+    //             }
                 
-                // Get book title for response
-                const bookQuery = 'SELECT title FROM books WHERE id = $1';
-                const bookResult = await client.query(bookQuery, [book_id]);
-                const bookTitle = bookResult.rows[0]?.title || 'Unknown';
+    //             // Get book title for response
+    //             const bookQuery = 'SELECT title FROM books WHERE id = $1';
+    //             const bookResult = await client.query(bookQuery, [book_id]);
+    //             const bookTitle = bookResult.rows[0]?.title || 'Unknown';
                 
-                let responseText = `Successfully reordered chapters in "${bookTitle}":\n\n`;
-                updates.sort((a, b) => a.chapter_number - b.chapter_number);
-                updates.forEach(chapter => {
-                    responseText += `Chapter ${chapter.chapter_number}${chapter.title ? `: ${chapter.title}` : ''}\n`;
-                });
+    //             let responseText = `Successfully reordered chapters in "${bookTitle}":\n\n`;
+    //             updates.sort((a, b) => a.chapter_number - b.chapter_number);
+    //             updates.forEach(chapter => {
+    //                 responseText += `Chapter ${chapter.chapter_number}${chapter.title ? `: ${chapter.title}` : ''}\n`;
+    //             });
                 
-                return {
-                    content: [{
-                        type: 'text',
-                        text: responseText
-                    }]
-                };
-            });
-        } catch (error) {
-            throw new Error(`Failed to reorder chapters: ${error.message}`);
-        }
-    }
+    //             return {
+    //                 content: [{
+    //                     type: 'text',
+    //                     text: responseText
+    //                 }]
+    //             };
+    //         });
+    //     } catch (error) {
+    //         throw new Error(`Failed to reorder chapters: ${error.message}`);
+    //     }
+    // }
 
     // =============================================
     // UTILITY METHODS FOR CROSS-COMPONENT USE
