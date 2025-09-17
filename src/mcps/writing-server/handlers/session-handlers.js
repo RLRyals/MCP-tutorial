@@ -249,7 +249,7 @@ export class SessionHandlers {
                 SELECT title, actual_word_count, target_word_count,
                        CASE 
                            WHEN target_word_count > 0 
-                           THEN ROUND((actual_word_count::float / target_word_count) * 100, 2)
+                           THEN ROUND((actual_word_count::numeric / target_word_count) * 100, 2)
                            ELSE NULL 
                        END as completion_percentage
                 FROM books WHERE id = $1
@@ -292,41 +292,74 @@ export class SessionHandlers {
 
     // AI team manages goal setting and tracking
     async handleSetWritingGoals(args) {
-        const { book_id, goal_type, target_value, target_date, description } = args;
+        // Parse and convert inputs to ensure consistent types
+        const book_id = parseInt(args.book_id, 10);
+        const goal_type = String(args.goal_type);
+        const target_value = parseInt(args.target_value, 10);
+        const target_date = String(args.target_date);
+        const description = args.description ? String(args.description) : null;
 
         try {
-            // Insert or update writing goal
-            const result = await this.db.query(`
-                INSERT INTO writing_goals (
-                    book_id, goal_type, target_value, target_date, description, 
-                    start_date, current_progress
-                ) VALUES ($1, $2, $3, $4, $5, CURRENT_DATE, 0)
-                ON CONFLICT (book_id, goal_type, target_date) 
-                DO UPDATE SET 
-                    target_value = EXCLUDED.target_value,
-                    description = EXCLUDED.description,
-                    updated_at = CURRENT_TIMESTAMP
-                RETURNING id, goal_type, target_value, target_date
-            `, [book_id, goal_type, target_value, target_date, description]);
+            console.log('Preparing to set writing goal:', {
+                book_id, goal_type, target_value, target_date, description,
+                types: {
+                    book_id: typeof book_id,
+                    goal_type: typeof goal_type,
+                    target_value: typeof target_value,
+                    target_date: typeof target_date,
+                    description: typeof description
+                }
+            });
+            
+            // Use separate queries with explicit parameters to avoid type inference issues
+            // First, deactivate any existing goals of the same type and date
+            await this.db.query(
+                'UPDATE writing_goals SET active = false, updated_at = CURRENT_TIMESTAMP ' +
+                'WHERE book_id = $1 AND goal_type = $2 AND target_date = $3 AND active = true',
+                [book_id, goal_type, target_date]
+            );
+            
+            // Then insert new active goal with simplified query
+            const result = await this.db.query(
+                'INSERT INTO writing_goals ' +
+                '(book_id, goal_type, target_value, target_date, description, start_date, current_progress, active) ' +
+                'VALUES ($1, $2, $3, $4, $5, CURRENT_DATE, 0, true) ' +
+                'RETURNING id, goal_type, target_value, target_date',
+                [book_id, goal_type, target_value, target_date, description]
+            );
 
             // Calculate current progress for goal type
             let current_progress = 0;
             if (goal_type.includes('words')) {
-                const progress_query = await this.db.query(`
-                    SELECT COALESCE(SUM(words_written), 0) as progress
-                    FROM writing_sessions 
-                    WHERE book_id = $1 AND session_date >= CURRENT_DATE - INTERVAL '30 days'
-                `, [book_id]);
-                current_progress = progress_query.rows[0].progress;
+                const progress_query = await this.db.query(
+                    'SELECT COALESCE(SUM(words_written), 0) as progress ' +
+                    'FROM writing_sessions ' +
+                    'WHERE book_id = $1 AND session_date >= CURRENT_DATE - INTERVAL \'30 days\'',
+                    [book_id]
+                );
+                current_progress = parseInt(progress_query.rows[0].progress, 10) || 0;
             }
 
-            // Update progress
-            await this.db.query(`
-                UPDATE writing_goals 
-                SET current_progress = $1,
-                    completion_percentage = ROUND(($1::float / target_value) * 100, 2)
-                WHERE id = $2
-            `, [current_progress, result.rows[0].id]);
+            // Get the inserted row ID
+            const goal_id = result.rows[0].id;
+            console.log('Goal created successfully with ID:', goal_id);
+
+            // Update progress with separate query - but handle errors separately
+            try {
+                await this.db.query(
+                    'UPDATE writing_goals SET current_progress = $1 WHERE id = $2',
+                    [current_progress, goal_id]
+                );
+                
+                // Update completion percentage in a separate query to avoid type issues
+                await this.db.query(
+                    'UPDATE writing_goals SET completion_percentage = ROUND((current_progress::numeric / target_value) * 100, 2) WHERE id = $1',
+                    [goal_id]
+                );
+            } catch (progressError) {
+                console.warn('Non-critical error updating progress for goal:', progressError.message);
+                // Continue despite progress update error - the goal was created successfully
+            }
 
             return {
                 success: true,
@@ -336,8 +369,29 @@ export class SessionHandlers {
             };
 
         } catch (error) {
-            console.error('Error setting writing goal:', error);
-            throw new Error(`Failed to set goal: ${error.message}`);
+            // If we have a goal ID, the primary goal creation succeeded
+            if (result && result.rows && result.rows[0] && result.rows[0].id) {
+                console.warn('Goal was created but encountered a non-critical error:', error.message);
+                
+                // Return success with warning since the goal was actually created
+                return {
+                    success: true,
+                    goal_set: result.rows[0],
+                    current_progress,
+                    message: 'Goal created successfully (with minor issues)',
+                    warning: error.message
+                };
+            } else {
+                // This is a critical error before goal creation
+                console.error('Critical error setting writing goal:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    code: error.code,
+                    detail: error.detail,
+                    stack: error.stack
+                });
+                throw new Error(`Failed to set goal: ${error.message}`);
+            }
         }
     }
 

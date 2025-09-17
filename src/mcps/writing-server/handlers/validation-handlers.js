@@ -99,23 +99,23 @@ export class ValidationHandlers {
             let query_params = [book_id];
             
             if (chapter_ids && chapter_ids.length > 0) {
-                chapter_filter = `AND c.id = ANY($2)`;
+                chapter_filter = `AND c.chapter_id = ANY($2)`;
                 query_params.push(chapter_ids);
             }
 
             // Get chapter structure data
             const chapters_data = await this.db.query(`
                 SELECT 
-                    c.id, c.chapter_number, c.title, c.word_count, c.target_word_count,
+                    c.chapter_id as id, c.chapter_number, c.title, c.word_count, c.target_word_count,
                     c.status, c.pov_character_id, c.primary_location, c.story_time_start,
                     c.story_time_end, c.summary,
                     ch.name as pov_character_name,
-                    COUNT(s.id) as scene_count
+                    COUNT(s.scene_id) as scene_count
                 FROM chapters c
-                LEFT JOIN characters ch ON c.pov_character_id = ch.id
-                LEFT JOIN scenes s ON c.id = s.chapter_id
+                LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+                LEFT JOIN chapter_scenes s ON c.chapter_id = s.chapter_id
                 WHERE c.book_id = $1 ${chapter_filter}
-                GROUP BY c.id, c.chapter_number, c.title, c.word_count, c.target_word_count,
+                GROUP BY c.chapter_id, c.chapter_number, c.title, c.word_count, c.target_word_count,
                          c.status, c.pov_character_id, c.primary_location, c.story_time_start,
                          c.story_time_end, c.summary, ch.name
                 ORDER BY c.chapter_number
@@ -263,7 +263,7 @@ export class ValidationHandlers {
             // Get book and chapter data for beat analysis
             const book_data = await this.db.query(`
                 SELECT b.title, b.target_word_count, b.actual_word_count,
-                       COUNT(c.id) as chapter_count,
+                       COUNT(c.chapter_id) as chapter_count,
                        SUM(c.word_count) as total_chapter_words
                 FROM books b
                 LEFT JOIN chapters c ON b.id = c.book_id
@@ -290,14 +290,14 @@ export class ValidationHandlers {
             // Get chapter progression data
             const chapter_progression = await this.db.query(`
                 SELECT 
-                    c.id, c.chapter_number, c.word_count, c.summary,
+                    c.chapter_id as id, c.chapter_number, c.word_count, c.summary,
                     c.pov_character_id, ch.name as pov_character,
                     STRING_AGG(cpp.plot_point_type, ', ') as plot_points
                 FROM chapters c
-                LEFT JOIN characters ch ON c.pov_character_id = ch.id
-                LEFT JOIN chapter_plot_points cpp ON c.id = cpp.chapter_id
+                LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+                LEFT JOIN chapter_plot_points cpp ON c.chapter_id = cpp.chapter_id
                 WHERE c.book_id = $1
-                GROUP BY c.id, c.chapter_number, c.word_count, c.summary, 
+                GROUP BY c.chapter_id, c.chapter_number, c.word_count, c.summary, 
                          c.pov_character_id, ch.name
                 ORDER BY c.chapter_number
             `, [book_id]);
@@ -513,8 +513,8 @@ export class ValidationHandlers {
                 c.name,
                 ARRAY_AGG(ch.chapter_number ORDER BY ch.chapter_number) as appearances
             FROM character_chapter_presence ccp
-            JOIN characters c ON ccp.character_id = c.id
-            JOIN chapters ch ON ccp.chapter_id = ch.id
+            JOIN characters c ON ccp.character_id = c.character_id
+            JOIN chapters ch ON ccp.chapter_id = ch.chapter_id
             WHERE ch.book_id = $1
             GROUP BY ccp.character_id, c.name
         `, [book_id]);
@@ -579,13 +579,13 @@ export class ValidationHandlers {
                 c.chapter_number,
                 c.pov_character_id,
                 ch.name as pov_character,
-                COUNT(s.id) as scene_count
+                COUNT(s.scene_id) as scene_count
             FROM chapters c
-            LEFT JOIN characters ch ON c.pov_character_id = ch.id
-            LEFT JOIN scenes s ON c.id = s.chapter_id AND s.pov_character_id != c.pov_character_id
+            LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+            LEFT JOIN chapter_scenes s ON c.chapter_id = s.chapter_id AND s.pov_character_id != c.pov_character_id
             WHERE c.book_id = $1
             GROUP BY c.chapter_number, c.pov_character_id, ch.name
-            HAVING COUNT(s.id) > 0
+            HAVING COUNT(s.scene_id) > 0
         `, [book_id]);
 
         pov_data.rows.forEach(chapter => {
