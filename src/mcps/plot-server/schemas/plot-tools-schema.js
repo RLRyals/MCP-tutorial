@@ -222,7 +222,7 @@ export const storyAnalysisToolsSchema = [
 // =============================================
 // UNIVERSAL GENRE TOOLS (replaces genre-specific ones)
 // =============================================
-export const universalGenreToolsSchema = [
+export const genreExtensionToolsSchema = [
     {
         name: 'create_information_reveal',
         description: 'Track any information reveal across all genres (evidence, secrets, backstory, world rules)',

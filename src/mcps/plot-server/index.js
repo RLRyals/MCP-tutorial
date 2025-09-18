@@ -89,12 +89,12 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
             
              // Bind universal genre extension methods
-            this.handleCreateInformationReveal = this.universalGenreExtensions.handleCreateInformationReveal.bind(this.universalGenreExtensions);
-            this.handleCreateRelationshipArc = this.universalGenreExtensions.handleCreateRelationshipArc.bind(this.universalGenreExtensions);
-            this.handleDefineWorldSystem = this.universalGenreExtensions.handleDefineWorldSystem.bind(this.universalGenreExtensions);
-            this.handleAddRevealEvidence = this.universalGenreExtensions.handleAddRevealEvidence.bind(this.universalGenreExtensions);
-            this.handleTrackRelationshipDynamics = this.universalGenreExtensions.handleTrackRelationshipDynamics.bind(this.universalGenreExtensions);
-            this.handleTrackSystemProgression = this.universalGenreExtensions.handleTrackSystemProgression.bind(this.universalGenreExtensions);
+            this.handleCreateInformationReveal = this.genreExtensions.handleCreateInformationReveal.bind(this.genreExtensions);
+            this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
+            this.handleDefineWorldSystem = this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions);
+            this.handleAddRevealEvidence = this.genreExtensions.handleAddRevealEvidence.bind(this.genreExtensions);
+            this.handleTrackRelationshipDynamics = this.genreExtensions.handleTrackRelationshipDynamics.bind(this.genreExtensions);
+            this.handleTrackSystemProgression = this.genreExtensions.handleTrackSystemProgression.bind(this.genreExtensions);
             
             // Bind trope handler methods
             this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);

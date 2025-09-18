@@ -3,7 +3,7 @@
 
 import { PlotValidators } from '../utils/plot-validators.js';
 
-export class UniversalGenreExtensions {
+export class GenreExtensions {
     constructor(db) {
         this.db = db;
     }
