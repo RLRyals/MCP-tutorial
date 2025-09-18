@@ -19,7 +19,8 @@ import {
     lookupSystemToolsSchema, 
     plotThreadToolsSchema, 
     storyAnalysisToolsSchema,
-    genreExtensionToolsSchema 
+    genreExtensionToolsSchema,
+    tropeToolsSchema 
 } from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
@@ -87,14 +88,13 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleIdentifyStoryAppreciations = this.storyAnalysisHandlers.handleIdentifyStoryAppreciations.bind(this.storyAnalysisHandlers);
             this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
             
-            // Bind genre extension methods
-            this.handleCreateCase = this.genreExtensions.handleCreateCase.bind(this.genreExtensions);
-            this.handleAddEvidence = this.genreExtensions.handleAddEvidence.bind(this.genreExtensions);
-            this.handleTrackClues = this.genreExtensions.handleTrackClues.bind(this.genreExtensions);
-            this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
-            this.handleTrackRomanticTension = this.genreExtensions.handleTrackRomanticTension.bind(this.genreExtensions);
-            this.handleDefineMagicSystem = this.genreExtensions.handleDefineMagicSystem.bind(this.genreExtensions);
-            this.handleTrackPowerProgression = this.genreExtensions.handleTrackPowerProgression.bind(this.genreExtensions);
+             // Bind universal genre extension methods
+            this.handleCreateInformationReveal = this.universalGenreExtensions.handleCreateInformationReveal.bind(this.universalGenreExtensions);
+            this.handleCreateRelationshipArc = this.universalGenreExtensions.handleCreateRelationshipArc.bind(this.universalGenreExtensions);
+            this.handleDefineWorldSystem = this.universalGenreExtensions.handleDefineWorldSystem.bind(this.universalGenreExtensions);
+            this.handleAddRevealEvidence = this.universalGenreExtensions.handleAddRevealEvidence.bind(this.universalGenreExtensions);
+            this.handleTrackRelationshipDynamics = this.universalGenreExtensions.handleTrackRelationshipDynamics.bind(this.universalGenreExtensions);
+            this.handleTrackSystemProgression = this.universalGenreExtensions.handleTrackSystemProgression.bind(this.universalGenreExtensions);
             
             // Bind trope handler methods
             this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);
@@ -149,10 +149,11 @@ class PlotMCPServer extends BaseMCPServer {
                 // Story analysis tools  
                 ...storyAnalysisToolsSchema,
                 
-                // Genre-specific tools (flatten all genre tools)
-                ...(genreExtensionToolsSchema.mystery || []),
-                ...(genreExtensionToolsSchema.romance || []),
-                ...(genreExtensionToolsSchema.fantasy || [])
+                // Trope system tools
+                ...tropeToolsSchema,
+
+                //Universal genre tools
+                ...genreExtensionToolsSchema
             ];
             
             console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);
@@ -185,18 +186,24 @@ class PlotMCPServer extends BaseMCPServer {
             'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
             'map_problem_solutions': this.handleMapProblemSolutions,
             
-            // Mystery Genre Handlers
-            'create_case': this.handleCreateCase,
-            'add_evidence': this.handleAddEvidence,
-            'track_clues': this.handleTrackClues,
-            
-            // Romance Genre Handlers
+            // Universal Genre Handlers (replaces old genre-specific ones)
+            'create_information_reveal': this.handleCreateInformationReveal,
             'create_relationship_arc': this.handleCreateRelationshipArc,
-            'track_romantic_tension': this.handleTrackRomanticTension,
+            'define_world_system': this.handleDefineWorldSystem,
+            'add_reveal_evidence': this.handleAddRevealEvidence,
+            'track_relationship_dynamics': this.handleTrackRelationshipDynamics,
+            'track_system_progression': this.handleTrackSystemProgression,
             
-            // Fantasy Genre Handlers
-            'define_magic_system': this.handleDefineMagicSystem,
-            'track_power_progression': this.handleTrackPowerProgression
+            // Trope Handlers (optional chaining for safety)
+            'create_trope': this.handleCreateTrope,
+            'get_trope': this.handleGetTrope,
+            'list_tropes': this.handleListTropes,
+            'create_trope_instance': this.handleCreateTropeInstance,
+            'get_trope_instance': this.handleGetTropeInstance,
+            'list_trope_instances': this.handleListTropeInstances,
+            'implement_trope_scene': this.handleImplementTropeScene,
+            'get_trope_progress': this.handleGetTropeProgress,
+            'analyze_trope_patterns': this.handleAnalyzeTropePatterns
         };
         
         const handler = handlers[toolName];

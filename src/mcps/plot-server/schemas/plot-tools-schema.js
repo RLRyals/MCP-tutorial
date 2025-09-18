@@ -220,168 +220,393 @@ export const storyAnalysisToolsSchema = [
 ];
 
 // =============================================
-// GENRE EXTENSION TOOL SCHEMAS
+// UNIVERSAL GENRE TOOLS (replaces genre-specific ones)
 // =============================================
-export const genreExtensionToolsSchema = {
-    mystery: [
-        {
-            name: 'create_case',
-            description: 'Create a new mystery case',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    plot_thread_id: { type: 'integer', description: 'Associated plot thread ID' },
-                    case_name: { type: 'string', description: 'Name of the case' },
-                    victim_info: { type: 'string', description: 'Information about the victim' },
-                    case_status: { 
-                        type: 'string', 
-                        enum: ['open', 'investigating', 'solved', 'cold'],
-                        description: 'Current status of the case'
-                    },
-                    initial_suspects: { 
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'Initial list of suspects'
-                    }
+export const universalGenreToolsSchema = [
+    {
+        name: 'create_information_reveal',
+        description: 'Track any information reveal across all genres (evidence, secrets, backstory, world rules)',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                plot_thread_id: {
+                    type: 'integer',
+                    description: 'Associated plot thread ID'
                 },
-                required: ['plot_thread_id', 'case_name']
-            }
-        },
-        {
-            name: 'add_evidence',
-            description: 'Add evidence to a case',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    case_id: { type: 'integer', description: 'Case ID' },
-                    evidence_type: { 
-                        type: 'string', 
-                        enum: ['physical', 'witness', 'circumstantial', 'digital', 'forensic'],
-                        description: 'Type of evidence'
-                    },
-                    evidence_description: { type: 'string', description: 'Description of the evidence' },
-                    discovered_by: { type: 'integer', description: 'Character ID who discovered it' },
-                    discovery_chapter: { type: 'integer', description: 'Chapter where discovered' },
-                    significance: { 
-                        type: 'string', 
-                        enum: ['critical', 'important', 'supporting', 'red_herring'],
-                        description: 'Significance of the evidence'
-                    }
+                reveal_type: {
+                    type: 'string',
+                    enum: ['evidence', 'secret', 'backstory', 'world_rule', 'relationship', 'skill'],
+                    description: 'Type of information being revealed'
                 },
-                required: ['case_id', 'evidence_type', 'evidence_description']
-            }
-        },
-        {
-            name: 'track_clues',
-            description: 'Track clues and their relationships',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    case_id: { type: 'integer', description: 'Case ID' },
-                    clue_description: { type: 'string', description: 'Description of the clue' },
-                    leads_to: { type: 'string', description: 'What this clue leads to' },
-                    revealed_chapter: { type: 'integer', description: 'Chapter where clue is revealed' },
-                    is_red_herring: { type: 'boolean', description: 'Whether this is a red herring' }
+                information_content: {
+                    type: 'string',
+                    description: 'What information is revealed'
                 },
-                required: ['case_id', 'clue_description']
-            }
+                reveal_method: {
+                    type: 'string',
+                    description: 'How the information is revealed (discovered, confessed, witnessed, deduced)'
+                },
+                significance_level: {
+                    type: 'string',
+                    enum: ['minor', 'major', 'climactic', 'world_changing'],
+                    description: 'Impact level of this reveal'
+                },
+                affects_characters: {
+                    type: 'array',
+                    items: { type: 'integer' },
+                    description: 'Character IDs who learn this information'
+                },
+                revealed_in_chapter: {
+                    type: 'integer',
+                    description: 'Chapter where revealed (optional)'
+                },
+                consequences: {
+                    type: 'string',
+                    description: 'What happens as a result of this reveal (optional)'
+                },
+                foreshadowing_chapters: {
+                    type: 'array',
+                    items: { type: 'integer' },
+                    description: 'Chapters where this was hinted at (optional)'
+                }
+            },
+            required: ['plot_thread_id', 'reveal_type', 'information_content', 'reveal_method', 'significance_level']
         }
-    ],
-    romance: [
-        {
-            name: 'create_relationship_arc',
-            description: 'Create a romantic relationship arc',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    plot_thread_id: { type: 'integer', description: 'Associated plot thread ID' },
-                    character_a_id: { type: 'integer', description: 'First character ID' },
-                    character_b_id: { type: 'integer', description: 'Second character ID' },
-                    relationship_stage: { 
-                        type: 'string', 
-                        enum: ['strangers', 'acquaintances', 'friends', 'attracted', 'dating', 'committed', 'separated'],
-                        description: 'Current relationship stage'
-                    },
-                    tension_level: { 
-                        type: 'integer', 
-                        minimum: 1, 
-                        maximum: 10,
-                        description: 'Current romantic tension level (1-10)'
-                    }
+    },
+    {
+        name: 'create_relationship_arc',
+        description: 'Track any relationship development across all genres and relationship types',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                plot_thread_id: {
+                    type: 'integer',
+                    description: 'Associated plot thread ID'
                 },
-                required: ['plot_thread_id', 'character_a_id', 'character_b_id']
-            }
-        },
-        {
-            name: 'track_romantic_tension',
-            description: 'Track romantic tension between characters',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    arc_id: { type: 'integer', description: 'Romance arc ID' },
-                    chapter_id: { type: 'integer', description: 'Chapter ID' },
-                    tension_change: { 
-                        type: 'integer', 
-                        minimum: -10, 
-                        maximum: 10,
-                        description: 'Change in tension level (-10 to +10)'
-                    },
-                    trigger_event: { type: 'string', description: 'What caused the tension change' }
+                arc_name: {
+                    type: 'string',
+                    description: 'Name for this relationship arc'
                 },
-                required: ['arc_id', 'chapter_id', 'tension_change']
-            }
+                participants: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            character_id: { type: 'integer' },
+                            role_in_relationship: {
+                                type: 'string',
+                                description: 'primary, secondary, catalyst, observer'
+                            },
+                            character_name: { type: 'string' }
+                        },
+                        required: ['character_id', 'role_in_relationship']
+                    },
+                    description: 'Characters involved (2 or more, flexible roles)'
+                },
+                relationship_type: {
+                    type: 'string',
+                    enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
+                    description: 'Type of relationship'
+                },
+                current_dynamic: {
+                    type: 'string',
+                    description: 'Current relationship dynamic/stage'
+                },
+                development_factors: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'What drives development in this relationship'
+                },
+                complexity_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
+                    description: 'Relationship complexity (1=simple, 10=very complex)'
+                }
+            },
+            required: ['plot_thread_id', 'arc_name', 'participants', 'relationship_type']
         }
-    ],
-    fantasy: [
-        {
-            name: 'define_magic_system',
-            description: 'Define or update magic system rules',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    series_id: { type: 'integer', description: 'Series ID' },
-                    magic_type: { type: 'string', description: 'Type of magic system' },
-                    power_source: { type: 'string', description: 'Source of magical power' },
-                    limitations: { 
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'Limitations and costs of magic use'
-                    },
-                    rules: { 
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'Rules governing magic use'
-                    }
+    },
+    {
+        name: 'define_world_system',
+        description: 'Define any systematic supernatural/advanced element with rules and limitations',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                series_id: {
+                    type: 'integer',
+                    description: 'Series ID'
                 },
-                required: ['series_id', 'magic_type']
-            }
-        },
-        {
-            name: 'track_power_progression',
-            description: 'Track character magical power progression',
-            inputSchema: {
-                type: 'object',
-                properties: {
-                    character_id: { type: 'integer', description: 'Character ID' },
-                    book_id: { type: 'integer', description: 'Book ID' },
-                    power_level: { 
-                        type: 'integer', 
-                        minimum: 1, 
-                        maximum: 10,
-                        description: 'Current power level (1-10)'
-                    },
-                    new_abilities: { 
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'New abilities gained'
-                    },
-                    power_cost: { type: 'string', description: 'What character sacrificed for this power' }
+                system_name: {
+                    type: 'string',
+                    description: 'Name of the system'
                 },
-                required: ['character_id', 'book_id', 'power_level']
-            }
+                system_type: {
+                    type: 'string',
+                    enum: ['magic', 'psionics', 'technology', 'divine', 'supernatural', 'mutation', 'alchemy'],
+                    description: 'Type of system'
+                },
+                power_source: {
+                    type: 'string',
+                    description: 'What powers this system'
+                },
+                access_method: {
+                    type: 'string',
+                    description: 'How beings access/use this system'
+                },
+                limitations: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Constraints, costs, and limitations'
+                },
+                system_rules: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Governing rules and principles'
+                },
+                power_scaling: {
+                    type: 'object',
+                    properties: {
+                        lowest_level: { type: 'string' },
+                        highest_level: { type: 'string' },
+                        progression_method: { type: 'string' }
+                    },
+                    description: 'How power levels work'
+                }
+            },
+            required: ['series_id', 'system_name', 'system_type', 'power_source', 'access_method']
         }
-    ]
-};
+    },
+    {
+        name: 'add_reveal_evidence',
+        description: 'Add specific evidence to an information reveal (universal evidence tracking)',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                reveal_id: {
+                    type: 'integer',
+                    description: 'Information reveal ID'
+                },
+                evidence_type: {
+                    type: 'string',
+                    enum: ['physical', 'witness', 'circumstantial', 'digital', 'forensic'],
+                    description: 'Type of evidence'
+                },
+                evidence_description: {
+                    type: 'string',
+                    description: 'Description of the evidence'
+                },
+                discovered_by: {
+                    type: 'integer',
+                    description: 'Character ID who discovered this (optional)'
+                },
+                discovery_chapter: {
+                    type: 'integer',
+                    description: 'Chapter where discovered (optional)'
+                },
+                significance: {
+                    type: 'string',
+                    enum: ['critical', 'important', 'supporting', 'red_herring'],
+                    description: 'Significance of this evidence'
+                }
+            },
+            required: ['reveal_id', 'evidence_type', 'evidence_description']
+        }
+    },
+    {
+        name: 'track_relationship_dynamics',
+        description: 'Track how relationship dynamics change over time',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                arc_id: {
+                    type: 'integer',
+                    description: 'Relationship arc ID'
+                },
+                chapter_id: {
+                    type: 'integer',
+                    description: 'Chapter where change occurs (optional)'
+                },
+                dynamic_change: {
+                    type: 'string',
+                    description: 'Description of how dynamic changed'
+                },
+                tension_change: {
+                    type: 'integer',
+                    minimum: -10,
+                    maximum: 10,
+                    description: 'Change in tension level (-10 to +10)'
+                },
+                change_type: {
+                    type: 'string',
+                    enum: ['emotional', 'power', 'trust', 'commitment', 'conflict'],
+                    description: 'Type of dynamic change'
+                },
+                trigger_event: {
+                    type: 'string',
+                    description: 'What triggered this change'
+                }
+            },
+            required: ['arc_id', 'dynamic_change', 'change_type']
+        }
+    },
+    {
+        name: 'track_system_progression',
+        description: 'Track character progression within a world system',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                character_id: {
+                    type: 'integer',
+                    description: 'Character ID'
+                },
+                system_id: {
+                    type: 'integer',
+                    description: 'World system ID'
+                },
+                book_id: {
+                    type: 'integer',
+                    description: 'Book where progression occurs'
+                },
+                chapter_id: {
+                    type: 'integer',
+                    description: 'Chapter where progression occurs (optional)'
+                },
+                current_power_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
+                    description: 'Current power level'
+                },
+                progression_method: {
+                    type: 'string',
+                    description: 'How they gained this power'
+                },
+                cost_or_sacrifice: {
+                    type: 'string',
+                    description: 'What they sacrificed to gain this power (optional)'
+                }
+            },
+            required: ['character_id', 'system_id', 'book_id', 'current_power_level']
+        }
+    }
+];
+
+// =============================================
+// TROPE SYSTEM TOOL SCHEMAS
+// =============================================
+export const tropeToolsSchema = [
+    {
+        name: 'create_trope',
+        description: 'Create a new trope definition with its scene types',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                series_id: { type: 'integer', description: 'Series ID' },
+                trope_name: { type: 'string', description: 'Name of the trope' },
+                trope_category: { 
+                    type: 'string', 
+                    enum: ['romance_trope', 'character_trope', 'plot_trope'],
+                    description: 'Category of trope'
+                },
+                description: { type: 'string', description: 'Description of the trope' },
+                common_elements: { 
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Common elements that appear in this trope'
+                },
+                typical_trajectory: { type: 'string', description: 'Typical story trajectory for this trope' },
+                scene_types: {
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            scene_function: { type: 'string', description: 'Function of this scene (opening, revelation, obstacle, climax)' },
+                            scene_description: { type: 'string', description: 'Description of what happens in this scene' },
+                            typical_placement: { 
+                                type: 'string', 
+                                enum: ['early', 'middle', 'climax', 'resolution'],
+                                description: 'When this scene typically occurs'
+                            },
+                            required: { type: 'boolean', description: 'Whether this scene is required for the trope' },
+                            narrative_purpose: { type: 'string', description: 'Purpose of this scene in the narrative' },
+                            emotional_beats: { 
+                                type: 'array',
+                                items: { type: 'string' },
+                                description: 'Emotional beats this scene should hit'
+                            }
+                        },
+                        required: ['scene_function', 'scene_description']
+                    },
+                    description: 'Scene types that make up this trope'
+                }
+            },
+            required: ['series_id', 'trope_name', 'trope_category', 'description']
+        }
+    },
+    {
+        name: 'create_trope_instance',
+        description: 'Create an instance of a trope in a specific book',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                trope_id: { type: 'integer', description: 'Trope ID' },
+                book_id: { type: 'integer', description: 'Book ID where trope is implemented' },
+                instance_notes: { type: 'string', description: 'Notes about this specific implementation' },
+                subversion_notes: { type: 'string', description: 'How this instance subverts or varies the trope' },
+                completion_status: {
+                    type: 'string',
+                    enum: ['planned', 'in_progress', 'complete', 'subverted'],
+                    description: 'Current status of trope implementation'
+                }
+            },
+            required: ['trope_id', 'book_id']
+        }
+    },
+    {
+        name: 'implement_trope_scene',
+        description: 'Implement a specific scene type for a trope instance',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                instance_id: { type: 'integer', description: 'Trope instance ID' },
+                scene_type_id: { type: 'integer', description: 'Scene type ID from trope definition' },
+                chapter_id: { type: 'integer', description: 'Chapter where scene occurs' },
+                scene_number: { type: 'integer', description: 'Scene number within chapter' },
+                scene_summary: { type: 'string', description: 'Summary of what happens in this scene' },
+                effectiveness_rating: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
+                    description: 'How effectively this scene implements the trope (1-10)'
+                },
+                variation_notes: { type: 'string', description: 'How this scene varies from the typical implementation' }
+            },
+            required: ['instance_id', 'scene_type_id', 'scene_summary']
+        }
+    },
+    {
+        name: 'analyze_trope_patterns',
+        description: 'Analyze trope usage patterns across a series',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                series_id: { type: 'integer', description: 'Series ID' },
+                trope_category: { 
+                    type: 'string',
+                    enum: ['romance_trope', 'character_trope', 'plot_trope'],
+                    description: 'Filter by trope category (optional)'
+                },
+                analysis_type: {
+                    type: 'string',
+                    enum: ['frequency', 'subversion', 'effectiveness'],
+                    description: 'Type of analysis to perform'
+                }
+            },
+            required: ['series_id']
+        }
+    }
+];
 
 // =============================================
 // LOOKUP SYSTEM TOOL SCHEMAS
