@@ -20,7 +20,7 @@ BEGIN
 
 -- Characters table - core character information
 CREATE TABLE characters (
-    character_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     full_name VARCHAR(500),
@@ -35,8 +35,8 @@ CREATE TABLE characters (
 
 -- Character details - physical and personality traits
 CREATE TABLE character_details (
-    detail_id SERIAL PRIMARY KEY,
-    character_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     category VARCHAR(100) NOT NULL, -- physical, personality, background, skills, etc.
     attribute VARCHAR(100) NOT NULL, -- eye_color, height, temperament, etc.
     value TEXT NOT NULL,
@@ -47,24 +47,24 @@ CREATE TABLE character_details (
     UNIQUE(character_id, category, attribute)
 );
 
--- Character relationships - tracks how characters relate to each other
-CREATE TABLE character_relationships (
-    relationship_id SERIAL PRIMARY KEY,
-    character_a_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
-    character_b_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
-    relationship_type VARCHAR(100) NOT NULL, -- family, romantic, friend, enemy, colleague, etc.
-    relationship_status VARCHAR(50) DEFAULT 'current', -- current, past, complicated
-    description TEXT,
-    established_book_id INTEGER REFERENCES books(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (character_a_id != character_b_id)
-);
+-- -- Character relationships - tracks how characters relate to each other
+-- CREATE TABLE character_relationships (
+--     relationship_id SERIAL PRIMARY KEY,
+--     character_a_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+--     character_b_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+--     relationship_type VARCHAR(100) NOT NULL, -- family, romantic, friend, enemy, colleague, etc.
+--     relationship_status VARCHAR(50) DEFAULT 'current', -- current, past, complicated
+--     description TEXT,
+--     established_book_id INTEGER REFERENCES books(id),
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     CHECK (character_a_id != character_b_id)
+-- );
 
 -- Character arcs - development tracking across books
 CREATE TABLE character_arcs (
-    arc_id SERIAL PRIMARY KEY,
-    character_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
     arc_name VARCHAR(255),
     starting_state TEXT,
@@ -78,8 +78,8 @@ CREATE TABLE character_arcs (
 
 -- Character knowledge - tracks what each character knows and when
 CREATE TABLE character_knowledge (
-    knowledge_id SERIAL PRIMARY KEY,
-    character_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     knowledge_category VARCHAR(100) NOT NULL, -- secret, skill, person, location, event
     knowledge_item VARCHAR(255) NOT NULL,
     knowledge_level VARCHAR(50) DEFAULT 'knows', -- knows, suspects, unaware, forgot
@@ -95,7 +95,7 @@ CREATE TABLE character_knowledge (
 
 -- Core chapters table
 CREATE TABLE chapters (
-    chapter_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
     chapter_number INTEGER NOT NULL,
     title VARCHAR(255), -- "The Discovery", "Into the Night", etc.
@@ -121,7 +121,7 @@ CREATE TABLE chapters (
     story_duration TEXT, -- "2 hours", "3 days", "instant"
     
     -- Narrative structure
-    pov_character_id INTEGER REFERENCES characters(character_id), -- whose POV
+    pov_character_id INTEGER REFERENCES characters(id), -- whose POV
     narrative_style VARCHAR(50), -- first_person, third_limited, third_omniscient
     tense VARCHAR(20), -- present, past, mixed
     
@@ -148,8 +148,8 @@ CREATE TABLE chapters (
 
 -- Chapter scenes - for more granular tracking within chapters
 CREATE TABLE chapter_scenes (
-    scene_id SERIAL PRIMARY KEY,
-    chapter_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    chapter_id INTEGER NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
     scene_number INTEGER NOT NULL, -- 1, 2, 3 within the chapter
     scene_title VARCHAR(255), -- optional scene name
     
@@ -167,7 +167,7 @@ CREATE TABLE chapter_scenes (
     word_count INTEGER DEFAULT 0,
     
     -- Characters in scene
-    pov_character_id INTEGER REFERENCES characters(character_id),
+    pov_character_id INTEGER REFERENCES characters(id),
     scene_participants INTEGER[], -- array of character_ids present
     
     -- Scene notes
@@ -182,9 +182,9 @@ CREATE TABLE chapter_scenes (
 
 -- Character presence in chapters - who appears where
 CREATE TABLE character_chapter_presence (
-    presence_id SERIAL PRIMARY KEY,
-    character_id INTEGER NOT NULL REFERENCES characters(character_id) ON DELETE CASCADE,
-    chapter_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    chapter_id INTEGER NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
     
     -- Type of presence
     presence_type VARCHAR(50) NOT NULL, -- present, mentioned, flashback, dream, phone_call
@@ -245,9 +245,9 @@ CREATE TABLE character_chapter_presence (
 
 -- Chapter plot points - key events that happen (foundation for Plot-Timeline MCP)
 CREATE TABLE chapter_plot_points (
-    plot_point_id SERIAL PRIMARY KEY,
-    chapter_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
-    scene_id INTEGER REFERENCES chapter_scenes(scene_id), -- optional: specific scene
+    id SERIAL PRIMARY KEY,
+    chapter_id INTEGER NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    scene_id INTEGER REFERENCES chapter_scenes(id), -- optional: specific scene
     
     -- Plot point details
     plot_point_type VARCHAR(50), -- inciting_incident, plot_twist, revelation, climax, resolution
@@ -290,10 +290,10 @@ CREATE TRIGGER update_character_details_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-CREATE TRIGGER update_character_relationships_timestamp
-    BEFORE UPDATE ON character_relationships
-    FOR EACH ROW
-    EXECUTE FUNCTION update_timestamp();
+-- CREATE TRIGGER update_character_relationships_timestamp
+--     BEFORE UPDATE ON character_relationships
+--     FOR EACH ROW
+--     EXECUTE FUNCTION update_timestamp();
 
 CREATE TRIGGER update_character_arcs_timestamp
     BEFORE UPDATE ON character_arcs
@@ -340,9 +340,9 @@ CREATE INDEX idx_character_details_character_id ON character_details(character_i
 CREATE INDEX idx_character_details_category ON character_details(category);
 CREATE INDEX idx_character_details_category_attribute ON character_details(character_id, category, attribute);
 
-CREATE INDEX idx_character_relationships_character_a ON character_relationships(character_a_id);
-CREATE INDEX idx_character_relationships_character_b ON character_relationships(character_b_id);
-CREATE INDEX idx_character_relationships_type ON character_relationships(relationship_type);
+-- CREATE INDEX idx_character_relationships_character_a ON character_relationships(character_a_id);
+-- CREATE INDEX idx_character_relationships_character_b ON character_relationships(character_b_id);
+-- CREATE INDEX idx_character_relationships_type ON character_relationships(relationship_type);
 
 CREATE INDEX idx_character_arcs_character_id ON character_arcs(character_id);
 CREATE INDEX idx_character_arcs_book_id ON character_arcs(book_id);
@@ -363,8 +363,10 @@ CREATE INDEX idx_character_chapter_presence_character ON character_chapter_prese
 CREATE INDEX idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
 CREATE INDEX idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
 
---CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
---CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
+
+-- CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
+-- CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
+
 
 CREATE INDEX idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
 CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);
