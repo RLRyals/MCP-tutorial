@@ -7,6 +7,7 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 - Git
 - A code editor (VS Code recommended)
 
+
 ## 🚀 START HERE: Interactive Tutorial Guide
 
 **📖 CLICK TO START:** <a href="https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/vs_code_mcp_tutorial.html" target="_blank">**VS Code MCP Writing Tools Setup Guide**</a>
@@ -14,6 +15,7 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 👆 **Students: Click this link first!** This opens an interactive, step-by-step tutorial that guides you through the entire setup process. It has copy buttons for all commands and works in any browser - no cloning required!
 
 **After cloning the repo:** You can also double-click `open-tutorial.bat` in the project folder to open the same tutorial locally.
+
 
 ## Quick Start
 
@@ -62,6 +64,81 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    ```bash
    node src/shared/run-migration.js 001_create_core_schema.sql
    ```
+6. Switch to the Series Management MCP branch:
+   ```bash
+   git checkout MCP_1_Series_Management
+   ```
+   This branch implements the first Model Context Protocol for managing book series data.
+   Follow the updated instructions in this branch to set up the Series Management functionality.
+
+7. some step I need to jam in here 
+
+8. Run database migrations:
+   ```bash
+   node src/shared/run-migration.js 002_update_series_schema.sql
+   ```
+
+7. **Configure and Test the MCP Servers:**
+
+   **For Claude Desktop Users:**
+   
+   a. Configure Claude Desktop to use your MCP servers:
+   ```bash
+   # Generate configuration files
+   .\scripts\generate-configs.ps1 -Claude
+   ```
+   
+   b. The script will create a `claude-desktop.json` configuration pointing to your MCP servers.
+   Copy the generated configuration to your Claude Desktop config location:
+   - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+   - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+   c. Restart Claude Desktop to load the new MCP servers.
+
+   d. Test the Series MCP by asking Claude:
+   ```
+   "Can you list all the series in my database?"
+   "Create a new series called 'The Starfire Chronicles' by author ID 1"
+   "Show me details for series ID 1"
+   ```
+
+   **For Typing Mind and Web-based Tools:**
+   
+   a. Start the HTTP server for the Series MCP:
+   ```bash
+   # Start the series MCP in HTTP mode
+   node src/mcps/series-server/index.js --http --port 3500
+   ```
+   
+   b. The MCP server will be available at `http://localhost:3500`
+   
+   c. Test the HTTP endpoints:
+   ```bash
+   # Health check
+   curl http://localhost:3500/health
+   
+   # Server info
+   curl http://localhost:3500/info
+   ```
+
+   d. In Typing Mind, configure the MCP connection to point to `http://localhost:3500`
+
+   
+   - **Create Sample Data:** Add some test data to work with
+   ```bash
+   # You can create sample authors and series using the database directly, or
+   # Use Claude Desktop/Typing Mind to test the create_series functionality
+   # Example: "Create a new author named 'Marina Blackwood'" (if you have author MCP)
+   # Then: "Create a series called 'The Crystal Realm Saga' by that author"
+   ```
+
+   **Troubleshooting:**
+   - Ensure Docker Desktop is running and the database is healthy
+   - Check that your `.env` file has the correct `DATABASE_URL` 
+   - Verify Node.js dependencies are installed with `npm install`
+   - For Claude Desktop: Ensure the config file path is correct and restart Claude
+   - For HTTP mode: Check that the port isn't already in use
+   - If you get "Author not found" errors, create some authors first using direct database inserts or author MCP tools
 
 6. Switch to the Series Management MCP branch:
    ```bash
@@ -119,16 +196,52 @@ A simple launcher for quick database startup when Docker Desktop is already runn
 ### `scripts/start-database.bat`
 A batch file alternative for users who prefer .bat files over PowerShell scripts.
 
+## MCP Server Setup
+
+This tutorial demonstrates dual-transport MCP servers that work with both Claude Projects and web-based tools.
+
+### Quick Start Commands
+
+**For Claude Desktop (Recommended):**
+- **Database:** `.\scripts\start-database.ps1` 
+- **MCP Configuration:** Generate and install config with `.\scripts\generate-configs.ps1`
+- **⚠️ Do NOT manually start MCP servers** - Claude Desktop manages them automatically via stdio transport
+
+**For Web Tools (Typing Mind, etc.):**
+```bash
+.\scripts\start-database.ps1                         # Start database first
+node src/mcps/series-server/index.js --http --port 3500  # Start series MCP in HTTP mode
+# Test with: curl http://localhost:3500/health
+```
+
+**Testing Your MCPs:**
+```bash
+# Quick database health check
+node -e "import('./src/shared/database.js').then(({DatabaseManager}) => { const db = new DatabaseManager(); db.healthCheck().then(console.log).finally(() => db.close()); });"
+
+# Test MCP server stdio mode (simulates Claude Desktop)
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | node src/mcps/series-server/index.js
+```
+
+### Available MCP Servers
+
+- **Author Management** - Create and manage authors
+- **Series Management** - Organize book series 
+- **Book Management** - Track individual books
+- **Timeline Management** - Series timeline tracking
+- **Metadata Management** - Flexible metadata storage
+
 ## Tutorial Steps
 
 The tutorial is organized into branches, each representing a different stage of development:
 
 1. `main` - Basic setup and project structure
-2. `character-server` - Implementing the character management server
-3. `world-server` - Adding world-building functionality
-4. `plot-server` - Creating the plot management system
-5. `writing-server` - Implementing writing progress tracking
-6. `research-server` - Adding research management capabilities
+2. `MCP_1_Series_Management` - Core series management MCPs
+3. `Step_2_MCP_character` - Character management system
+4. `Step_3_MCP_plot` - Plot and story structure
+5. `Step_4_MCP_research` - Research and continuity tracking
+6. `Step_5_MCP_writing` - Writing production management
+7. `Step_6_MCP_persona_voice` - AI personas and voice integration
 
 Each branch builds upon the previous one, gradually introducing new concepts and functionality.
 
@@ -138,6 +251,8 @@ For detailed information about the project, please refer to the following docume
 
 - [Core Series Schema](docs/core-series-schema.md)
 - [Project Structure Guide](docs/mcp-tutorial-structure.md)
+- [Dual Transport Setup](docs/dual-transport-setup.md)
+- [MCP Series Management](docs/MCP_1_Series_management.md)
 
 ## License
 

@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "author-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/author-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "book-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/book-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "metadata-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/metadata-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "series-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/series-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "timeline-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/timeline-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    }
+  }
+}

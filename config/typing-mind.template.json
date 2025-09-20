@@ -1,0 +1,22 @@
+[
+  {
+    "serverName": "author-server",
+    "httpUrl": "{{MCP_SERVER_URL}}/author-server"
+  },
+  {
+    "serverName": "series-server", 
+    "httpUrl": "{{MCP_SERVER_URL}}/series-server"
+  },
+  {
+    "serverName": "book-server",
+    "httpUrl": "{{MCP_SERVER_URL}}/book-server"
+  },
+  {
+    "serverName": "timeline-server",
+    "httpUrl": "{{MCP_SERVER_URL}}/timeline-server"
+  },
+  {
+    "serverName": "metadata-server",
+    "httpUrl": "{{MCP_SERVER_URL}}/metadata-server"
+  }
+]

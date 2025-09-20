@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "author-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/author-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "series-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/series-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "book-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/book-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "timeline-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/timeline-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "metadata-server": {
+      "command": "node",
+      "args": [
+        "{{MCP_TUTORIAL_PATH}}/src/mcps/metadata-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "{{NODE_ENV}}",
+        "MCP_STDIO_MODE": "true"
+      }
+    }
+  }
+}
