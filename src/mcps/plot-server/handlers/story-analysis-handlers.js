@@ -206,7 +206,7 @@ export class StoryAnalysisHandlers {
             
             // Check if throughline already exists
             const existingThroughline = await this.db.query(
-                'SELECT throughline_id FROM character_throughlines WHERE book_id = $1 AND character_id = $2 AND throughline_type = $3',
+                'SELECT id FROM character_throughlines WHERE book_id = $1 AND character_id = $2 AND throughline_type = $3',
                 [args.book_id, args.character_id, args.throughline_type]
             );
             
@@ -220,8 +220,8 @@ export class StoryAnalysisHandlers {
                         character_solution = COALESCE($2, character_solution),
                         character_arc = COALESCE($3, character_arc),
                         updated_at = CURRENT_TIMESTAMP
-                    WHERE throughline_id = $4
-                    RETURNING throughline_id, character_problem, character_solution, character_arc, updated_at
+                    WHERE id = $4
+                    RETURNING id, character_problem, character_solution, character_arc, updated_at
                 `;
                 
                 throughlineResult = await this.db.query(updateQuery, [
@@ -239,7 +239,7 @@ export class StoryAnalysisHandlers {
                             book_id, character_id, throughline_type, character_problem,
                             character_solution, character_arc
                         ) VALUES ($1, $2, $3, $4, $5, $6)
-                        RETURNING throughline_id, character_problem, character_solution, character_arc, created_at
+                        RETURNING id, character_problem, character_solution, character_arc, created_at
                     `;
                     
                     throughlineResult = await this.db.query(insertQuery, [
@@ -356,7 +356,7 @@ export class StoryAnalysisHandlers {
                     INSERT INTO story_appreciations (
                         book_id, appreciation_type, appreciation_value, supporting_evidence, confidence_level
                     ) VALUES ($1, $2, $3, $4, $5)
-                    RETURNING appreciation_id, created_at
+                    RETURNING id, created_at
                 `;
                 
                 const result = await this.db.query(insertQuery, [
@@ -377,7 +377,7 @@ export class StoryAnalysisHandlers {
                                   `**Value:** ${args.appreciation_value}\n` +
                                   `**Confidence Level:** ${args.confidence_level || 5}/10\n` +
                                   `${args.supporting_evidence ? `**Evidence:** ${args.supporting_evidence}\n` : ''}` +
-                                  `**Appreciation ID:** ${result.rows[0].appreciation_id}\n` +
+                                  `**Appreciation ID:** ${result.rows[0].id}\n` +
                                   `**Recorded:** ${new Date(result.rows[0].created_at).toLocaleString()}`
                         }
                     ]
@@ -462,7 +462,7 @@ export class StoryAnalysisHandlers {
                     INSERT INTO problem_solutions (
                         book_id, problem, solution, problem_level, effectiveness
                     ) VALUES ($1, $2, $3, $4, $5)
-                    RETURNING mapping_id, created_at
+                    RETURNING id, created_at
                 `;
                 
                 const result = await this.db.query(insertQuery, [
@@ -483,7 +483,7 @@ export class StoryAnalysisHandlers {
                                   `**Problem:** ${args.problem}\n` +
                                   `**Solution:** ${args.solution}\n` +
                                   `**Effectiveness:** ${args.effectiveness || 'unknown'}\n` +
-                                  `**Mapping ID:** ${result.rows[0].mapping_id}\n` +
+                                  `**Mapping ID:** ${result.rows[0].id}\n` +
                                   `**Recorded:** ${new Date(result.rows[0].created_at).toLocaleString()}`
                         }
                     ]

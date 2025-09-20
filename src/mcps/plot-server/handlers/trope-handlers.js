@@ -421,11 +421,11 @@ export class TropeHandlers {
             const instanceResult = await this.db.query(
                 `INSERT INTO trope_instances
                  (trope_id, book_id, instance_notes, subversion_notes, completion_status)
-                 VALUES ($1, $2, $3, $4, $5) RETURNING instance_id`,
+                 VALUES ($1, $2, $3, $4, $5) RETURNING id`,
                 [trope_id, book_id, instance_notes, subversion_notes, completion_status]
             );
             
-            const instanceId = instanceResult.rows[0].instance_id;
+            const instanceId = instanceResult.rows[0].id;
             
             // Get the trope details for the response
             const tropeInfo = validation.rows[0];

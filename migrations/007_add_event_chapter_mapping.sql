@@ -22,9 +22,9 @@ ALTER TABLE timeline_events
 
 -- Create event participants table for many-to-many relationship
 CREATE TABLE IF NOT EXISTS event_participants (
-    participant_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     event_id INTEGER REFERENCES timeline_events(id) ON DELETE CASCADE,
-    character_id INTEGER REFERENCES characters(character_id) ON DELETE CASCADE,
+    character_id INTEGER REFERENCES characters(id) ON DELETE CASCADE,
     role_in_event VARCHAR(100), -- e.g., "witness", "victim", "perpetrator"
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(event_id, character_id)
@@ -36,14 +36,14 @@ CREATE TABLE IF NOT EXISTS event_participants (
 
 -- Maps timeline events to their appearance in chapters
 CREATE TABLE event_chapter_mappings (
-    mapping_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     event_id INTEGER REFERENCES timeline_events(id) ON DELETE CASCADE,
-    chapter_id INTEGER REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
     scene_number INTEGER, -- Optional: specific scene within chapter
     
     -- How the event is presented
     presentation_type VARCHAR(100), -- direct_scene, flashback, memory, reference, foreshadowing, dream, retelling
-    pov_character_id INTEGER REFERENCES characters(character_id), -- Who experiences/relates this event
+    pov_character_id INTEGER REFERENCES characters(id), -- Who experiences/relates this event
     
     -- What portion of the event is shown
     event_aspect VARCHAR(255), -- Which part or perspective of the event is shown
@@ -99,12 +99,12 @@ SELECT
     t.time_period,
     t.significance,
     t.is_public_knowledge,
-    array_agg(c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
-    array_agg(c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
+    array_agg(c.id) FILTER (WHERE c.id IS NOT NULL) AS participant_ids,
+    array_agg(c.name) FILTER (WHERE c.id IS NOT NULL) AS participant_names
 FROM 
     timeline_events t
     LEFT JOIN event_participants ep ON t.id = ep.event_id
-    LEFT JOIN characters c ON ep.character_id = c.character_id
+    LEFT JOIN characters c ON ep.character_id = c.id
 GROUP BY 
     t.id;
 
