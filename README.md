@@ -7,9 +7,15 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 - Git
 - A code editor (VS Code recommended)
 
-## Link to html tutorial guide
 
-📖 **[VS Code MCP Writing Tools Setup Guide](docs/vs_code_mcp_tutorial.html)** - A comprehensive, interactive tutorial guide specifically designed for VS Code users. This HTML guide provides step-by-step instructions with visual aids, code blocks, and troubleshooting tips for setting up your MCP writing tools directly within VS Code.
+## 🚀 START HERE: Interactive Tutorial Guide
+
+**📖 CLICK TO START:** <a href="https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/vs_code_mcp_tutorial.html" target="_blank">**VS Code MCP Writing Tools Setup Guide**</a>
+
+👆 **Students: Click this link first!** This opens an interactive, step-by-step tutorial that guides you through the entire setup process. It has copy buttons for all commands and works in any browser - no cloning required!
+
+**After cloning the repo:** You can also double-click `open-tutorial.bat` in the project folder to open the same tutorial locally.
+
 
 ## Quick Start
 
@@ -133,6 +139,13 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
    - For Claude Desktop: Ensure the config file path is correct and restart Claude
    - For HTTP mode: Check that the port isn't already in use
    - If you get "Author not found" errors, create some authors first using direct database inserts or author MCP tools
+
+6. Switch to the Series Management MCP branch:
+   ```bash
+   git checkout MCP_1_Series_Management
+   ```
+   This branch implements the first Model Context Protocol for managing book series data.
+   Follow the updated instructions in this branch to set up the Series Management functionality.
 
 ## Project Structure
 ```
