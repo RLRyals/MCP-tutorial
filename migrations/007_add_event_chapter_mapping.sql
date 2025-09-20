@@ -11,14 +11,27 @@ BEGIN
     END IF;
 
 -- =============================================
--- TIMELINE EVENTS TABLE ENHANCEMENTS
+-- CREATE TIMELINE EVENTS TABLE
 -- =============================================
 
--- Add new columns to timeline_events table
-ALTER TABLE timeline_events 
-    ADD COLUMN IF NOT EXISTS time_period VARCHAR(100),
-    ADD COLUMN IF NOT EXISTS significance VARCHAR(50) DEFAULT 'minor',
-    ADD COLUMN IF NOT EXISTS is_public_knowledge BOOLEAN DEFAULT TRUE;
+-- Create the timeline_events table with all required columns
+CREATE TABLE timeline_events (
+    id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    event_name VARCHAR(255) NOT NULL,
+    event_description TEXT,
+    event_date DATE,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    sort_order INTEGER DEFAULT 0,
+    time_period VARCHAR(100),
+    significance VARCHAR(50) DEFAULT 'minor',
+    is_public_knowledge BOOLEAN DEFAULT TRUE,
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 
 -- Create event participants table for many-to-many relationship
 CREATE TABLE IF NOT EXISTS event_participants (
@@ -65,6 +78,11 @@ CREATE TRIGGER update_event_chapter_mappings_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+
+CREATE TRIGGER update_timeline_events_timestamp
+    BEFORE UPDATE ON timeline_events
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp();
 -- =============================================
 -- INDICES FOR PERFORMANCE OPTIMIZATION
 -- =============================================
@@ -82,6 +100,16 @@ CREATE INDEX IF NOT EXISTS idx_timeline_events_public ON timeline_events(is_publ
 
 CREATE INDEX IF NOT EXISTS idx_event_participants_event_id ON event_participants(event_id);
 CREATE INDEX IF NOT EXISTS idx_event_participants_character_id ON event_participants(character_id);
+
+-- Primary indices for foreign keys and common queries
+CREATE INDEX idx_timeline_events_series_id ON timeline_events(series_id);
+CREATE INDEX idx_timeline_events_book_id ON timeline_events(book_id);
+CREATE INDEX idx_timeline_events_event_date ON timeline_events(event_date);
+CREATE INDEX idx_timeline_events_sort_order ON timeline_events(sort_order);
+CREATE INDEX idx_timeline_events_time_period ON timeline_events(time_period);
+CREATE INDEX idx_timeline_events_significance ON timeline_events(significance);
+CREATE INDEX idx_timeline_events_public ON timeline_events(is_public_knowledge);
+
 
 -- =============================================
 -- VIEWS FOR COMMON QUERIES
