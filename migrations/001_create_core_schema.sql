@@ -13,17 +13,17 @@ CREATE TABLE IF NOT EXISTS migrations (
 
 -- Authors table
 CREATE TABLE authors (
-    author_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Series table - the top-level container for all content
 CREATE TABLE series (
-    series_id SERIAL PRIMARY KEY,
-    author_id INTEGER NOT NULL REFERENCES authors(author_id) ON DELETE RESTRICT,
+    id SERIAL PRIMARY KEY,
+    author_id INTEGER NOT NULL REFERENCES authors(id) ON DELETE RESTRICT,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     genre VARCHAR(100),
@@ -34,8 +34,8 @@ CREATE TABLE series (
 
 -- Books table - individual books within a series
 CREATE TABLE books (
-    book_id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     book_number INTEGER,
     status VARCHAR(50) DEFAULT 'planned', -- planned, in_progress, draft, editing, published
@@ -48,8 +48,8 @@ CREATE TABLE books (
 
 -- Series timeline - master timeline for the series
 CREATE TABLE series_timeline (
-    timeline_id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -58,8 +58,8 @@ CREATE TABLE series_timeline (
 
 -- Series metadata - flexible metadata storage for series-level information
 CREATE TABLE series_metadata (
-    metadata_id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
     key VARCHAR(100) NOT NULL,
     value TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
