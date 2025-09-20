@@ -8,9 +8,9 @@ This document outlines the essential database schema for the main branch of the 
 Authors (including pen names) who create series.
 ```sql
 CREATE TABLE authors (
-    id SERIAL PRIMARY KEY,
+    author_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
+    email VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -20,8 +20,8 @@ CREATE TABLE authors (
 The top-level container for all content.
 ```sql
 CREATE TABLE series (
-    id SERIAL PRIMARY KEY,
-    author_id INTEGER NOT NULL REFERENCES authors(id) ON DELETE RESTRICT,
+    series_id SERIAL PRIMARY KEY,
+    author_id INTEGER NOT NULL REFERENCES authors(author_id) ON DELETE RESTRICT,
     title VARCHAR(255) NOT NULL,
 
     description TEXT,
@@ -36,8 +36,8 @@ CREATE TABLE series (
 Individual books within a series.
 ```sql
 CREATE TABLE books (
-    id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    book_id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     book_number INTEGER,
     status VARCHAR(50) DEFAULT 'planned', -- planned, in_progress, draft, editing, published
@@ -55,8 +55,8 @@ CREATE TABLE books (
 Master timeline for the series.
 ```sql
 CREATE TABLE series_timeline (
-    id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    timeline_id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -68,8 +68,8 @@ CREATE TABLE series_timeline (
 Flexible metadata storage for series-level information.
 ```sql
 CREATE TABLE series_metadata (
-    id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    metadata_id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(series_id) ON DELETE CASCADE,
     key VARCHAR(100) NOT NULL,
     value TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

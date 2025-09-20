@@ -1,4 +1,3 @@
-
 -- Initialize database with any required setup
 -- This file will be run when the PostgreSQL container first starts
 
@@ -11,4 +10,3 @@ SET timezone = 'UTC';
 -- You can add more initialization commands here as needed
 
 SELECT 'Database initialization complete' as status;
-
