@@ -249,7 +249,7 @@ export class ChapterHandlers {
                     story_time_end, story_duration, author_notes } = args;
             
             // Check if chapter number already exists in this book
-            const checkQuery = 'SELECT chapter_id FROM chapters WHERE book_id = $1 AND chapter_number = $2';
+            const checkQuery = 'SELECT id FROM chapters WHERE book_id = $1 AND chapter_number = $2';
             const checkResult = await this.db.query(checkQuery, [book_id, chapter_number]);
             
             if (checkResult.rows.length > 0) {
@@ -345,7 +345,7 @@ export class ChapterHandlers {
             const query = `
                 UPDATE chapters 
                 SET ${updateFields.join(', ')}
-                WHERE chapter_id = $1
+                WHERE id = $1
                 RETURNING *
             `;
             
@@ -396,8 +396,8 @@ export class ChapterHandlers {
                        ch.name as pov_character_name
                 FROM chapters c
                 JOIN books b ON c.book_id = b.id
-                LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
-                WHERE c.chapter_id = $1
+                LEFT JOIN characters ch ON c.pov_character_id = ch.id
+                WHERE c.id = $1
             `;
             
             const result = await this.db.query(query, [chapter_id]);
@@ -462,7 +462,7 @@ export class ChapterHandlers {
 
             if (include_scenes) {
                 const scenesQuery = `
-                    SELECT scene_id, scene_number, scene_title, word_count, location
+                    SELECT id, scene_number, scene_title, word_count, location
                     FROM chapter_scenes 
                     WHERE chapter_id = $1 
                     ORDER BY scene_number
@@ -487,7 +487,7 @@ export class ChapterHandlers {
                     SELECT ch.name, ccp.presence_type, ccp.importance_level, 
                            ccp.physical_state, ccp.emotional_state
                     FROM character_chapter_presence ccp
-                    JOIN characters ch ON ccp.character_id = ch.character_id
+                    JOIN characters ch ON ccp.character_id = ch.id
                     WHERE ccp.chapter_id = $1
                     ORDER BY ccp.importance_level, ch.name
                 `;
@@ -528,7 +528,7 @@ export class ChapterHandlers {
             let query = `
                 SELECT c.*, ch.name as pov_character_name
                 FROM chapters c
-                LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+                LEFT JOIN characters ch ON c.pov_character_id = ch.id
                 WHERE c.book_id = $1
             `;
             
@@ -621,10 +621,10 @@ export class ChapterHandlers {
             // Get chapter info before deletion
             const chapterQuery = `
                 SELECT c.chapter_number, c.title, b.title as book_title,
-                       (SELECT COUNT(*) FROM chapter_scenes WHERE chapter_id = c.chapter_id) as scene_count
+                       (SELECT COUNT(*) FROM chapter_scenes WHERE id = c.id) as scene_count
                 FROM chapters c 
                 JOIN books b ON c.book_id = b.id
-                WHERE c.chapter_id = $1
+                WHERE c.id = $1
             `;
             const chapterResult = await this.db.query(chapterQuery, [chapter_id]);
             
@@ -640,7 +640,7 @@ export class ChapterHandlers {
             const chapterInfo = chapterResult.rows[0];
             
             // Delete the chapter (cascade will handle scenes and character presence)
-            const deleteQuery = 'DELETE FROM chapters WHERE chapter_id = $1 RETURNING *';
+            const deleteQuery = 'DELETE FROM chapters WHERE id = $1 RETURNING *';
             await this.db.query(deleteQuery, [chapter_id]);
             
             return {
@@ -657,6 +657,7 @@ export class ChapterHandlers {
         }
     }
 
+
     // async handleReorderChapters(args) {
     //     try {
     //         const { book_id, chapter_order } = args;
@@ -670,6 +671,7 @@ export class ChapterHandlers {
     //                 WHERE book_id = $1 AND chapter_id = ANY($2)
     //             `;
     //             const verifyResult = await client.query(verifyQuery, [book_id, chapterIds]);
+
                 
     //             if (verifyResult.rows.length !== chapter_order.length) {
     //                 throw new Error('One or more chapters do not belong to the specified book');
@@ -682,6 +684,7 @@ export class ChapterHandlers {
     //                 throw new Error('Duplicate chapter numbers detected in reorder request');
     //             }
                 
+
     //             // Update each chapter's number
     //             const updates = [];
     //             for (const item of chapter_order) {
@@ -694,6 +697,7 @@ export class ChapterHandlers {
     //                 const updateResult = await client.query(updateQuery, [item.new_chapter_number, item.chapter_id]);
     //                 updates.push(updateResult.rows[0]);
     //             }
+
                 
     //             // Get book title for response
     //             const bookQuery = 'SELECT title FROM books WHERE id = $1';
@@ -742,7 +746,7 @@ export class ChapterHandlers {
                 SELECT c.*, b.title as book_title
                 FROM chapters c
                 JOIN books b ON c.book_id = b.id
-                WHERE c.chapter_id = $1
+                WHERE c.id = $1
             `;
             const result = await this.db.query(query, [chapter_id]);
             return result.rows[0] || null;
@@ -756,7 +760,7 @@ export class ChapterHandlers {
             const query = `
                 UPDATE chapters 
                 SET word_count = $2, updated_at = CURRENT_TIMESTAMP 
-                WHERE chapter_id = $1 
+                WHERE id = $1 
                 RETURNING word_count, book_id
             `;
             const result = await this.db.query(query, [chapter_id, new_word_count]);
@@ -768,7 +772,7 @@ export class ChapterHandlers {
 
     async getChapterIdByBookAndNumber(book_id, chapter_number) {
         try {
-            const query = 'SELECT chapter_id FROM chapters WHERE book_id = $1 AND chapter_number = $2';
+            const query = 'SELECT id FROM chapters WHERE book_id = $1 AND chapter_number = $2';
             const result = await this.db.query(query, [book_id, chapter_number]);
             return result.rows[0]?.chapter_id || null;
         } catch (error) {

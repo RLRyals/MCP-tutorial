@@ -5,8 +5,8 @@ BEGIN;
 DO $$
 BEGIN
     -- Check if migration was already applied
-    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '005.sql') THEN
-        RAISE NOTICE 'Migration 005.sql already applied, skipping.';
+    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '005_update_author_email_constraint.sql') THEN
+        RAISE NOTICE 'Migration 005_update_author_email_constraint.sql already applied, skipping.';
         RETURN;
     END IF;
 
@@ -17,7 +17,7 @@ ALTER TABLE authors
     DROP CONSTRAINT IF EXISTS authors_email_key;
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('005.sql');
+    INSERT INTO migrations (filename) VALUES ('005_update_author_email_constraint.sql');
 
 END
 $$;

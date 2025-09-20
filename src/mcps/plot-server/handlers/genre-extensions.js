@@ -8,6 +8,7 @@ export class GenreExtensions {
         this.db = db;
     }
     
+
     getUniversalGenreTools() {
         return [
             {
@@ -383,6 +384,7 @@ export class GenreExtensions {
                 throw new Error('One or more characters not found');
             }
             
+
             // Create the relationship arc
             const insertQuery = `
                 INSERT INTO relationship_arcs (
@@ -423,6 +425,7 @@ export class GenreExtensions {
                     }
                 ]
             };
+
             
         } catch (error) {
             throw new Error(`Failed to create relationship arc: ${error.message}`);

@@ -19,7 +19,7 @@ BEGIN
 
 -- Base genres (foundation for all genre-specific work)
 CREATE TABLE genres (
-    genre_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     genre_name VARCHAR(50) NOT NULL UNIQUE,
     genre_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -28,7 +28,7 @@ CREATE TABLE genres (
 
 -- Plot thread types (dynamic, not hardcoded)
 CREATE TABLE plot_thread_types (
-    type_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     type_name VARCHAR(50) NOT NULL UNIQUE,
     type_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -37,7 +37,7 @@ CREATE TABLE plot_thread_types (
 
 -- Plot thread statuses (dynamic, not hardcoded)  
 CREATE TABLE plot_thread_statuses (
-    status_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     status_name VARCHAR(50) NOT NULL UNIQUE,
     status_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -46,7 +46,7 @@ CREATE TABLE plot_thread_statuses (
 
 -- Relationship types (dynamic, not hardcoded)
 CREATE TABLE relationship_types (
-    relationship_type_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     type_name VARCHAR(50) NOT NULL UNIQUE,
     type_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -55,7 +55,7 @@ CREATE TABLE relationship_types (
 
 -- Story concerns (Dramatica-inspired, expandable)
 CREATE TABLE story_concerns (
-    concern_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     concern_name VARCHAR(100) NOT NULL UNIQUE,
     concern_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -64,7 +64,7 @@ CREATE TABLE story_concerns (
 
 -- Story outcomes (expandable)
 CREATE TABLE story_outcomes (
-    outcome_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     outcome_name VARCHAR(50) NOT NULL UNIQUE,
     outcome_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -73,7 +73,7 @@ CREATE TABLE story_outcomes (
 
 -- Story judgments (expandable)
 CREATE TABLE story_judgments (
-    judgment_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     judgment_name VARCHAR(50) NOT NULL UNIQUE,
     judgment_description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
@@ -86,13 +86,13 @@ CREATE TABLE story_judgments (
 
 -- Plot threads - story arcs, subplots, character arcs
 CREATE TABLE plot_threads (
-    thread_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     
     -- Thread categorization (using lookup tables)
-    thread_type_id INTEGER REFERENCES plot_thread_types(type_id),
+    thread_type_id INTEGER REFERENCES plot_thread_types(id),
     importance_level INTEGER DEFAULT 5 CHECK (importance_level >= 1 AND importance_level <= 10),
     complexity_level INTEGER DEFAULT 5 CHECK (complexity_level >= 1 AND complexity_level <= 10),
     
@@ -102,7 +102,7 @@ CREATE TABLE plot_threads (
     current_status_id INTEGER DEFAULT 1 REFERENCES plot_thread_statuses(status_id),
     
     -- Thread relationships
-    parent_thread_id INTEGER REFERENCES plot_threads(thread_id),
+    parent_thread_id INTEGER REFERENCES plot_threads(id),
     related_characters INTEGER[],
     
     -- Resolution tracking
@@ -118,11 +118,11 @@ CREATE TABLE plot_threads (
 
 -- Plot thread relationships (using lookup table)
 CREATE TABLE plot_thread_relationships (
-    relationship_id SERIAL PRIMARY KEY,
-    thread_a_id INTEGER NOT NULL REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
-    thread_b_id INTEGER NOT NULL REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
+    id SERIAL PRIMARY KEY,
+    thread_a_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
+    thread_b_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
     
-    relationship_type_id INTEGER NOT NULL REFERENCES relationship_types(relationship_type_id),
+    relationship_type_id INTEGER NOT NULL REFERENCES relationship_types(id),
     relationship_description TEXT,
     strength INTEGER DEFAULT 5 CHECK (strength >= 1 AND strength <= 10),
     
@@ -139,15 +139,15 @@ CREATE TABLE plot_thread_relationships (
 
 -- Core story analysis table for Dramatica-inspired flexible analysis
 CREATE TABLE story_analysis (
-    analysis_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
     
     -- Dramatica elements (using lookup tables)
-    story_concern_id INTEGER REFERENCES story_concerns(concern_id),
+    story_concern_id INTEGER REFERENCES story_concerns(id),
     main_character_problem TEXT,
     influence_character_impact TEXT,
-    story_outcome_id INTEGER REFERENCES story_outcomes(outcome_id),
-    story_judgment_id INTEGER REFERENCES story_judgments(judgment_id),
+    story_outcome_id INTEGER REFERENCES story_outcomes(id),
+    story_judgment_id INTEGER REFERENCES story_judgments(id),
     thematic_elements JSONB,
     
     -- General analysis notes
@@ -158,45 +158,45 @@ CREATE TABLE story_analysis (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- =============================================
--- GENRE-SPECIFIC TABLES (CONDITIONALLY CREATED)
--- =============================================
--- These are created only when needed by genre extensions
+-- -- =============================================
+-- -- GENRE-SPECIFIC TABLES (CONDITIONALLY CREATED)
+-- -- =============================================
+-- -- These are created only when needed by genre extensions
 
--- Mystery genre support
-CREATE TABLE IF NOT EXISTS detective_cases (
-    case_id SERIAL PRIMARY KEY,
-    plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
-    case_name VARCHAR(255),
-    victim_info TEXT,
-    suspects JSONB,
-    timeline_events JSONB,
-    case_status VARCHAR(50) DEFAULT 'open',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- -- Mystery genre support
+-- CREATE TABLE IF NOT EXISTS detective_cases (
+--     case_id SERIAL PRIMARY KEY,
+--     plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
+--     case_name VARCHAR(255),
+--     victim_info TEXT,
+--     suspects JSONB,
+--     timeline_events JSONB,
+--     case_status VARCHAR(50) DEFAULT 'open',
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
--- Romance genre support  
-CREATE TABLE IF NOT EXISTS romance_arcs (
-    arc_id SERIAL PRIMARY KEY,
-    plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
-    character_a_id INTEGER REFERENCES characters(character_id),
-    character_b_id INTEGER REFERENCES characters(character_id),
-    relationship_stage VARCHAR(100),
-    tension_level INTEGER CHECK (tension_level BETWEEN 1 AND 10),
-    obstacles TEXT[],
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- -- Romance genre support  
+-- CREATE TABLE IF NOT EXISTS romance_arcs (
+--     arc_id SERIAL PRIMARY KEY,
+--     plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
+--     character_a_id INTEGER REFERENCES characters(character_id),
+--     character_b_id INTEGER REFERENCES characters(character_id),
+--     relationship_stage VARCHAR(100),
+--     tension_level INTEGER CHECK (tension_level BETWEEN 1 AND 10),
+--     obstacles TEXT[],
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
--- Fantasy genre support
-CREATE TABLE IF NOT EXISTS magic_systems (
-    magic_system_id SERIAL PRIMARY KEY,
-    series_id INTEGER REFERENCES series(id) ON DELETE CASCADE,
-    magic_type VARCHAR(100),
-    power_source TEXT,
-    limitations TEXT[],
-    rules TEXT[],
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- -- Fantasy genre support
+-- CREATE TABLE IF NOT EXISTS magic_systems (
+--     magic_system_id SERIAL PRIMARY KEY,
+--     series_id INTEGER REFERENCES series(id) ON DELETE CASCADE,
+--     magic_type VARCHAR(100),
+--     power_source TEXT,
+--     limitations TEXT[],
+--     rules TEXT[],
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 -- =============================================
 -- TRIGGERS FOR AUTOMATIC TIMESTAMP UPDATES
@@ -230,7 +230,7 @@ CREATE INDEX idx_plot_thread_statuses_name ON plot_thread_statuses(status_name);
 CREATE INDEX idx_relationship_types_name ON relationship_types(type_name);
 
 -- Plot thread indices
-CREATE INDEX idx_plot_threads_series_id ON plot_threads(series_id);
+CREATE INDEX idx_plot_threads_series_id ON plot_threads(id);
 CREATE INDEX idx_plot_threads_type_status ON plot_threads(thread_type_id, current_status_id);
 CREATE INDEX idx_plot_threads_books ON plot_threads(start_book, end_book);
 CREATE INDEX idx_plot_threads_parent ON plot_threads(parent_thread_id);
@@ -245,10 +245,10 @@ CREATE INDEX idx_story_analysis_book_id ON story_analysis(book_id);
 CREATE INDEX idx_story_analysis_concern ON story_analysis(story_concern_id);
 
 -- Genre-specific indices
-CREATE INDEX idx_detective_cases_plot_thread ON detective_cases(plot_thread_id);
-CREATE INDEX idx_romance_arcs_plot_thread ON romance_arcs(plot_thread_id);
-CREATE INDEX idx_romance_arcs_characters ON romance_arcs(character_a_id, character_b_id);
-CREATE INDEX idx_magic_systems_series ON magic_systems(series_id);
+-- CREATE INDEX idx_detective_cases_plot_thread ON detective_cases(plot_thread_id);
+-- CREATE INDEX idx_romance_arcs_plot_thread ON romance_arcs(plot_thread_id);
+-- CREATE INDEX idx_romance_arcs_characters ON romance_arcs(character_a_id, character_b_id);
+-- CREATE INDEX idx_magic_systems_series ON magic_systems(series_id);
 
 -- =============================================
 -- INITIAL LOOKUP DATA

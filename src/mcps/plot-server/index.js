@@ -13,14 +13,16 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 import { BaseMCPServer } from '../../shared/base-server.js';
 import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
 import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
-import { GenreExtensions } from './handlers/genre-extensions.js';
+// import { GenreExtensions } from './handlers/genre-extensions.js';
 import { TropeHandlers } from './handlers/trope-handlers.js'; 
 import { 
     lookupSystemToolsSchema, 
     plotThreadToolsSchema, 
+
     storyAnalysisToolsSchema,
     genreExtensionToolsSchema,
     tropeToolsSchema 
+
 } from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
@@ -42,8 +44,8 @@ class PlotMCPServer extends BaseMCPServer {
             this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
             console.error('[PLOT-SERVER] Story analysis handlers initialized');
             
-            this.genreExtensions = new GenreExtensions(this.db);
-            console.error('[PLOT-SERVER] Genre extensions initialized');
+            // this.genreExtensions = new GenreExtensions(this.db);
+            // console.error('[PLOT-SERVER] Genre extensions initialized');
 
             this.tropeHandlers = new TropeHandlers(this.db);
             console.error('[PLOT-SERVER] Trope handlers initialized');
@@ -95,6 +97,7 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleAddRevealEvidence = this.genreExtensions.handleAddRevealEvidence.bind(this.genreExtensions);
             this.handleTrackRelationshipDynamics = this.genreExtensions.handleTrackRelationshipDynamics.bind(this.genreExtensions);
             this.handleTrackSystemProgression = this.genreExtensions.handleTrackSystemProgression.bind(this.genreExtensions);
+
             
             // Bind trope handler methods
             this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);
@@ -149,11 +152,13 @@ class PlotMCPServer extends BaseMCPServer {
                 // Story analysis tools  
                 ...storyAnalysisToolsSchema,
                 
+
                 // Trope system tools
                 ...tropeToolsSchema,
 
                 //Universal genre tools
                 ...genreExtensionToolsSchema
+
             ];
             
             console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);

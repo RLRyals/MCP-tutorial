@@ -86,13 +86,13 @@ CREATE TABLE organizations (
 -- ========================================
 
 CREATE TABLE world_element_usage (
-    usage_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     element_type VARCHAR(50) NOT NULL, -- location, world_element, organization
     element_id INTEGER NOT NULL,
     
     -- Story context
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
-    chapter_id INTEGER REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
     
     -- Usage details
     usage_notes TEXT,
