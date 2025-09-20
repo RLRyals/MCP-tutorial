@@ -748,7 +748,7 @@ export class SceneHandlers {
                         UPDATE chapter_scenes 
                         SET scene_number = $1, updated_at = CURRENT_TIMESTAMP 
                         WHERE id = $2
-                        RETURNING scene_id, scene_number, scene_title
+                        RETURNING id, scene_number, scene_title
                     `;
                     const updateResult = await client.query(updateQuery, [item.new_scene_number, item.scene_id]);
                     updates.push(updateResult.rows[0]);
