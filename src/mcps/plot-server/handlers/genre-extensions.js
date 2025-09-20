@@ -315,7 +315,7 @@ export class GenreExtensions {
                     significance_level, affects_characters, revealed_in_chapter,
                     consequences, foreshadowing_chapters
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-                RETURNING reveal_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -337,7 +337,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `Information reveal created!\n\n` +
-                              `**Reveal ID:** ${result.rows[0].reveal_id}\n` +
+                              `**Reveal ID:** ${result.rows[0].id}\n` +
                               `**Type:** ${args.reveal_type}\n` +
                               `**Information:** ${args.information_content}\n` +
                               `**Method:** ${args.reveal_method}\n` +
@@ -389,7 +389,7 @@ export class GenreExtensions {
                     plot_thread_id, arc_name, participants, relationship_type,
                     current_dynamic, development_factors, complexity_level
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING arc_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -410,7 +410,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `Relationship arc created!\n\n` +
-                              `**Arc ID:** ${result.rows[0].arc_id}\n` +
+                              `**Arc ID:** ${result.rows[0].id}\n` +
                               `**Arc Name:** ${args.arc_name}\n` +
                               `**Type:** ${args.relationship_type}\n` +
                               `**Characters:** ${characterNames.join(', ')}\n` +
@@ -451,7 +451,7 @@ export class GenreExtensions {
                     series_id, system_name, system_type, power_source,
                     access_method, limitations, system_rules, power_scaling
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                RETURNING system_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -472,7 +472,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `World system defined!\n\n` +
-                              `**System ID:** ${result.rows[0].system_id}\n` +
+                              `**System ID:** ${result.rows[0].id}\n` +
                               `**System Name:** ${args.system_name}\n` +
                               `**Type:** ${args.system_type}\n` +
                               `**Power Source:** ${args.power_source}\n` +
@@ -513,7 +513,7 @@ export class GenreExtensions {
                     reveal_id, evidence_type, evidence_description,
                     discovered_by, discovery_chapter, significance
                 ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING evidence_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -530,7 +530,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `Evidence added to information reveal!\n\n` +
-                              `**Evidence ID:** ${result.rows[0].evidence_id}\n` +
+                              `**Evidence ID:** ${result.rows[0].id}\n` +
                               `**Type:** ${args.evidence_type}\n` +
                               `**Description:** ${args.evidence_description}\n` +
                               `**Significance:** ${args.significance || 'supporting'}\n` +
@@ -563,7 +563,7 @@ export class GenreExtensions {
                     arc_id, chapter_id, dynamic_change, tension_change,
                     change_type, trigger_event
                 ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING dynamic_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -582,7 +582,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `Relationship dynamics tracked!\n\n` +
-                              `**Dynamic ID:** ${result.rows[0].dynamic_id}\n` +
+                              `**Dynamic ID:** ${result.rows[0].id}\n` +
                               `**Arc:** "${arc.arc_name}"\n` +
                               `**Change Type:** ${args.change_type}\n` +
                               `**Dynamic Change:** ${args.dynamic_change}\n` +
@@ -628,7 +628,7 @@ export class GenreExtensions {
                     character_id, system_id, book_id, chapter_id,
                     current_power_level, progression_method, cost_or_sacrifice
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING progression_id, created_at
+                RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
@@ -646,7 +646,7 @@ export class GenreExtensions {
                     {
                         type: 'text',
                         text: `System progression tracked!\n\n` +
-                              `**Progression ID:** ${result.rows[0].progression_id}\n` +
+                              `**Progression ID:** ${result.rows[0].id}\n` +
                               `**Character:** ${character.name}\n` +
                               `**System:** ${system.system_name}\n` +
                               `**Book:** "${book.title}"\n` +
