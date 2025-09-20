@@ -66,7 +66,7 @@ class BookMCPServer extends BaseMCPServer {
         this.handleGetChapter = this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers);
         this.handleListChapters = this.chapterHandlers.handleListChapters.bind(this.chapterHandlers);
         this.handleDeleteChapter = this.chapterHandlers.handleDeleteChapter.bind(this.chapterHandlers);
-        this.handleReorderChapters = this.chapterHandlers.handleReorderChapters.bind(this.chapterHandlers);
+        //this.handleReorderChapters = this.chapterHandlers.handleReorderChapters.bind(this.chapterHandlers);
         
         // Bind scene handler methods (when scene handlers are implemented)
         // this.handleCreateScene = this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers);
@@ -127,7 +127,7 @@ class BookMCPServer extends BaseMCPServer {
             'get_chapter': this.handleGetChapter,
             'list_chapters': this.handleListChapters,
             'delete_chapter': this.handleDeleteChapter,
-            'reorder_chapters': this.handleReorderChapters,
+            //'reorder_chapters': this.handleReorderChapters,
             
             // Scene Management Handlers (when implemented)
             // 'create_scene': this.handleCreateScene,

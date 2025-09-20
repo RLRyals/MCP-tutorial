@@ -391,33 +391,34 @@ export const chapterToolsSchema = [
             },
             required: ['chapter_id', 'confirm_deletion']
         }
-    },
-    {
-        name: 'reorder_chapters',
-        description: 'Reorder chapters within a book by updating chapter numbers',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                book_id: {
-                    type: 'integer',
-                    description: 'ID of the book'
-                },
-                chapter_order: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            chapter_id: { type: 'integer' },
-                            new_chapter_number: { type: 'integer' }
-                        },
-                        required: ['chapter_id', 'new_chapter_number']
-                    },
-                    description: 'Array of chapter IDs and their new chapter numbers'
-                }
-            },
-            required: ['book_id', 'chapter_order']
-        }
     }
+    //,
+    // {
+    //     name: 'reorder_chapters',
+    //     description: 'Reorder chapters within a book by updating chapter numbers',
+    //     inputSchema: {
+    //         type: 'object',
+    //         properties: {
+    //             book_id: {
+    //                 type: 'integer',
+    //                 description: 'ID of the book'
+    //             },
+    //             chapter_order: {
+    //                 type: 'array',
+    //                 items: {
+    //                     type: 'object',
+    //                     properties: {
+    //                         chapter_id: { type: 'integer' },
+    //                         new_chapter_number: { type: 'integer' }
+    //                     },
+    //                     required: ['chapter_id', 'new_chapter_number']
+    //                 },
+    //                 description: 'Array of chapter IDs and their new chapter numbers'
+    //             }
+    //         },
+    //         required: ['book_id', 'chapter_order']
+    //     }
+    // }
 ];
 
 // =============================================
