@@ -340,7 +340,7 @@ export class BookHandlers {
 
             if (include_chapters) {
                 const chaptersQuery = `
-                    SELECT chapter_id, chapter_number, title, word_count, status
+                    SELECT id, chapter_number, title, word_count, status
                     FROM chapters 
                     WHERE book_id = $1 
                     ORDER BY chapter_number

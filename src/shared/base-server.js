@@ -7,10 +7,16 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ 
-    path: 'C:/github/MCP-tutorial/.env',
-    silent: true , debug: false, quiet: true
+    path: path.resolve(__dirname, '../../.env'),
+    silent: true,
+    debug: false,
+    quiet: true
 });
 
 if (!process.env.DATABASE_URL) {
