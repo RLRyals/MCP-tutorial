@@ -9,8 +9,8 @@ BEGIN;
 DO $$
 BEGIN
     -- Check if migration was already applied
-    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '003_add_character_and_chapter_schema.sql') THEN
-        RAISE NOTICE 'Migration 003_add_character_and_chapter_schema.sql already applied, skipping.';
+    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '003_add_character_schema.sql') THEN
+        RAISE NOTICE 'Migration 003_add_character_schema.sql already applied, skipping.';
         RETURN;
     END IF;
 
@@ -371,7 +371,7 @@ CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type
 CREATE INDEX idx_chapter_plot_points_scene ON chapter_plot_points(scene_id);
 
     -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('003_add_character_and_chapter_schema.sql');
+    INSERT INTO migrations (filename) VALUES ('003_add_character_schema.sql');
 
 END
 $$;
