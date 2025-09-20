@@ -691,8 +691,8 @@ class CharacterMCPServer extends BaseMCPServer {
             let query = `
                 SELECT cd.*, c.name as character_name, b.title as source_book_title
                 FROM character_details cd
-                JOIN characters c ON cd.character_id = c.character_id
-                LEFT JOIN books b ON cd.source_book_id = b.book_id
+                JOIN characters c ON cd.character_id = c.id
+                LEFT JOIN books b ON cd.source_book_id = b.id
                 WHERE cd.character_id = $1
             `;
             const params = [character_id];
@@ -774,8 +774,8 @@ class CharacterMCPServer extends BaseMCPServer {
             let query = `
                 SELECT ck.*, c.name as character_name, b.title as learned_book_title
                 FROM character_knowledge ck
-                JOIN characters c ON ck.character_id = c.character_id
-                LEFT JOIN books b ON ck.learned_book_id = b.book_id
+                JOIN characters c ON ck.character_id = c.id
+                LEFT JOIN books b ON ck.learned_book_id = b.id
                 WHERE ck.character_id = $1
             `;
             const params = [character_id];
@@ -834,8 +834,8 @@ class CharacterMCPServer extends BaseMCPServer {
             let query = `
                 SELECT ck.*, c.name as character_name, b.title as learned_book_title
                 FROM character_knowledge ck
-                JOIN characters c ON ck.character_id = c.character_id
-                LEFT JOIN books b ON ck.learned_book_id = b.book_id
+                JOIN characters c ON ck.character_id = c.id
+                LEFT JOIN books b ON ck.learned_book_id = b.id
                 WHERE c.series_id = $1 AND ck.knowledge_item ILIKE $2
             `;
             const params = [series_id, `%${knowledge_item}%`];
@@ -947,8 +947,8 @@ class CharacterMCPServer extends BaseMCPServer {
                     ccp.learns_this_chapter,
                     ccp.reveals_this_chapter
                 FROM character_chapter_presence ccp
-                JOIN chapters c ON ccp.chapter_id = c.chapter_id
-                JOIN books b ON c.book_id = b.book_id
+                JOIN chapters c ON ccp.chapter_id = c.id
+                JOIN books b ON c.book_id = b.id
                 WHERE ccp.character_id = $1
             `;
             
@@ -1013,7 +1013,7 @@ class CharacterMCPServer extends BaseMCPServer {
             const fromResult = await this.db.query(
                 `SELECT ccp.*, c.chapter_number as from_chapter, c.title as from_title
                  FROM character_chapter_presence ccp
-                 JOIN chapters c ON ccp.chapter_id = c.chapter_id
+                 JOIN chapters c ON ccp.chapter_id = c.id
                  WHERE ccp.character_id = $1 AND ccp.chapter_id = $2`,
                 [character_id, from_chapter_id]
             );
@@ -1021,7 +1021,7 @@ class CharacterMCPServer extends BaseMCPServer {
             const toResult = await this.db.query(
                 `SELECT ccp.*, c.chapter_number as to_chapter, c.title as to_title
                  FROM character_chapter_presence ccp
-                 JOIN chapters c ON ccp.chapter_id = c.chapter_id
+                 JOIN chapters c ON ccp.chapter_id = c.id
                  WHERE ccp.character_id = $1 AND ccp.chapter_id = $2`,
                 [character_id, to_chapter_id]
             );
@@ -1116,7 +1116,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     ccp.exits_at_scene,
                     ccp.character_function
                 FROM character_chapter_presence ccp
-                JOIN characters c ON ccp.character_id = c.character_id
+                JOIN characters c ON ccp.character_id = c.id
                 WHERE ccp.chapter_id = $1
             `;
             
