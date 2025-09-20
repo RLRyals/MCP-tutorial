@@ -5,3 +5,4 @@ export { SeriesMCPServer } from './series-server/index.js';
 export { BookMCPServer } from './book-server/index.js';
 export { TimelineMCPServer } from './timeline-server/index.js';
 export { MetadataMCPServer } from './metadata-server/index.js';
+export { PlotMCPServer } from './plot-server/index.js';

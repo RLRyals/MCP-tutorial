@@ -40,6 +40,16 @@
         "MCP_STDIO_MODE": "true"
       }
     },
+    "plot-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-tutorial/src/mcps/plot-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
     "series-server": {
       "command": "node",
       "args": [

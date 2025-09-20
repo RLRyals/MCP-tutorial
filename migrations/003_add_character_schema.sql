@@ -363,8 +363,10 @@ CREATE INDEX idx_character_chapter_presence_character ON character_chapter_prese
 CREATE INDEX idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
 CREATE INDEX idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
 
+
 -- CREATE INDEX idx_chapter_relationships_chapter_a ON chapter_relationships(chapter_a_id);
 -- CREATE INDEX idx_chapter_relationships_chapter_b ON chapter_relationships(chapter_b_id);
+
 
 CREATE INDEX idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
 CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);

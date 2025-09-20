@@ -10,10 +10,20 @@
       "name": "Book Server",
       "description": "Manage book server functionality"
     },
+    "mcp-tutorial-character-server": {
+      "url": "http://localhost:3500/character-server",
+      "name": "Character Server",
+      "description": "Manage character server functionality"
+    },
     "mcp-tutorial-metadata-server": {
       "url": "http://localhost:3500/metadata-server",
       "name": "Metadata Server",
       "description": "Manage metadata server functionality"
+    },
+    "mcp-tutorial-plot-server": {
+      "url": "http://localhost:3500/plot-server",
+      "name": "Plot Server",
+      "description": "Manage plot server functionality"
     },
     "mcp-tutorial-series-server": {
       "url": "http://localhost:3500/series-server",
