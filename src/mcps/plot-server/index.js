@@ -13,13 +13,14 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 import { BaseMCPServer } from '../../shared/base-server.js';
 import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
 import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
-import { GenreExtensions } from './handlers/genre-extensions.js';
+// import { GenreExtensions } from './handlers/genre-extensions.js';
 import { TropeHandlers } from './handlers/trope-handlers.js'; 
 import { 
     lookupSystemToolsSchema, 
     plotThreadToolsSchema, 
-    storyAnalysisToolsSchema,
-    genreExtensionToolsSchema 
+    storyAnalysisToolsSchema
+    //,
+    //genreExtensionToolsSchema 
 } from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
@@ -41,8 +42,8 @@ class PlotMCPServer extends BaseMCPServer {
             this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
             console.error('[PLOT-SERVER] Story analysis handlers initialized');
             
-            this.genreExtensions = new GenreExtensions(this.db);
-            console.error('[PLOT-SERVER] Genre extensions initialized');
+            // this.genreExtensions = new GenreExtensions(this.db);
+            // console.error('[PLOT-SERVER] Genre extensions initialized');
 
             this.tropeHandlers = new TropeHandlers(this.db);
             console.error('[PLOT-SERVER] Trope handlers initialized');
@@ -88,13 +89,13 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
             
             // Bind genre extension methods
-            this.handleCreateCase = this.genreExtensions.handleCreateCase.bind(this.genreExtensions);
-            this.handleAddEvidence = this.genreExtensions.handleAddEvidence.bind(this.genreExtensions);
-            this.handleTrackClues = this.genreExtensions.handleTrackClues.bind(this.genreExtensions);
-            this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
-            this.handleTrackRomanticTension = this.genreExtensions.handleTrackRomanticTension.bind(this.genreExtensions);
-            this.handleDefineMagicSystem = this.genreExtensions.handleDefineMagicSystem.bind(this.genreExtensions);
-            this.handleTrackPowerProgression = this.genreExtensions.handleTrackPowerProgression.bind(this.genreExtensions);
+            // this.handleCreateCase = this.genreExtensions.handleCreateCase.bind(this.genreExtensions);
+            // this.handleAddEvidence = this.genreExtensions.handleAddEvidence.bind(this.genreExtensions);
+            // this.handleTrackClues = this.genreExtensions.handleTrackClues.bind(this.genreExtensions);
+            // this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
+            // this.handleTrackRomanticTension = this.genreExtensions.handleTrackRomanticTension.bind(this.genreExtensions);
+            // this.handleDefineMagicSystem = this.genreExtensions.handleDefineMagicSystem.bind(this.genreExtensions);
+            // this.handleTrackPowerProgression = this.genreExtensions.handleTrackPowerProgression.bind(this.genreExtensions);
             
             // Bind trope handler methods
             this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);
@@ -150,9 +151,9 @@ class PlotMCPServer extends BaseMCPServer {
                 ...storyAnalysisToolsSchema,
                 
                 // Genre-specific tools (flatten all genre tools)
-                ...(genreExtensionToolsSchema.mystery || []),
-                ...(genreExtensionToolsSchema.romance || []),
-                ...(genreExtensionToolsSchema.fantasy || [])
+                // ...(genreExtensionToolsSchema.mystery || []),
+                // ...(genreExtensionToolsSchema.romance || []),
+                // ...(genreExtensionToolsSchema.fantasy || [])
             ];
             
             console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);
@@ -185,18 +186,18 @@ class PlotMCPServer extends BaseMCPServer {
             'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
             'map_problem_solutions': this.handleMapProblemSolutions,
             
-            // Mystery Genre Handlers
-            'create_case': this.handleCreateCase,
-            'add_evidence': this.handleAddEvidence,
-            'track_clues': this.handleTrackClues,
+            // // Mystery Genre Handlers
+            // 'create_case': this.handleCreateCase,
+            // 'add_evidence': this.handleAddEvidence,
+            // 'track_clues': this.handleTrackClues,
             
-            // Romance Genre Handlers
-            'create_relationship_arc': this.handleCreateRelationshipArc,
-            'track_romantic_tension': this.handleTrackRomanticTension,
+            // // Romance Genre Handlers
+            // 'create_relationship_arc': this.handleCreateRelationshipArc,
+            // 'track_romantic_tension': this.handleTrackRomanticTension,
             
-            // Fantasy Genre Handlers
-            'define_magic_system': this.handleDefineMagicSystem,
-            'track_power_progression': this.handleTrackPowerProgression
+            // // Fantasy Genre Handlers
+            // 'define_magic_system': this.handleDefineMagicSystem,
+            // 'track_power_progression': this.handleTrackPowerProgression
         };
         
         const handler = handlers[toolName];

@@ -21,9 +21,9 @@ ALTER TABLE books
 -- Add to your next migration file
 -- For character throughlines
 CREATE TABLE character_throughlines (
-    throughline_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES books(id),
-    character_id INTEGER REFERENCES characters(character_id),
+    character_id INTEGER REFERENCES characters(id),
     throughline_type VARCHAR(50), -- main_character, influence_character, etc.
     character_arc TEXT,
     character_problem TEXT,
@@ -35,7 +35,7 @@ CREATE TABLE character_throughlines (
 
 -- For story appreciations
 CREATE TABLE story_appreciations (
-    appreciation_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES books(id),
     appreciation_type VARCHAR(100),
     appreciation_value TEXT,
@@ -47,7 +47,7 @@ CREATE TABLE story_appreciations (
 
 -- For problem-solution mapping
 CREATE TABLE problem_solutions (
-    mapping_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES books(id),
     problem TEXT,
     solution TEXT,
@@ -75,7 +75,7 @@ CREATE TABLE tropes (
 
 -- Trope scene types - the "standard" scenes for a particular trope
 CREATE TABLE trope_scene_types (
-    scene_type_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     trope_id INTEGER REFERENCES tropes(id) ON DELETE CASCADE,
     scene_function VARCHAR(100) NOT NULL, -- opening, middle_build, obstacle, revelation, climax, resolution, etc.
     scene_description TEXT NOT NULL, -- e.g., "Age gap is revealed and causes initial tension"
@@ -89,7 +89,7 @@ CREATE TABLE trope_scene_types (
 
 -- Trope instances in specific books
 CREATE TABLE trope_instances (
-    instance_id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     trope_id INTEGER REFERENCES tropes(id),
     book_id INTEGER REFERENCES books(id),
     instance_notes TEXT, -- how this trope instance plays out in this book
@@ -101,9 +101,9 @@ CREATE TABLE trope_instances (
 
 -- Specific scenes implementing trope scene types in a book
 CREATE TABLE trope_scenes (
-    trope_scene_id SERIAL PRIMARY KEY,
-    instance_id INTEGER REFERENCES trope_instances(instance_id) ON DELETE CASCADE,
-    scene_type_id INTEGER REFERENCES trope_scene_types(scene_type_id),
+    id SERIAL PRIMARY KEY,
+    instance_id INTEGER REFERENCES trope_instances(id) ON DELETE CASCADE,
+    scene_type_id INTEGER REFERENCES trope_scene_types(id),
     chapter_id INTEGER, -- where this scene appears
     scene_number INTEGER, -- which scene within chapter
     scene_summary TEXT, -- how this specific scene implements the trope scene type
@@ -119,41 +119,41 @@ CREATE TABLE trope_scenes (
 -- =============================================
 
 -- Relationship participants for family or polyamorous/"why choose" relationships
-CREATE TABLE relationship_participants (
-    participant_id SERIAL PRIMARY KEY,
-    arc_id INTEGER REFERENCES romance_arcs(arc_id) ON DELETE CASCADE,
-    character_id INTEGER REFERENCES characters(character_id),
-    join_chapter INTEGER, -- when they joined the relationship
-    role_in_relationship TEXT, -- optional descriptor
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(arc_id, character_id)
-);
+-- CREATE TABLE relationship_participants (
+--     id SERIAL PRIMARY KEY,
+--     --arc_id INTEGER REFERENCES romance_arcs(id) ON DELETE CASCADE,
+--     character_id INTEGER REFERENCES characters(id),
+--     join_chapter INTEGER, -- when they joined the relationship
+--     role_in_relationship TEXT, -- optional descriptor
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     UNIQUE(arc_id, character_id)
+-- );
 
 -- Dynamics between specific participants in a relationship
-CREATE TABLE participant_dynamics (
-    dynamic_id SERIAL PRIMARY KEY,
-    arc_id INTEGER REFERENCES romance_arcs(arc_id),
-    character_a_id INTEGER REFERENCES characters(character_id),
-    character_b_id INTEGER REFERENCES characters(character_id),
-    dynamic_type VARCHAR(100), -- romantic, platonic, rivalrous, etc.
-    connection_strength INTEGER CHECK (connection_strength BETWEEN 1 AND 10),
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CHECK (character_a_id != character_b_id)
-);
+-- CREATE TABLE participant_dynamics (
+--     id SERIAL PRIMARY KEY,
+--     arc_id INTEGER REFERENCES romance_arcs(id),
+--     character_a_id INTEGER REFERENCES characters(id),
+--     character_b_id INTEGER REFERENCES characters(id),
+--     dynamic_type VARCHAR(100), -- romantic, platonic, rivalrous, etc.
+--     connection_strength INTEGER CHECK (connection_strength BETWEEN 1 AND 10),
+--     notes TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     CHECK (character_a_id != character_b_id)
+-- );
 
--- Relationship evolution tracking
-CREATE TABLE relationship_evolution (
-    evolution_id SERIAL PRIMARY KEY,
-    arc_id INTEGER REFERENCES romance_arcs(arc_id),
-    chapter_id INTEGER,
-    previous_stage VARCHAR(100),
-    new_stage VARCHAR(100),
-    catalyst TEXT,
-    notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- -- Relationship evolution tracking
+-- CREATE TABLE relationship_evolution (
+--     evolution_id SERIAL PRIMARY KEY,
+--     --arc_id INTEGER REFERENCES romance_arcs(arc_id),
+--     chapter_id INTEGER,
+--     previous_stage VARCHAR(100),
+--     new_stage VARCHAR(100),
+--     catalyst TEXT,
+--     notes TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 
 -- Create appropriate triggers for timestamp updates

@@ -17,10 +17,10 @@ export class GenreExtensions {
     // Helper method to validate plot thread exists and get series info for genre tools
     async validatePlotThreadAndSeries(threadId) {
         const result = await this.db.query(`
-            SELECT pt.thread_id, pt.title, s.id as series_id, s.title as series_title, s.genre
+            SELECT pt.id, pt.title, s.id as series_id, s.title as series_title, s.genre
             FROM plot_threads pt
             JOIN series s ON pt.series_id = s.id
-            WHERE pt.thread_id = $1
+            WHERE pt.id = $1
         `, [threadId]);
         
         if (result.rows.length === 0) {
@@ -90,7 +90,7 @@ export class GenreExtensions {
                                    `${args.initial_suspects?.length ? `Initial suspects: ${args.initial_suspects.join(', ')}\n` : ''}`;
                     
                     await this.db.query(
-                        'UPDATE plot_threads SET description = description || $1 WHERE thread_id = $2',
+                        'UPDATE plot_threads SET description = description || $1 WHERE id = $2',
                         [caseInfo, args.plot_thread_id]
                     );
                     
@@ -289,7 +289,7 @@ export class GenreExtensions {
                                   `Tension: ${args.tension_level || 5}/10\n`;
                     
                     await this.db.query(
-                        'UPDATE plot_threads SET description = description || $1 WHERE thread_id = $2',
+                        'UPDATE plot_threads SET description = description || $1 WHERE id = $2',
                         [arcInfo, args.plot_thread_id]
                     );
                     

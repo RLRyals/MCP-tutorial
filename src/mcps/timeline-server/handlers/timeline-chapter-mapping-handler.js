@@ -199,7 +199,7 @@ export class EventChapterMappingHandlers {
                  (event_id, chapter_id, scene_number, presentation_type, 
                   pov_character_id, event_aspect, completeness, narrative_function)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                 RETURNING mapping_id`,
+                 RETURNING id`,
                 [
                     event_id, 
                     chapter_id, 
@@ -212,7 +212,7 @@ export class EventChapterMappingHandlers {
                 ]
             );
             
-            const mapping_id = mappingResult.rows[0].mapping_id;
+            const mapping_id = mappingResult.rows[0].id;
             
             // Get character name for response if POV character is provided
             let povCharacterName = null;

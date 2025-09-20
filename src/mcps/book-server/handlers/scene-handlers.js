@@ -288,10 +288,10 @@ export class SceneHandlers {
             
             // Verify the chapter exists and get chapter info
             const chapterQuery = `
-                SELECT c.chapter_id, c.title, c.chapter_number, b.title as book_title 
+                SELECT c.id, c.title, c.chapter_number, b.title as book_title 
                 FROM chapters c 
                 JOIN books b ON c.book_id = b.id 
-                WHERE c.chapter_id = $1
+                WHERE c.id = $1
             `;
             const chapterResult = await this.db.query(chapterQuery, [chapter_id]);
             
@@ -393,7 +393,7 @@ export class SceneHandlers {
             const query = `
                 UPDATE chapter_scenes 
                 SET ${updateFields.join(', ')}
-                WHERE scene_id = $1
+                WHERE id = $1
                 RETURNING *
             `;
             
@@ -414,7 +414,7 @@ export class SceneHandlers {
             const contextQuery = `
                 SELECT c.chapter_number, c.title as chapter_title, b.title as book_title
                 FROM chapter_scenes s
-                JOIN chapters c ON s.chapter_id = c.chapter_id
+                JOIN chapters c ON s.chapter_id = c.id
                 JOIN books b ON c.book_id = b.id
                 WHERE s.scene_id = $1
             `;
@@ -454,9 +454,9 @@ export class SceneHandlers {
                 SELECT s.*, c.chapter_number, c.title as chapter_title, 
                        b.title as book_title, ch.name as pov_character_name
                 FROM chapter_scenes s
-                JOIN chapters c ON s.chapter_id = c.chapter_id
+                JOIN chapters c ON s.chapter_id = c.id
                 JOIN books b ON c.book_id = b.id
-                LEFT JOIN characters ch ON s.pov_character_id = ch.character_id
+                LEFT JOIN characters ch ON s.pov_character_id = ch.id
                 WHERE s.scene_id = $1
             `;
             
@@ -555,7 +555,7 @@ export class SceneHandlers {
             let query = `
                 SELECT s.*, ch.name as pov_character_name
                 FROM chapter_scenes s
-                LEFT JOIN characters ch ON s.pov_character_id = ch.character_id
+                LEFT JOIN characters ch ON s.pov_character_id = ch.id
                 WHERE s.chapter_id = $1
             `;
             
@@ -592,7 +592,7 @@ export class SceneHandlers {
                 SELECT c.chapter_number, c.title as chapter_title, b.title as book_title
                 FROM chapters c 
                 JOIN books b ON c.book_id = b.id 
-                WHERE c.chapter_id = $1
+                WHERE c.id = $1
             `;
             const contextResult = await this.db.query(contextQuery, [chapter_id]);
             const context = contextResult.rows[0] || {};
@@ -681,7 +681,7 @@ export class SceneHandlers {
                 SELECT s.scene_number, s.scene_title, c.chapter_number, 
                        c.title as chapter_title, b.title as book_title
                 FROM chapter_scenes s
-                JOIN chapters c ON s.chapter_id = c.chapter_id
+                JOIN chapters c ON s.chapter_id = c.id
                 JOIN books b ON c.book_id = b.id
                 WHERE s.scene_id = $1
             `;
@@ -699,7 +699,7 @@ export class SceneHandlers {
             const sceneInfo = sceneResult.rows[0];
             
             // Delete the scene
-            const deleteQuery = 'DELETE FROM chapter_scenes WHERE scene_id = $1 RETURNING *';
+            const deleteQuery = 'DELETE FROM chapter_scenes WHERE id = $1 RETURNING *';
             await this.db.query(deleteQuery, [scene_id]);
             
             return {
@@ -747,8 +747,8 @@ export class SceneHandlers {
                     const updateQuery = `
                         UPDATE chapter_scenes 
                         SET scene_number = $1, updated_at = CURRENT_TIMESTAMP 
-                        WHERE scene_id = $2
-                        RETURNING scene_id, scene_number, scene_title
+                        WHERE id = $2
+                        RETURNING id, scene_number, scene_title
                     `;
                     const updateResult = await client.query(updateQuery, [item.new_scene_number, item.scene_id]);
                     updates.push(updateResult.rows[0]);
@@ -759,7 +759,7 @@ export class SceneHandlers {
                     SELECT c.chapter_number, c.title as chapter_title, b.title as book_title
                     FROM chapters c 
                     JOIN books b ON c.book_id = b.id 
-                    WHERE c.chapter_id = $1
+                    WHERE c.id = $1
                 `;
                 const contextResult = await client.query(contextQuery, [chapter_id]);
                 const context = contextResult.rows[0] || {};
@@ -814,7 +814,7 @@ export class SceneHandlers {
                 SELECT c.chapter_number, c.title as chapter_title, b.title as book_title
                 FROM chapters c 
                 JOIN books b ON c.book_id = b.id 
-                WHERE c.chapter_id = $1
+                WHERE c.id = $1
             `;
             const contextResult = await this.db.query(contextQuery, [chapter_id]);
             const context = contextResult.rows[0] || {};
@@ -963,7 +963,7 @@ export class SceneHandlers {
             const query = `
                 SELECT s.*, c.chapter_number, c.title as chapter_title, b.title as book_title
                 FROM chapter_scenes s
-                JOIN chapters c ON s.chapter_id = c.chapter_id
+                JOIN chapters c ON s.chapter_id = c.id
                 JOIN books b ON c.book_id = b.id
                 WHERE s.scene_id = $1
             `;
@@ -979,7 +979,7 @@ export class SceneHandlers {
             const query = `
                 UPDATE chapter_scenes 
                 SET word_count = $2, updated_at = CURRENT_TIMESTAMP 
-                WHERE scene_id = $1 
+                WHERE id = $1 
                 RETURNING word_count, chapter_id
             `;
             const result = await this.db.query(query, [scene_id, new_word_count]);
@@ -1008,7 +1008,7 @@ export class SceneHandlers {
             const query = `
                 SELECT scene_participants 
                 FROM chapter_scenes 
-                WHERE scene_id = $1
+                WHERE id = $1
             `;
             const result = await this.db.query(query, [scene_id]);
             return result.rows[0]?.scene_participants || [];
