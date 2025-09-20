@@ -34,7 +34,7 @@ export class PlotThreadHandlers {
             // Verify parent thread exists if specified
             if (args.parent_thread_id) {
                 const parentCheck = await this.db.query(
-                    'SELECT thread_id FROM plot_threads WHERE thread_id = $1 AND series_id = $2',
+                    'SELECT id FROM plot_threads WHERE id = $1 AND series_id = $2',
                     [args.parent_thread_id, args.series_id]
                 );
                 
@@ -57,7 +57,7 @@ export class PlotThreadHandlers {
             
             // Get thread type ID from lookup table
             const threadTypeResult = await this.db.query(
-                'SELECT type_id FROM plot_thread_types WHERE type_name = $1 AND is_active = true',
+                'SELECT id FROM plot_thread_types WHERE type_name = $1 AND is_active = true',
                 [args.thread_type]
             );
             
@@ -74,7 +74,7 @@ export class PlotThreadHandlers {
                     importance_level, complexity_level, start_book, end_book,
                     parent_thread_id, related_characters
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                RETURNING thread_id, title, description, importance_level, 
+                RETURNING id, title, description, importance_level, 
                          complexity_level, created_at
             `;
             
@@ -125,10 +125,10 @@ export class PlotThreadHandlers {
             
             // Check if thread exists
             const threadCheck = await this.db.query(
-                `SELECT t.thread_id, t.title, s.status_name as current_status 
+                `SELECT t.id, t.title, s.status_name as current_status 
                  FROM plot_threads t 
-                 LEFT JOIN plot_thread_statuses s ON t.current_status_id = s.status_id 
-                 WHERE t.thread_id = $1`,
+                 LEFT JOIN plot_thread_statuses s ON t.current_status_id = s.id 
+                 WHERE t.id = $1`,
                 [args.thread_id]
             );
             
@@ -156,7 +156,7 @@ export class PlotThreadHandlers {
             if (args.current_status !== undefined) {
                 // Get status ID from lookup table
                 const statusResult = await this.db.query(
-                    'SELECT status_id FROM plot_thread_statuses WHERE status_name = $1 AND is_active = true',
+                    'SELECT id FROM plot_thread_statuses WHERE status_name = $1 AND is_active = true',
                     [args.current_status]
                 );
                 
@@ -200,8 +200,8 @@ export class PlotThreadHandlers {
             const updateQuery = `
                 UPDATE plot_threads 
                 SET ${updates.join(', ')}
-                WHERE thread_id = $${paramCount}
-                RETURNING thread_id, title, description, 
+                WHERE id = $${paramCount}
+                RETURNING id, title, description, 
                          importance_level, complexity_level, resolution_notes, updated_at
             `;
             
@@ -209,13 +209,13 @@ export class PlotThreadHandlers {
             
             // Get the updated thread with proper joins
             const threadResult = await this.db.query(`
-                SELECT t.thread_id, t.title, t.description, 
+                SELECT t.id, t.title, t.description, 
                        ptt.type_name as thread_type, pts.status_name as current_status,
                        t.importance_level, t.complexity_level, t.resolution_notes, t.updated_at
                 FROM plot_threads t
-                LEFT JOIN plot_thread_types ptt ON t.thread_type_id = ptt.type_id
-                LEFT JOIN plot_thread_statuses pts ON t.current_status_id = pts.status_id
-                WHERE t.thread_id = $1
+                LEFT JOIN plot_thread_types ptt ON t.thread_type_id = ptt.id
+                LEFT JOIN plot_thread_statuses pts ON t.current_status_id = pts.id
+                WHERE t.id = $1
             `, [args.thread_id]);
             
             const updatedThread = threadResult.rows[0];
@@ -262,7 +262,7 @@ export class PlotThreadHandlers {
             // Build dynamic query with filters
             let query = `
                 SELECT 
-                    pt.thread_id, pt.title, pt.description, 
+                    pt.id, pt.title, pt.description, 
                     ptt.type_name AS thread_type,
                     pt.importance_level, pt.complexity_level, 
                     pts.status_name AS current_status,
@@ -271,9 +271,9 @@ export class PlotThreadHandlers {
                     pt.created_at, pt.updated_at,
                     parent.title as parent_title
                 FROM plot_threads pt
-                LEFT JOIN plot_threads parent ON pt.parent_thread_id = parent.thread_id
-                LEFT JOIN plot_thread_types ptt ON pt.thread_type_id = ptt.type_id
-                LEFT JOIN plot_thread_statuses pts ON pt.current_status_id = pts.status_id
+                LEFT JOIN plot_threads parent ON pt.parent_thread_id = parent.id
+                LEFT JOIN plot_thread_types ptt ON pt.thread_type_id = ptt.id
+                LEFT JOIN plot_thread_statuses pts ON pt.current_status_id = pts.id
                 WHERE pt.series_id = $1
             `;
             
@@ -383,7 +383,7 @@ export class PlotThreadHandlers {
             
             // Check if both threads exist
             const threadsCheck = await this.db.query(
-                'SELECT thread_id, title FROM plot_threads WHERE thread_id = ANY($1)',
+                'SELECT id, title FROM plot_threads WHERE id = ANY($1)',
                 [[args.thread_a_id, args.thread_b_id]]
             );
             
@@ -393,7 +393,7 @@ export class PlotThreadHandlers {
             
             // Check for existing relationship
             const existingCheck = await this.db.query(
-                'SELECT relationship_id FROM plot_thread_relationships WHERE thread_a_id = $1 AND thread_b_id = $2',
+                'SELECT id FROM plot_thread_relationships WHERE thread_a_id = $1 AND thread_b_id = $2',
                 [args.thread_a_id, args.thread_b_id]
             );
             
@@ -403,7 +403,7 @@ export class PlotThreadHandlers {
             
             // Get relationship type ID from lookup table
             const relationshipTypeResult = await this.db.query(
-                'SELECT relationship_type_id, type_name FROM relationship_types WHERE type_name = $1 AND is_active = true',
+                'SELECT id, type_name FROM relationship_types WHERE type_name = $1 AND is_active = true',
                 [args.relationship_type]
             );
             
@@ -465,10 +465,10 @@ export class PlotThreadHandlers {
             
             // Check if thread exists
             const threadCheck = await this.db.query(
-                `SELECT t.thread_id, t.title, pts.status_name as current_status 
+                `SELECT t.id, t.title, pts.status_name as current_status 
                  FROM plot_threads t
-                 LEFT JOIN plot_thread_statuses pts ON t.current_status_id = pts.status_id 
-                 WHERE t.thread_id = $1`,
+                 LEFT JOIN plot_thread_statuses pts ON t.current_status_id = pts.id 
+                 WHERE t.id = $1`,
                 [args.thread_id]
             );
             
@@ -484,7 +484,7 @@ export class PlotThreadHandlers {
             
             // Get resolved status ID from lookup table
             const statusResult = await this.db.query(
-                'SELECT status_id FROM plot_thread_statuses WHERE status_name = $1 AND is_active = true',
+                'SELECT id FROM plot_thread_statuses WHERE status_name = $1 AND is_active = true',
                 ['resolved']
             );
             
@@ -499,7 +499,7 @@ export class PlotThreadHandlers {
                     resolution_notes = $2,
                     resolution_book = $3,
                     updated_at = CURRENT_TIMESTAMP
-                WHERE thread_id = $4
+                WHERE id = $4
                 RETURNING title
             `;
             

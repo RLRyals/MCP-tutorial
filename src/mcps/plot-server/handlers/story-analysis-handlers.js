@@ -35,7 +35,7 @@ export class StoryAnalysisHandlers {
             
             // Check if story analysis already exists
             const existingAnalysis = await this.db.query(
-                'SELECT analysis_id FROM story_analysis WHERE book_id = $1',
+                'SELECT id FROM story_analysis WHERE book_id = $1',
                 [args.book_id]
             );
             
@@ -54,7 +54,7 @@ export class StoryAnalysisHandlers {
                         analysis_notes = COALESCE($7, analysis_notes),
                         updated_at = CURRENT_TIMESTAMP
                     WHERE book_id = $8
-                    RETURNING analysis_id, story_concern_id, main_character_problem, influence_character_impact,
+                    RETURNING id, story_concern_id, main_character_problem, influence_character_impact,
                              story_outcome_id, story_judgment_id, thematic_elements, analysis_notes, updated_at
                 `;
                 
@@ -76,7 +76,7 @@ export class StoryAnalysisHandlers {
                         book_id, story_concern_id, main_character_problem, influence_character_impact,
                         story_outcome_id, story_judgment_id, thematic_elements, analysis_notes
                     ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                    RETURNING analysis_id, story_concern_id, main_character_problem, influence_character_impact,
+                    RETURNING id, story_concern_id, main_character_problem, influence_character_impact,
                              story_outcome_id, story_judgment_id, thematic_elements, analysis_notes, created_at
                 `;
                 
@@ -99,7 +99,7 @@ export class StoryAnalysisHandlers {
             
             if (analysis.story_concern_id) {
                 const concernResult = await this.db.query(
-                    'SELECT concern_name FROM story_concerns WHERE concern_id = $1',
+                    'SELECT concern_name FROM story_concerns WHERE id = $1',
                     [analysis.story_concern_id]
                 );
                 storyConcernName = concernResult.rows.length > 0 ? concernResult.rows[0].concern_name : null;
@@ -107,7 +107,7 @@ export class StoryAnalysisHandlers {
             
             if (analysis.story_outcome_id) {
                 const outcomeResult = await this.db.query(
-                    'SELECT outcome_name FROM story_outcomes WHERE outcome_id = $1',
+                    'SELECT outcome_name FROM story_outcomes WHERE id = $1',
                     [analysis.story_outcome_id]
                 );
                 storyOutcomeName = outcomeResult.rows.length > 0 ? outcomeResult.rows[0].outcome_name : null;
@@ -115,7 +115,7 @@ export class StoryAnalysisHandlers {
             
             if (analysis.story_judgment_id) {
                 const judgmentResult = await this.db.query(
-                    'SELECT judgment_name FROM story_judgments WHERE judgment_id = $1',
+                    'SELECT judgment_name FROM story_judgments WHERE id = $1',
                     [analysis.story_judgment_id]
                 );
                 storyJudgmentName = judgmentResult.rows.length > 0 ? judgmentResult.rows[0].judgment_name : null;
@@ -269,7 +269,7 @@ export class StoryAnalysisHandlers {
                             ON CONFLICT (book_id) DO UPDATE SET
                                 analysis_notes = COALESCE(story_analysis.analysis_notes, '') || '\n\n' || $2,
                                 updated_at = CURRENT_TIMESTAMP
-                            RETURNING analysis_id
+                            RETURNING id
                         `;
                         
                         const noteText = `Character Throughline - ${args.throughline_type}:\n` +
@@ -397,7 +397,7 @@ export class StoryAnalysisHandlers {
                         ON CONFLICT (book_id) DO UPDATE SET
                             analysis_notes = COALESCE(story_analysis.analysis_notes, '') || '\n\n' || $2,
                             updated_at = CURRENT_TIMESTAMP
-                        RETURNING analysis_id
+                        RETURNING id
                     `;
                     
                     await this.db.query(insertIntoAnalysisQuery, [args.book_id, appreciationText]);
@@ -503,7 +503,7 @@ export class StoryAnalysisHandlers {
                         ON CONFLICT (book_id) DO UPDATE SET
                             analysis_notes = COALESCE(story_analysis.analysis_notes, '') || '\n\n' || $2,
                             updated_at = CURRENT_TIMESTAMP
-                        RETURNING analysis_id
+                        RETURNING id
                     `;
                     
                     await this.db.query(insertIntoAnalysisQuery, [args.book_id, problemSolutionText]);
