@@ -106,9 +106,6 @@ CREATE INDEX idx_timeline_events_series_id ON timeline_events(series_id);
 CREATE INDEX idx_timeline_events_book_id ON timeline_events(book_id);
 CREATE INDEX idx_timeline_events_event_date ON timeline_events(event_date);
 CREATE INDEX idx_timeline_events_sort_order ON timeline_events(sort_order);
-CREATE INDEX idx_timeline_events_time_period ON timeline_events(time_period);
-CREATE INDEX idx_timeline_events_significance ON timeline_events(significance);
-CREATE INDEX idx_timeline_events_public ON timeline_events(is_public_knowledge);
 
 
 -- =============================================
