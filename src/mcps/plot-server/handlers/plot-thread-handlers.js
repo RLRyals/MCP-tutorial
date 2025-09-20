@@ -65,7 +65,7 @@ export class PlotThreadHandlers {
                 throw new Error(`Invalid thread_type: ${args.thread_type}. Use get_available_options with option_type='plot_thread_types' to see valid values.`);
             }
             
-            const threadTypeId = threadTypeResult.rows[0].type_id;
+            const threadTypeId = threadTypeResult.rows[0].id;
             
             // Insert the plot thread (using lookup table IDs)
             const insertQuery = `
@@ -165,7 +165,7 @@ export class PlotThreadHandlers {
                 }
                 
                 updates.push(`current_status_id = $${paramCount}`);
-                values.push(statusResult.rows[0].status_id);
+                values.push(statusResult.rows[0].id);
                 paramCount++;
             }
             
@@ -417,7 +417,7 @@ export class PlotThreadHandlers {
                     thread_a_id, thread_b_id, relationship_type_id, relationship_description,
                     strength, established_book
                 ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING relationship_id
+                RETURNING id
             `;
             
             await this.db.query(insertQuery, [
