@@ -146,7 +146,7 @@ CREATE TABLE character_system_progression (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-- =============================================
+-- =============================================
 -- Add update triggers for timestamp management
 -- =============================================
 
