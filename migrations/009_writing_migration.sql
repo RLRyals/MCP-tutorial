@@ -21,7 +21,7 @@ BEGIN
 CREATE TABLE writing_sessions (
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
-    chapter_id INTEGER REFERENCES chapters(chapter_id), -- optional specific chapter focus
+    chapter_id INTEGER REFERENCES chapters(id), -- optional specific chapter focus
     
     -- Session timing
     session_date DATE NOT NULL,
@@ -55,7 +55,7 @@ CREATE TABLE writing_sessions (
 CREATE TABLE session_chapters (
     id SERIAL PRIMARY KEY,
     session_id INTEGER NOT NULL REFERENCES writing_sessions(id) ON DELETE CASCADE,
-    chapter_id INTEGER NOT NULL REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    chapter_id INTEGER NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
     words_written_on_chapter INTEGER DEFAULT 0,
     
     UNIQUE(session_id, chapter_id)
@@ -181,8 +181,8 @@ CREATE TABLE validation_results (
     validation_rule_id INTEGER REFERENCES validation_rules(id) ON DELETE CASCADE,
     
     -- Validation context
-    chapter_id INTEGER REFERENCES chapters(chapter_id), -- specific chapter if applicable
-    scene_id INTEGER REFERENCES chapter_scenes(scene_id), -- specific scene if applicable
+    chapter_id INTEGER REFERENCES chapters(id), -- specific chapter if applicable
+    scene_id INTEGER REFERENCES chapter_scenes(id), -- specific scene if applicable
     
     -- Result details
     validation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -212,7 +212,7 @@ CREATE TABLE validation_results (
 CREATE TABLE word_count_snapshots (
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
-    chapter_id INTEGER REFERENCES chapters(chapter_id) ON DELETE CASCADE,
+    chapter_id INTEGER REFERENCES chapters(id) ON DELETE CASCADE,
     
     -- Snapshot details
     snapshot_date DATE DEFAULT CURRENT_DATE,
