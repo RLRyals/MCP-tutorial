@@ -150,15 +150,6 @@ CREATE TABLE character_system_progression (
 -- Add update triggers for timestamp management
 -- =============================================
 
--- Create the update_timestamp function if it doesn't exist
-CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
 -- Information reveal triggers
 CREATE TRIGGER update_information_reveals_timestamp
     BEFORE UPDATE ON information_reveals
