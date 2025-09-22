@@ -365,7 +365,7 @@ export class GenreExtensions {
         try {
             // Validate plot thread exists
             const threadCheck = await this.db.query(
-                'SELECT thread_id, title FROM plot_threads WHERE thread_id = $1',
+                'SELECT id, title FROM plot_threads WHERE id = $1',
                 [args.plot_thread_id]
             );
             
@@ -376,7 +376,7 @@ export class GenreExtensions {
             // Validate all characters exist
             const characterIds = args.participants.map(p => p.character_id);
             const charactersCheck = await this.db.query(
-                'SELECT character_id, name FROM characters WHERE character_id = ANY($1)',
+                'SELECT id, name FROM characters WHERE id = ANY($1)',
                 [characterIds]
             );
             
@@ -502,7 +502,7 @@ export class GenreExtensions {
         try {
             // Validate reveal exists
             const revealCheck = await this.db.query(
-                'SELECT reveal_id, information_content FROM information_reveals WHERE reveal_id = $1',
+                'SELECT id, information_content FROM information_reveals WHERE id = $1',
                 [args.reveal_id]
             );
             
@@ -552,7 +552,7 @@ export class GenreExtensions {
         try {
             // Validate arc exists
             const arcCheck = await this.db.query(
-                'SELECT arc_id, arc_name FROM relationship_arcs WHERE arc_id = $1',
+                'SELECT id, arc_name FROM relationship_arcs WHERE id = $1',
                 [args.arc_id]
             );
             
@@ -606,8 +606,8 @@ export class GenreExtensions {
         try {
             // Validate character and system exist
             const checks = await Promise.all([
-                this.db.query('SELECT character_id, name FROM characters WHERE character_id = $1', [args.character_id]),
-                this.db.query('SELECT system_id, system_name FROM world_systems WHERE system_id = $1', [args.system_id]),
+                this.db.query('SELECT id, name FROM characters WHERE id = $1', [args.character_id]),
+                this.db.query('SELECT id, system_name FROM world_systems WHERE id = $1', [args.system_id]),
                 this.db.query('SELECT id, title FROM books WHERE id = $1', [args.book_id])
             ]);
             

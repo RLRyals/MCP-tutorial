@@ -99,7 +99,7 @@ CREATE TABLE plot_threads (
     -- Thread span and status (using lookup table)
     start_book INTEGER,
     end_book INTEGER,
-    current_status_id INTEGER DEFAULT 1 REFERENCES plot_thread_statuses(status_id),
+    current_status_id INTEGER DEFAULT 1 REFERENCES plot_thread_statuses(id),
     
     -- Thread relationships
     parent_thread_id INTEGER REFERENCES plot_threads(id),

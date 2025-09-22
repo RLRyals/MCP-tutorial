@@ -203,14 +203,14 @@ export class TimelineEventHandlers {
                     s.title AS series_title,
                     b.id as book_id,
                     b.title AS book_title,
-                    array_agg(DISTINCT c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
-                    array_agg(DISTINCT c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
+                    array_agg(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL) AS participant_ids,
+                    array_agg(DISTINCT c.name) FILTER (WHERE c.id IS NOT NULL) AS participant_names
                 FROM 
                     timeline_events t
                     JOIN series s ON t.series_id = s.id
                     LEFT JOIN books b ON t.book_id = b.id
                     LEFT JOIN event_participants ep ON t.id = ep.event_id
-                    LEFT JOIN characters c ON ep.character_id = c.character_id
+                    LEFT JOIN characters c ON ep.character_id = c.id
                 ${whereClause}
                 GROUP BY 
                     t.id, s.id, b.id
@@ -284,14 +284,14 @@ export class TimelineEventHandlers {
                     s.title AS series_title,
                     b.id as book_id,
                     b.title AS book_title,
-                    array_agg(DISTINCT c.character_id) FILTER (WHERE c.character_id IS NOT NULL) AS participant_ids,
-                    array_agg(DISTINCT c.name) FILTER (WHERE c.character_id IS NOT NULL) AS participant_names
+                    array_agg(DISTINCT c.id) FILTER (WHERE c.id IS NOT NULL) AS participant_ids,
+                    array_agg(DISTINCT c.name) FILTER (WHERE c.id IS NOT NULL) AS participant_names
                 FROM 
                     timeline_events t
                     JOIN series s ON t.series_id = s.id
                     LEFT JOIN books b ON t.book_id = b.id
                     LEFT JOIN event_participants ep ON t.id = ep.event_id
-                    LEFT JOIN characters c ON ep.character_id = c.character_id
+                    LEFT JOIN characters c ON ep.character_id = c.id
                 WHERE 
                     t.id = $1
                 GROUP BY 
@@ -318,13 +318,13 @@ export class TimelineEventHandlers {
                         c.title AS chapter_title,
                         b.id as book_id,
                         b.title AS book_title,
-                        ch.character_id AS pov_character_id,
+                        ch.id AS pov_character_id,
                         ch.name AS pov_character_name
                     FROM 
                         event_chapter_mappings m
                         JOIN chapters c ON m.chapter_id = c.chapter_id
                         JOIN books b ON c.book_id = b.id
-                        LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
+                        LEFT JOIN characters ch ON m.pov_character_id = ch.id
                     WHERE 
                         m.event_id = $1
                     ORDER BY
@@ -476,12 +476,12 @@ export class TimelineEventHandlers {
             let participantInfo = [];
             if (participants && participants.length > 0) {
                 const participantQuery = `
-                    SELECT character_id, name FROM characters WHERE character_id = ANY($1)
+                    SELECT id, name FROM characters WHERE id = ANY($1)
                 `;
                 
                 const participantResult = await this.db.query(participantQuery, [participants]);
                 participantInfo = participantResult.rows.map(row => ({
-                    character_id: row.character_id,
+                    character_id: row.id,
                     name: row.name
                 }));
             }
@@ -676,27 +676,27 @@ export class TimelineEventHandlers {
             if (participants !== undefined) {
                 if (participants && participants.length > 0) {
                     const participantQuery = `
-                        SELECT character_id, name FROM characters WHERE character_id = ANY($1)
+                        SELECT id, name FROM characters WHERE id = ANY($1)
                     `;
                     
                     const participantResult = await this.db.query(participantQuery, [participants]);
                     participantInfo = participantResult.rows.map(row => ({
-                        character_id: row.character_id,
+                        character_id: row.id,
                         name: row.name
                     }));
                 }
             } else {
                 // Get existing participants
                 const participantQuery = `
-                    SELECT c.character_id, c.name 
+                    SELECT c.id, c.name 
                     FROM event_participants ep
-                    JOIN characters c ON ep.character_id = c.character_id
+                    JOIN characters c ON ep.character_id = c.id
                     WHERE ep.event_id = $1
                 `;
                 
                 const participantResult = await this.db.query(participantQuery, [event_id]);
                 participantInfo = participantResult.rows.map(row => ({
-                    character_id: row.character_id,
+                    character_id: row.id,
                     name: row.name
                 }));
             }
@@ -835,7 +835,7 @@ export class TimelineEventHandlers {
             
             // Check if character exists
             const characterQuery = `
-                SELECT name FROM characters WHERE character_id = $1
+                SELECT name FROM characters WHERE id = $1
             `;
             
             const characterResult = await this.db.query(characterQuery, [character_id]);
@@ -990,7 +990,7 @@ export class TimelineEventHandlers {
                     FROM 
                         timeline_events t
                         JOIN event_participants ep ON t.id = ep.event_id
-                        JOIN characters c ON ep.character_id = c.character_id
+                        JOIN characters c ON ep.character_id = c.id
                     WHERE 
                         t.series_id = $1
                 ),
@@ -1061,7 +1061,7 @@ export class TimelineEventHandlers {
                             FROM 
                                 timeline_events t
                                 JOIN event_participants ep ON t.id = ep.event_id
-                                JOIN characters c ON ep.character_id = c.character_id
+                                JOIN characters c ON ep.character_id = c.id
                                 LEFT JOIN books b ON t.book_id = b.id
                             WHERE 
                                 t.series_id = $1

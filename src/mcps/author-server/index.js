@@ -139,6 +139,7 @@ class AuthorMCPServer extends BaseMCPServer {
                         text: `Author Details:\n\n` +
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
+                              `Email: ${author.email}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography available'}\n` +
                               `Created: ${author.created_at}\n` +

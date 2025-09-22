@@ -534,7 +534,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     {
                         type: 'text',
                         text: `Character Information:\n\n` +
-                              `ID: ${character.character_id}\n` +
+                              `ID: ${character.id}\n` +
                               `Name: ${character.name}${character.full_name ? ` (${character.full_name})` : ''}\n` +
                               `Series: ${character.series_title}\n` +
                               `Type: ${character.character_type}\n` +
@@ -571,7 +571,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     {
                         type: 'text',
                         text: `Created character successfully!\n\n` +
-                              `ID: ${character.character_id}\n` +
+                              `ID: ${character.id}\n` +
                               `Name: ${character.name}${character.full_name ? ` (${character.full_name})` : ''}\n` +
                               `Type: ${character.character_type}\n` +
                               `Status: ${character.status}\n` +
@@ -637,7 +637,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     {
                         type: 'text',
                         text: `Updated character successfully!\n\n` +
-                              `ID: ${character.character_id}\n` +
+                              `ID: ${character.id}\n` +
                               `Name: ${character.name}${character.full_name ? ` (${character.full_name})` : ''}\n` +
                               `Type: ${character.character_type}\n` +
                               `Status: ${character.status}\n` +

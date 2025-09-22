@@ -11,14 +11,26 @@ BEGIN
     END IF;
 
 -- =============================================
--- TIMELINE EVENTS TABLE ENHANCEMENTS
+-- CREATE TIMELINE EVENTS TABLE
 -- =============================================
 
--- Add new columns to timeline_events table
-ALTER TABLE timeline_events 
-    ADD COLUMN IF NOT EXISTS time_period VARCHAR(100),
-    ADD COLUMN IF NOT EXISTS significance VARCHAR(50) DEFAULT 'minor',
-    ADD COLUMN IF NOT EXISTS is_public_knowledge BOOLEAN DEFAULT TRUE;
+-- Create the timeline_events table with all required columns
+CREATE TABLE timeline_events (
+    id SERIAL PRIMARY KEY,
+    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+    event_name VARCHAR(255) NOT NULL,
+    event_description TEXT,
+    event_date DATE,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    sort_order INTEGER DEFAULT 0,
+    time_period VARCHAR(100),
+    significance VARCHAR(50) DEFAULT 'minor',
+    is_public_knowledge BOOLEAN DEFAULT TRUE,
+    
+    -- Metadata
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- Create event participants table for many-to-many relationship
 CREATE TABLE IF NOT EXISTS event_participants (

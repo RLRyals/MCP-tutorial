@@ -18,7 +18,7 @@ BEGIN
     ALTER TABLE series_timeline DROP CONSTRAINT series_timeline_series_id_fkey;
     ALTER TABLE series_metadata DROP CONSTRAINT series_metadata_series_id_fkey;
 
-    ALTER TABLE series RENAME COLUMN series_id TO id;
+    --ALTER TABLE series RENAME COLUMN series_id TO id;
 
     -- Update foreign key constraints to point to new column name
     ALTER TABLE books ADD CONSTRAINT books_series_id_fkey 

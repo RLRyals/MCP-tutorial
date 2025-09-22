@@ -46,7 +46,7 @@ export class PlotThreadHandlers {
             // Verify characters exist if specified
             if (args.related_characters && args.related_characters.length > 0) {
                 const characterCheck = await this.db.query(
-                    'SELECT character_id FROM characters WHERE character_id = ANY($1) AND series_id = $2',
+                    'SELECT id FROM characters WHERE id = ANY($1) AND series_id = $2',
                     [args.related_characters, args.series_id]
                 );
                 
@@ -98,7 +98,7 @@ export class PlotThreadHandlers {
                     {
                         type: 'text',
                         text: `Successfully created plot thread!\n\n` +
-                              `**Thread ID:** ${newThread.thread_id}\n` +
+                              `**Thread ID:** ${newThread.id}\n` +
                               `**Title:** ${newThread.title}\n` +
                               `**Type:** ${args.thread_type}\n` +
                               `**Status:** active (default)\n` +
@@ -225,7 +225,7 @@ export class PlotThreadHandlers {
                     {
                         type: 'text',
                         text: `Successfully updated plot thread!\n\n` +
-                              `**Thread ID:** ${updatedThread.thread_id}\n` +
+                              `**Thread ID:** ${updatedThread.id}\n` +
                               `**Title:** ${updatedThread.title}\n` +
                               `**Type:** ${updatedThread.thread_type}\n` +
                               `**Status:** ${updatedThread.current_status}\n` +
@@ -338,7 +338,7 @@ export class PlotThreadHandlers {
                 output += `## ${type.replace('_', ' ').toUpperCase()}\n\n`;
                 
                 typeThreads.forEach(thread => {
-                    output += `### ${thread.title} (ID: ${thread.thread_id})\n`;
+                    output += `### ${thread.title} (ID: ${thread.id})\n`;
                     output += `- **Status:** ${thread.current_status}\n`;
                     output += `- **Importance:** ${thread.importance_level}/10\n`;
                     output += `- **Complexity:** ${thread.complexity_level}/10\n`;
