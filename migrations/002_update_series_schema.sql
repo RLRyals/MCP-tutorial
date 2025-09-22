@@ -16,7 +16,7 @@ BEGIN
     -- First rename series_id to id for consistency with code
     ALTER TABLE books DROP CONSTRAINT books_series_id_fkey;
     ALTER TABLE series_timeline DROP CONSTRAINT series_timeline_series_id_fkey;
-    ALTER TABLE series_metadata DROP CONSTRAINT series_metadata_series_id_fkey;
+    --ALTER TABLE series_metadata DROP CONSTRAINT series_metadata_series_id_fkey;
 
     --ALTER TABLE series RENAME COLUMN series_id TO id;
 
@@ -25,8 +25,8 @@ BEGIN
         FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
     ALTER TABLE series_timeline ADD CONSTRAINT series_timeline_series_id_fkey 
         FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey 
-        FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
+    -- ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey 
+    --     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
 
     -- Add new columns
     ALTER TABLE series ADD COLUMN status VARCHAR(50) 

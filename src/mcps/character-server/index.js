@@ -490,7 +490,7 @@ class CharacterMCPServer extends BaseMCPServer {
                         type: 'text',
                         text: `Found ${result.rows.length} characters:\n\n` +
                               result.rows.map(char => 
-                                  `ID: ${char.character_id}\n` +
+                                  `ID: ${char.id}\n` +
                                   `Name: ${char.name}${char.full_name ? ` (${char.full_name})` : ''}\n` +
                                   `Type: ${char.character_type}\n` +
                                   `Status: ${char.status}\n` +

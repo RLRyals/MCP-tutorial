@@ -57,14 +57,35 @@ CREATE TABLE series_timeline (
 );
 
 -- Series metadata - flexible metadata storage for series-level information
-CREATE TABLE series_metadata (
-    id SERIAL PRIMARY KEY,
-    series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
-    key VARCHAR(100) NOT NULL,
-    value TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(series_id, key)
-);
+-- CREATE TABLE series_metadata (
+--     id SERIAL PRIMARY KEY,
+--     series_id INTEGER NOT NULL REFERENCES series(id) ON DELETE CASCADE,
+--     key VARCHAR(100) NOT NULL,
+--     value TEXT,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     UNIQUE(series_id, key)
+-- );
+
+  -- Create the universal metadata table
+    CREATE TABLE metadata (
+        id SERIAL PRIMARY KEY,
+        series_id INTEGER REFERENCES series(id) ON DELETE CASCADE,
+        book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+        metadata_key VARCHAR(255) NOT NULL,
+        metadata_value TEXT NOT NULL,
+        metadata_type VARCHAR(50) NOT NULL DEFAULT 'string' CHECK (metadata_type IN ('string', 'number', 'date', 'url', 'json')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        -- Ensure either series_id or book_id is provided, but not both
+        CONSTRAINT metadata_context_check CHECK (
+            (series_id IS NOT NULL AND book_id IS NULL) OR 
+            (series_id IS NULL AND book_id IS NOT NULL)
+        ),
+        -- Ensure unique metadata keys within the same context
+        CONSTRAINT unique_series_metadata_key UNIQUE (series_id, metadata_key) DEFERRABLE INITIALLY DEFERRED,
+        CONSTRAINT unique_book_metadata_key UNIQUE (book_id, metadata_key) DEFERRABLE INITIALLY DEFERRED
+    );
+
 
 -- Utility function for automatic timestamp updates
 CREATE OR REPLACE FUNCTION update_timestamp()
@@ -96,6 +117,12 @@ CREATE TRIGGER update_series_timeline_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+-- Add trigger for automatic timestamp updates
+CREATE TRIGGER metadata_update_timestamp
+    BEFORE UPDATE ON metadata
+    FOR EACH ROW
+    EXECUTE FUNCTION update_timestamp();
+
 -- Create indices for performance optimization
 -- Optimize author lookups
 CREATE INDEX idx_authors_name ON authors(name);
@@ -113,8 +140,15 @@ CREATE INDEX idx_books_status ON books(status);
 CREATE INDEX idx_series_timeline_series_id ON series_timeline(series_id);
 
 -- Optimize metadata lookups
-CREATE INDEX idx_series_metadata_series_id_key ON series_metadata(series_id, key);
+--CREATE INDEX idx_series_metadata_series_id_key ON series_metadata(series_id, key);
 
+   -- Create indexes for better query performance
+    CREATE INDEX idx_metadata_series_id ON metadata(series_id) WHERE series_id IS NOT NULL;
+    CREATE INDEX idx_metadata_book_id ON metadata(book_id) WHERE book_id IS NOT NULL;
+    CREATE INDEX idx_metadata_key ON metadata(metadata_key);
+    CREATE INDEX idx_metadata_type ON metadata(metadata_type);
+
+ 
 -- Record this migration
 INSERT INTO migrations (filename) VALUES ('001_create_core_schema.sql');
 
