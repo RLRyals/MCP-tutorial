@@ -201,7 +201,7 @@ export class TropeHandlers {
             const tropeResult = await this.db.query(
                 `INSERT INTO tropes 
                  (series_id, trope_name, trope_category, description, common_elements, typical_trajectory) 
-                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING trope_id`,
+                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
                 [
                     series_id, 
                     trope_name, 
@@ -212,7 +212,7 @@ export class TropeHandlers {
                 ]
             );
             
-            const tropeId = tropeResult.rows[0].trope_id;
+            const tropeId = tropeResult.rows[0].id;
             
             // Then, create all the scene types for this trope
             if (scene_types && scene_types.length > 0) {
@@ -269,7 +269,7 @@ export class TropeHandlers {
                 `SELECT t.*, s.title as series_title
                  FROM tropes t
                  JOIN series s ON t.series_id = s.series_id
-                 WHERE t.trope_id = $1`,
+                 WHERE t.id = $1`,
                 [trope_id]
             );
             
@@ -361,8 +361,8 @@ export class TropeHandlers {
             // Execute the query
             const result = await this.db.query(
                 `SELECT t.*, s.title as series_title,
-                 (SELECT COUNT(*) FROM trope_scene_types WHERE trope_id = t.trope_id) as scene_type_count,
-                 (SELECT COUNT(*) FROM trope_instances WHERE trope_id = t.trope_id) as usage_count
+                 (SELECT COUNT(*) FROM trope_scene_types WHERE trope_id = t.id) as scene_type_count,
+                 (SELECT COUNT(*) FROM trope_instances WHERE trope_id = t.id) as usage_count
                  FROM tropes t
                  JOIN series s ON t.series_id = s.series_id
                  ${whereClause}
@@ -409,7 +409,7 @@ export class TropeHandlers {
             const validation = await this.db.query(
                 `SELECT t.trope_name, b.title as book_title
                  FROM tropes t, books b
-                 WHERE t.trope_id = $1 AND b.book_id = $2`,
+                 WHERE t.id = $1 AND b.id = $2`,
                 [trope_id, book_id]
             );
             
@@ -489,7 +489,7 @@ export class TropeHandlers {
             const instanceResult = await this.db.query(
                 `SELECT i.*, t.trope_name, t.trope_category, b.title as book_title
                  FROM trope_instances i
-                 JOIN tropes t ON i.trope_id = t.trope_id
+                 JOIN tropes t ON i.trope_id = t.id
                  JOIN books b ON i.book_id = b.book_id
                  WHERE i.instance_id = $1`,
                 [instance_id]

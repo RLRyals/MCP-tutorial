@@ -373,81 +373,81 @@ export class PlotThreadHandlers {
         }
     }
     
-    async handleLinkPlotThreads(args) {
-        try {
-            // Validate input
-            const validation = PlotValidators.validateThreadRelationship(args);
-            if (!validation.valid) {
-                throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
-            }
+    // async handleLinkPlotThreads(args) {
+    //     try {
+    //         // Validate input
+    //         const validation = PlotValidators.validateThreadRelationship(args);
+    //         if (!validation.valid) {
+    //             throw new Error(`Validation failed: ${validation.errors.join(', ')}`);
+    //         }
             
-            // Check if both threads exist
-            const threadsCheck = await this.db.query(
-                'SELECT id, title FROM plot_threads WHERE id = ANY($1)',
-                [[args.thread_a_id, args.thread_b_id]]
-            );
+    //         // Check if both threads exist
+    //         const threadsCheck = await this.db.query(
+    //             'SELECT id, title FROM plot_threads WHERE id = ANY($1)',
+    //             [[args.thread_a_id, args.thread_b_id]]
+    //         );
             
-            if (threadsCheck.rows.length !== 2) {
-                throw new Error('One or both plot threads not found');
-            }
+    //         if (threadsCheck.rows.length !== 2) {
+    //             throw new Error('One or both plot threads not found');
+    //         }
             
-            // Check for existing relationship
-            const existingCheck = await this.db.query(
-                'SELECT id FROM plot_thread_relationships WHERE thread_a_id = $1 AND thread_b_id = $2',
-                [args.thread_a_id, args.thread_b_id]
-            );
+    //         // Check for existing relationship
+    //         const existingCheck = await this.db.query(
+    //             'SELECT id FROM plot_thread_relationships WHERE thread_a_id = $1 AND thread_b_id = $2',
+    //             [args.thread_a_id, args.thread_b_id]
+    //         );
             
-            if (existingCheck.rows.length > 0) {
-                throw new Error('Relationship between these threads already exists');
-            }
+    //         if (existingCheck.rows.length > 0) {
+    //             throw new Error('Relationship between these threads already exists');
+    //         }
             
-            // Get relationship type ID from lookup table
-            const relationshipTypeResult = await this.db.query(
-                'SELECT id, type_name FROM relationship_types WHERE type_name = $1 AND is_active = true',
-                [args.relationship_type]
-            );
+    //         // Get relationship type ID from lookup table
+    //         const relationshipTypeResult = await this.db.query(
+    //             'SELECT id, type_name FROM relationship_types WHERE type_name = $1 AND is_active = true',
+    //             [args.relationship_type]
+    //         );
             
-            if (relationshipTypeResult.rows.length === 0) {
-                throw new Error(`Invalid relationship type: ${args.relationship_type}. Use get_available_options with option_type='relationship_types' to see valid values.`);
-            }
+    //         if (relationshipTypeResult.rows.length === 0) {
+    //             throw new Error(`Invalid relationship type: ${args.relationship_type}. Use get_available_options with option_type='relationship_types' to see valid values.`);
+    //         }
 
-            // Insert the relationship
-            const insertQuery = `
-                INSERT INTO plot_thread_relationships (
-                    thread_a_id, thread_b_id, relationship_type_id, relationship_description,
-                    strength, established_book
-                ) VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING id
-            `;
+    //         // Insert the relationship
+    //         const insertQuery = `
+    //             INSERT INTO plot_thread_relationships (
+    //                 thread_a_id, thread_b_id, relationship_type_id, relationship_description,
+    //                 strength, established_book
+    //             ) VALUES ($1, $2, $3, $4, $5, $6)
+    //             RETURNING id
+    //         `;
             
-            await this.db.query(insertQuery, [
-                args.thread_a_id,
-                args.thread_b_id,
-                relationshipTypeResult.rows[0].relationship_type_id,
-                args.relationship_description || null,
-                args.strength || 5,
-                args.established_book || null
-            ]);
+    //         await this.db.query(insertQuery, [
+    //             args.thread_a_id,
+    //             args.thread_b_id,
+    //             relationshipTypeResult.rows[0].relationship_type_id,
+    //             args.relationship_description || null,
+    //             args.strength || 5,
+    //             args.established_book || null
+    //         ]);
             
-            const threadNames = threadsCheck.rows.map(t => t.title);
+    //         const threadNames = threadsCheck.rows.map(t => t.title);
             
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Successfully linked plot threads!\n\n` +
-                              `**Relationship:** "${threadNames[0]}" ${relationshipTypeResult.rows[0].type_name.replace('_', ' ')} "${threadNames[1]}"\n` +
-                              `**Strength:** ${args.strength || 5}/10\n` +
-                              `${args.relationship_description ? `**Description:** ${args.relationship_description}\n` : ''}` +
-                              `${args.established_book ? `**Established in Book:** ${args.established_book}` : ''}`
-                    }
-                ]
-            };
+    //         return {
+    //             content: [
+    //                 {
+    //                     type: 'text',
+    //                     text: `Successfully linked plot threads!\n\n` +
+    //                           `**Relationship:** "${threadNames[0]}" ${relationshipTypeResult.rows[0].type_name.replace('_', ' ')} "${threadNames[1]}"\n` +
+    //                           `**Strength:** ${args.strength || 5}/10\n` +
+    //                           `${args.relationship_description ? `**Description:** ${args.relationship_description}\n` : ''}` +
+    //                           `${args.established_book ? `**Established in Book:** ${args.established_book}` : ''}`
+    //                 }
+    //             ]
+    //         };
             
-        } catch (error) {
-            throw new Error(`Failed to link plot threads: ${error.message}`);
-        }
-    }
+    //     } catch (error) {
+    //         throw new Error(`Failed to link plot threads: ${error.message}`);
+    //     }
+    // }
     
     async handleResolvePlotThread(args) {
         try {

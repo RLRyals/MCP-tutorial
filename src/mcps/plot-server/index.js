@@ -182,7 +182,7 @@ class PlotMCPServer extends BaseMCPServer {
             'create_plot_thread': this.handleCreatePlotThread,
             'update_plot_thread': this.handleUpdatePlotThread,
             'get_plot_threads': this.handleGetPlotThreads,
-            'link_plot_threads': this.handleLinkPlotThreads,
+            //'link_plot_threads': this.handleLinkPlotThreads,
             'resolve_plot_thread': this.handleResolvePlotThread,
             
             // Story Analysis Handlers

@@ -289,7 +289,7 @@ export class GenreExtensions {
         try {
             // Validate plot thread exists
             const threadCheck = await this.db.query(
-                'SELECT thread_id, title FROM plot_threads WHERE thread_id = $1',
+                'SELECT id, title FROM plot_threads WHERE id = $1',
                 [args.plot_thread_id]
             );
             
@@ -300,7 +300,7 @@ export class GenreExtensions {
             // Validate characters exist if provided
             if (args.affects_characters && args.affects_characters.length > 0) {
                 const charactersCheck = await this.db.query(
-                    'SELECT character_id, name FROM characters WHERE character_id = ANY($1)',
+                    'SELECT id, name FROM characters WHERE id = ANY($1)',
                     [args.affects_characters]
                 );
                 

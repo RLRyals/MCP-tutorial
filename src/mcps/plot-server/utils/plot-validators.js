@@ -511,37 +511,37 @@ export class PlotValidators {
     // =============================================
     
     // Old mystery-specific validator - DEPRECATED
-    static validateMysteryCase(args) {
-        console.warn('PlotValidators.validateMysteryCase is deprecated. Use validateInformationReveal instead for cross-genre compatibility.');
-        return this.validateInformationReveal({
-            plot_thread_id: args.plot_thread_id,
-            reveal_type: 'evidence',
-            information_content: args.case_name,
-            reveal_method: 'investigation',
-            significance_level: 'major'
-        });
-    }
+    // static validateMysteryCase(args) {
+    //     console.warn('PlotValidators.validateMysteryCase is deprecated. Use validateInformationReveal instead for cross-genre compatibility.');
+    //     return this.validateInformationReveal({
+    //         plot_thread_id: args.plot_thread_id,
+    //         reveal_type: 'evidence',
+    //         information_content: args.case_name,
+    //         reveal_method: 'investigation',
+    //         significance_level: 'major'
+    //     });
+    // }
     
     // Old romance-specific validator - DEPRECATED  
-    static validateRomanceArc(args) {
-        console.warn('PlotValidators.validateRomanceArc is deprecated. Use validateRelationshipArc instead for cross-genre compatibility.');
+    // static validateRomanceArc(args) {
+    //     console.warn('PlotValidators.validateRomanceArc is deprecated. Use validateRelationshipArc instead for cross-genre compatibility.');
         
-        if (!args.character_a_id || !args.character_b_id) {
-            return { valid: false, errors: ['Use the new validateRelationshipArc with participants array instead of character_a_id/character_b_id'] };
-        }
+    //     if (!args.character_a_id || !args.character_b_id) {
+    //         return { valid: false, errors: ['Use the new validateRelationshipArc with participants array instead of character_a_id/character_b_id'] };
+    //     }
         
-        // Convert old format to new format for validation
-        const convertedArgs = {
-            plot_thread_id: args.plot_thread_id,
-            arc_name: `Romance Arc`,
-            participants: [
-                { character_id: args.character_a_id, role_in_relationship: 'primary' },
-                { character_id: args.character_b_id, role_in_relationship: 'primary' }
-            ],
-            relationship_type: 'romantic',
-            complexity_level: args.tension_level || 5
-        };
+    //     // Convert old format to new format for validation
+    //     const convertedArgs = {
+    //         plot_thread_id: args.plot_thread_id,
+    //         arc_name: `Romance Arc`,
+    //         participants: [
+    //             { character_id: args.character_a_id, role_in_relationship: 'primary' },
+    //             { character_id: args.character_b_id, role_in_relationship: 'primary' }
+    //         ],
+    //         relationship_type: 'romantic',
+    //         complexity_level: args.tension_level || 5
+    //     };
         
-        return this.validateRelationshipArc(convertedArgs);
-    }
+    //     return this.validateRelationshipArc(convertedArgs);
+    // }
 }

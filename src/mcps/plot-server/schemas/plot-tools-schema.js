@@ -80,31 +80,31 @@ export const plotThreadToolsSchema = [
             required: ['series_id']
         }
     },
-    {
-        name: 'link_plot_threads',
-        description: 'Create relationships between plot threads',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                thread_a_id: { type: 'integer', description: 'First thread ID' },
-                thread_b_id: { type: 'integer', description: 'Second thread ID' },
-                relationship_type: { 
-                    type: 'string', 
-                    description: 'Type of relationship (use get_available_options with option_type="relationship_types" to see valid values)'
-                },
-                relationship_description: { type: 'string', description: 'Description of the relationship' },
-                strength: { 
-                    type: 'integer', 
-                    minimum: 1, 
-                    maximum: 10, 
-                    default: 5,
-                    description: 'Relationship strength (1-10)'
-                },
-                established_book: { type: 'integer', description: 'Book where relationship is established' }
-            },
-            required: ['thread_a_id', 'thread_b_id', 'relationship_type']
-        }
-    },
+    // {
+    //     name: 'link_plot_threads',
+    //     description: 'Create relationships between plot threads',
+    //     inputSchema: {
+    //         type: 'object',
+    //         properties: {
+    //             thread_a_id: { type: 'integer', description: 'First thread ID' },
+    //             thread_b_id: { type: 'integer', description: 'Second thread ID' },
+    //             relationship_type: { 
+    //                 type: 'string', 
+    //                 description: 'Type of relationship (use get_available_options with option_type="relationship_types" to see valid values)'
+    //             },
+    //             relationship_description: { type: 'string', description: 'Description of the relationship' },
+    //             strength: { 
+    //                 type: 'integer', 
+    //                 minimum: 1, 
+    //                 maximum: 10, 
+    //                 default: 5,
+    //                 description: 'Relationship strength (1-10)'
+    //             },
+    //             established_book: { type: 'integer', description: 'Book where relationship is established' }
+    //         },
+    //         required: ['thread_a_id', 'thread_b_id', 'relationship_type']
+    //     }
+    // },
     {
         name: 'resolve_plot_thread',
         description: 'Mark a plot thread as resolved with details',
