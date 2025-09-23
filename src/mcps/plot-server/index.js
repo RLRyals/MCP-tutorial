@@ -81,7 +81,7 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleCreatePlotThread = this.plotThreadHandlers.handleCreatePlotThread.bind(this.plotThreadHandlers);
             this.handleUpdatePlotThread = this.plotThreadHandlers.handleUpdatePlotThread.bind(this.plotThreadHandlers);
             this.handleGetPlotThreads = this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers);
-            this.handleLinkPlotThreads = this.plotThreadHandlers.handleLinkPlotThreads.bind(this.plotThreadHandlers);
+            //this.handleLinkPlotThreads = this.plotThreadHandlers.handleLinkPlotThreads.bind(this.plotThreadHandlers);
             this.handleResolvePlotThread = this.plotThreadHandlers.handleResolvePlotThread.bind(this.plotThreadHandlers);
             
             // Bind story analysis handler methods

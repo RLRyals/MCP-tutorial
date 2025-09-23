@@ -118,7 +118,7 @@ export class TimelineEventHandlers {
                 }
             },
             {
-                name: 'get_character_timeline',
+                name: 'get_character_timeline_events',
                 description: 'Get all timeline events involving a specific character',
                 inputSchema: {
                     type: 'object',
@@ -133,22 +133,22 @@ export class TimelineEventHandlers {
                     required: ['character_id']
                 }
             },
-            {
-                name: 'find_timeline_inconsistencies',
-                description: 'Analyze the timeline for potential continuity problems',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        series_id: { type: 'integer', description: 'Series ID to analyze' },
-                        check_character_logistics: { 
-                            type: 'boolean', 
-                            description: 'Check for character travel/location inconsistencies',
-                            default: true
-                        }
-                    },
-                    required: ['series_id']
-                }
-            }
+            // {
+            //     name: 'find_timeline_inconsistencies',
+            //     description: 'Analyze the timeline for potential continuity problems',
+            //     inputSchema: {
+            //         type: 'object',
+            //         properties: {
+            //             series_id: { type: 'integer', description: 'Series ID to analyze' },
+            //             check_character_logistics: { 
+            //                 type: 'boolean', 
+            //                 description: 'Check for character travel/location inconsistencies',
+            //                 default: true
+            //             }
+            //         },
+            //         required: ['series_id']
+            //     }
+            // }
         ];
     }
 
@@ -953,263 +953,263 @@ export class TimelineEventHandlers {
      * @param {Object} args - Function arguments
      * @returns {Object} Analysis results
      */
-    async handleFindTimelineInconsistencies(args) {
-        try {
-            const { series_id, check_character_logistics = true } = args;
+    // async handleFindTimelineInconsistencies(args) {
+    //     try {
+    //         const { series_id, check_character_logistics = true } = args;
             
-            // Check if series exists
-            const seriesQuery = `
-                SELECT title FROM series WHERE series_id = $1
-            `;
+    //         // Check if series exists
+    //         const seriesQuery = `
+    //             SELECT title FROM series WHERE series_id = $1
+    //         `;
             
-            const seriesResult = await this.db.query(seriesQuery, [series_id]);
+    //         const seriesResult = await this.db.query(seriesQuery, [series_id]);
             
-            if (seriesResult.rows.length === 0) {
-                throw new Error(`Series with ID ${series_id} not found`);
-            }
+    //         if (seriesResult.rows.length === 0) {
+    //             throw new Error(`Series with ID ${series_id} not found`);
+    //         }
             
-            const seriesTitle = seriesResult.rows[0].title;
+    //         const seriesTitle = seriesResult.rows[0].title;
             
-            // Initialize the response object
-            const response = {
-                series_id,
-                series_title: seriesTitle,
-                analysis_date: new Date().toISOString(),
-                issues: []
-            };
+    //         // Initialize the response object
+    //         const response = {
+    //             series_id,
+    //             series_title: seriesTitle,
+    //             analysis_date: new Date().toISOString(),
+    //             issues: []
+    //         };
             
-            // Check for overlapping events with the same characters
-            const overlapQuery = `
-                WITH character_events AS (
-                    SELECT 
-                        t.id as event_id,
-                        t.event_name,
-                        t.event_date,
-                        ep.character_id,
-                        c.name AS character_name
-                    FROM 
-                        timeline_events t
-                        JOIN event_participants ep ON t.id = ep.event_id
-                        JOIN characters c ON ep.character_id = c.id
-                    WHERE 
-                        t.series_id = $1
-                ),
-                character_pairs AS (
-                    SELECT 
-                        a.character_id,
-                        a.character_name,
-                        a.event_id AS event_a_id,
-                        a.event_name AS event_a_name,
-                        a.event_date AS event_a_date,
-                        b.event_id AS event_b_id,
-                        b.event_name AS event_b_name,
-                        b.event_date AS event_b_date
-                    FROM 
-                        character_events a
-                        JOIN character_events b ON a.character_id = b.character_id AND a.event_id < b.event_id
-                    WHERE 
-                        a.event_date = b.event_date
-                )
-                SELECT * FROM character_pairs
-            `;
+    //         // Check for overlapping events with the same characters
+    //         const overlapQuery = `
+    //             WITH character_events AS (
+    //                 SELECT 
+    //                     t.id as event_id,
+    //                     t.event_name,
+    //                     t.event_date,
+    //                     ep.character_id,
+    //                     c.name AS character_name
+    //                 FROM 
+    //                     timeline_events t
+    //                     JOIN event_participants ep ON t.id = ep.event_id
+    //                     JOIN characters c ON ep.character_id = c.id
+    //                 WHERE 
+    //                     t.series_id = $1
+    //             ),
+    //             character_pairs AS (
+    //                 SELECT 
+    //                     a.character_id,
+    //                     a.character_name,
+    //                     a.event_id AS event_a_id,
+    //                     a.event_name AS event_a_name,
+    //                     a.event_date AS event_a_date,
+    //                     b.event_id AS event_b_id,
+    //                     b.event_name AS event_b_name,
+    //                     b.event_date AS event_b_date
+    //                 FROM 
+    //                     character_events a
+    //                     JOIN character_events b ON a.character_id = b.character_id AND a.event_id < b.event_id
+    //                 WHERE 
+    //                     a.event_date = b.event_date
+    //             )
+    //             SELECT * FROM character_pairs
+    //         `;
             
-            const overlapResult = await this.db.query(overlapQuery, [series_id]);
+    //         const overlapResult = await this.db.query(overlapQuery, [series_id]);
             
-            // Add overlap issues to the response
-            if (overlapResult.rows.length > 0) {
-                for (const overlap of overlapResult.rows) {
-                    response.issues.push({
-                        issue_type: 'character_double_booking',
-                        severity: 'warning',
-                        description: `Character "${overlap.character_name}" appears in two events on the same date: "${overlap.event_a_name}" and "${overlap.event_b_name}"`,
-                        details: {
-                            character_id: overlap.character_id,
-                            character_name: overlap.character_name,
-                            event1: {
-                                event_id: overlap.event_a_id,
-                                name: overlap.event_a_name,
-                                date: overlap.event_a_date
-                            },
-                            event2: {
-                                event_id: overlap.event_b_id,
-                                name: overlap.event_b_name,
-                                date: overlap.event_b_date
-                            }
-                        }
-                    });
-                }
-            }
+    //         // Add overlap issues to the response
+    //         if (overlapResult.rows.length > 0) {
+    //             for (const overlap of overlapResult.rows) {
+    //                 response.issues.push({
+    //                     issue_type: 'character_double_booking',
+    //                     severity: 'warning',
+    //                     description: `Character "${overlap.character_name}" appears in two events on the same date: "${overlap.event_a_name}" and "${overlap.event_b_name}"`,
+    //                     details: {
+    //                         character_id: overlap.character_id,
+    //                         character_name: overlap.character_name,
+    //                         event1: {
+    //                             event_id: overlap.event_a_id,
+    //                             name: overlap.event_a_name,
+    //                             date: overlap.event_a_date
+    //                         },
+    //                         event2: {
+    //                             event_id: overlap.event_b_id,
+    //                             name: overlap.event_b_name,
+    //                             date: overlap.event_b_date
+    //                         }
+    //                     }
+    //                 });
+    //             }
+    //         }
             
-            // Check for character logistics issues if requested
-            if (check_character_logistics) {
-                try {
-                    // This is a more complex check that would involve looking at locations,
-                    // travel times, and potentially chapter mappings if implemented
-                    // Here's a simplified version that checks for rapid location changes
+    //         // Check for character logistics issues if requested
+    //         if (check_character_logistics) {
+    //             try {
+    //                 // This is a more complex check that would involve looking at locations,
+    //                 // travel times, and potentially chapter mappings if implemented
+    //                 // Here's a simplified version that checks for rapid location changes
                     
-                    const logisticsQuery = `
-                        WITH event_locations AS (
-                            SELECT 
-                                t.id as event_id,
-                                t.event_name,
-                                t.event_date,
-                                t.book_id,
-                                ep.character_id,
-                                c.name AS character_name,
-                                b.title AS book_title,
-                                COALESCE(t.event_description, '') AS event_description
-                            FROM 
-                                timeline_events t
-                                JOIN event_participants ep ON t.id = ep.event_id
-                                JOIN characters c ON ep.character_id = c.id
-                                LEFT JOIN books b ON t.book_id = b.id
-                            WHERE 
-                                t.series_id = $1
-                        ),
-                        location_pairs AS (
-                            SELECT 
-                                a.character_id,
-                                a.character_name,
-                                a.event_id AS event_a_id,
-                                a.event_name AS event_a_name,
-                                a.event_date AS event_a_date,
-                                a.event_description AS event_a_description,
-                                b.event_id AS event_b_id,
-                                b.event_name AS event_b_name,
-                                b.event_date AS event_b_date,
-                                b.event_description AS event_b_description
-                            FROM 
-                                event_locations a
-                                JOIN event_locations b ON a.character_id = b.character_id 
-                                                       AND a.event_id < b.event_id
-                                                       AND a.event_date = b.event_date
-                                                       AND position(lower(a.event_description) in lower(b.event_description)) = 0
-                            WHERE
-                                a.event_description ~ '[Ll]ocation|[Pp]lace|[Cc]ity|[Tt]own|[Cc]ountry|[Vv]illage' AND
-                                b.event_description ~ '[Ll]ocation|[Pp]lace|[Cc]ity|[Tt]own|[Cc]ountry|[Vv]illage'
-                        )
-                        SELECT * FROM location_pairs
-                    `;
+    //                 const logisticsQuery = `
+    //                     WITH event_locations AS (
+    //                         SELECT 
+    //                             t.id as event_id,
+    //                             t.event_name,
+    //                             t.event_date,
+    //                             t.book_id,
+    //                             ep.character_id,
+    //                             c.name AS character_name,
+    //                             b.title AS book_title,
+    //                             COALESCE(t.event_description, '') AS event_description
+    //                         FROM 
+    //                             timeline_events t
+    //                             JOIN event_participants ep ON t.id = ep.event_id
+    //                             JOIN characters c ON ep.character_id = c.id
+    //                             LEFT JOIN books b ON t.book_id = b.id
+    //                         WHERE 
+    //                             t.series_id = $1
+    //                     ),
+    //                     location_pairs AS (
+    //                         SELECT 
+    //                             a.character_id,
+    //                             a.character_name,
+    //                             a.event_id AS event_a_id,
+    //                             a.event_name AS event_a_name,
+    //                             a.event_date AS event_a_date,
+    //                             a.event_description AS event_a_description,
+    //                             b.event_id AS event_b_id,
+    //                             b.event_name AS event_b_name,
+    //                             b.event_date AS event_b_date,
+    //                             b.event_description AS event_b_description
+    //                         FROM 
+    //                             event_locations a
+    //                             JOIN event_locations b ON a.character_id = b.character_id 
+    //                                                    AND a.event_id < b.event_id
+    //                                                    AND a.event_date = b.event_date
+    //                                                    AND position(lower(a.event_description) in lower(b.event_description)) = 0
+    //                         WHERE
+    //                             a.event_description ~ '[Ll]ocation|[Pp]lace|[Cc]ity|[Tt]own|[Cc]ountry|[Vv]illage' AND
+    //                             b.event_description ~ '[Ll]ocation|[Pp]lace|[Cc]ity|[Tt]own|[Cc]ountry|[Vv]illage'
+    //                     )
+    //                     SELECT * FROM location_pairs
+    //                 `;
                     
-                    const logisticsResult = await this.db.query(logisticsQuery, [series_id]);
+    //                 const logisticsResult = await this.db.query(logisticsQuery, [series_id]);
                     
-                    // Add logistics issues to the response
-                    if (logisticsResult.rows.length > 0) {
-                        for (const logistics of logisticsResult.rows) {
-                            response.issues.push({
-                                issue_type: 'possible_travel_inconsistency',
-                                severity: 'info',
-                                description: `Character "${logistics.character_name}" might be in different locations on the same date: "${logistics.event_a_name}" and "${logistics.event_b_name}"`,
-                                details: {
-                                    character_id: logistics.character_id,
-                                    character_name: logistics.character_name,
-                                    event1: {
-                                        event_id: logistics.event_a_id,
-                                        name: logistics.event_a_name,
-                                        date: logistics.event_a_date,
-                                        description: logistics.event_a_description
-                                    },
-                                    event2: {
-                                        event_id: logistics.event_b_id,
-                                        name: logistics.event_b_name,
-                                        date: logistics.event_b_date,
-                                        description: logistics.event_b_description
-                                    }
-                                }
-                            });
-                        }
-                    }
-                } catch (error) {
-                    console.log(`Character logistics check error: ${error.message}`);
-                    // Continue with other checks if this one fails
-                }
-            }
+    //                 // Add logistics issues to the response
+    //                 if (logisticsResult.rows.length > 0) {
+    //                     for (const logistics of logisticsResult.rows) {
+    //                         response.issues.push({
+    //                             issue_type: 'possible_travel_inconsistency',
+    //                             severity: 'info',
+    //                             description: `Character "${logistics.character_name}" might be in different locations on the same date: "${logistics.event_a_name}" and "${logistics.event_b_name}"`,
+    //                             details: {
+    //                                 character_id: logistics.character_id,
+    //                                 character_name: logistics.character_name,
+    //                                 event1: {
+    //                                     event_id: logistics.event_a_id,
+    //                                     name: logistics.event_a_name,
+    //                                     date: logistics.event_a_date,
+    //                                     description: logistics.event_a_description
+    //                                 },
+    //                                 event2: {
+    //                                     event_id: logistics.event_b_id,
+    //                                     name: logistics.event_b_name,
+    //                                     date: logistics.event_b_date,
+    //                                     description: logistics.event_b_description
+    //                                 }
+    //                             }
+    //                         });
+    //                     }
+    //                 }
+    //             } catch (error) {
+    //                 console.log(`Character logistics check error: ${error.message}`);
+    //                 // Continue with other checks if this one fails
+    //             }
+    //         }
             
-            // Check for chronology issues in event-chapter mappings
-            try {
-                const chronologyQuery = `
-                    WITH event_chapters AS (
-                        SELECT 
-                            t.id as event_id,
-                            t.event_name,
-                            t.event_date,
-                            m.chapter_id,
-                            c.chapter_number,
-                            b.book_number
-                        FROM 
-                            timeline_events t
-                            JOIN event_chapter_mappings m ON t.id = m.event_id
-                            JOIN chapters c ON m.chapter_id = c.chapter_id
-                            JOIN books b ON c.book_id = b.id
-                        WHERE 
-                            t.series_id = $1 AND
-                            m.presentation_type = 'direct_scene'
-                        ORDER BY
-                            t.event_date
-                    ),
-                    chronology_pairs AS (
-                        SELECT 
-                            a.event_id AS event_a_id,
-                            a.event_name AS event_a_name,
-                            a.event_date AS event_a_date,
-                            a.chapter_id AS chapter_a_id,
-                            a.chapter_number AS chapter_a_number,
-                            a.book_number AS book_a_number,
-                            b.event_id AS event_b_id,
-                            b.event_name AS event_b_name,
-                            b.event_date AS event_b_date,
-                            b.chapter_id AS chapter_b_id,
-                            b.chapter_number AS chapter_b_number,
-                            b.book_number AS book_b_number
-                        FROM 
-                            event_chapters a
-                            JOIN event_chapters b ON a.event_date < b.event_date AND
-                                                    ((a.book_number > b.book_number) OR 
-                                                     (a.book_number = b.book_number AND a.chapter_number > b.chapter_number))
-                    )
-                    SELECT * FROM chronology_pairs
-                `;
+    //         // Check for chronology issues in event-chapter mappings
+    //         try {
+    //             const chronologyQuery = `
+    //                 WITH event_chapters AS (
+    //                     SELECT 
+    //                         t.id as event_id,
+    //                         t.event_name,
+    //                         t.event_date,
+    //                         m.chapter_id,
+    //                         c.chapter_number,
+    //                         b.book_number
+    //                     FROM 
+    //                         timeline_events t
+    //                         JOIN event_chapter_mappings m ON t.id = m.event_id
+    //                         JOIN chapters c ON m.chapter_id = c.chapter_id
+    //                         JOIN books b ON c.book_id = b.id
+    //                     WHERE 
+    //                         t.series_id = $1 AND
+    //                         m.presentation_type = 'direct_scene'
+    //                     ORDER BY
+    //                         t.event_date
+    //                 ),
+    //                 chronology_pairs AS (
+    //                     SELECT 
+    //                         a.event_id AS event_a_id,
+    //                         a.event_name AS event_a_name,
+    //                         a.event_date AS event_a_date,
+    //                         a.chapter_id AS chapter_a_id,
+    //                         a.chapter_number AS chapter_a_number,
+    //                         a.book_number AS book_a_number,
+    //                         b.event_id AS event_b_id,
+    //                         b.event_name AS event_b_name,
+    //                         b.event_date AS event_b_date,
+    //                         b.chapter_id AS chapter_b_id,
+    //                         b.chapter_number AS chapter_b_number,
+    //                         b.book_number AS book_b_number
+    //                     FROM 
+    //                         event_chapters a
+    //                         JOIN event_chapters b ON a.event_date < b.event_date AND
+    //                                                 ((a.book_number > b.book_number) OR 
+    //                                                  (a.book_number = b.book_number AND a.chapter_number > b.chapter_number))
+    //                 )
+    //                 SELECT * FROM chronology_pairs
+    //             `;
                 
-                const chronologyResult = await this.db.query(chronologyQuery, [series_id]);
+    //             const chronologyResult = await this.db.query(chronologyQuery, [series_id]);
                 
-                // Add chronology issues to the response
-                if (chronologyResult.rows.length > 0) {
-                    for (const chronology of chronologyResult.rows) {
-                        response.issues.push({
-                            issue_type: 'chronology_narrative_mismatch',
-                            severity: 'warning',
-                            description: `Chronology issue: Event "${chronology.event_a_name}" occurs before "${chronology.event_b_name}" in timeline, but appears later in the narrative`,
-                            details: {
-                                earlier_event: {
-                                    event_id: chronology.event_a_id,
-                                    name: chronology.event_a_name,
-                                    date: chronology.event_a_date,
-                                    chapter: `Book ${chronology.book_a_number}, Chapter ${chronology.chapter_a_number}`
-                                },
-                                later_event: {
-                                    event_id: chronology.event_b_id,
-                                    name: chronology.event_b_name,
-                                    date: chronology.event_b_date,
-                                    chapter: `Book ${chronology.book_b_number}, Chapter ${chronology.chapter_b_number}`
-                                }
-                            }
-                        });
-                    }
-                }
-            } catch (error) {
-                // Event-chapter mappings might not be implemented yet
-                console.log(`Chronology check error: ${error.message}`);
-            }
+    //             // Add chronology issues to the response
+    //             if (chronologyResult.rows.length > 0) {
+    //                 for (const chronology of chronologyResult.rows) {
+    //                     response.issues.push({
+    //                         issue_type: 'chronology_narrative_mismatch',
+    //                         severity: 'warning',
+    //                         description: `Chronology issue: Event "${chronology.event_a_name}" occurs before "${chronology.event_b_name}" in timeline, but appears later in the narrative`,
+    //                         details: {
+    //                             earlier_event: {
+    //                                 event_id: chronology.event_a_id,
+    //                                 name: chronology.event_a_name,
+    //                                 date: chronology.event_a_date,
+    //                                 chapter: `Book ${chronology.book_a_number}, Chapter ${chronology.chapter_a_number}`
+    //                             },
+    //                             later_event: {
+    //                                 event_id: chronology.event_b_id,
+    //                                 name: chronology.event_b_name,
+    //                                 date: chronology.event_b_date,
+    //                                 chapter: `Book ${chronology.book_b_number}, Chapter ${chronology.chapter_b_number}`
+    //                             }
+    //                         }
+    //                     });
+    //                 }
+    //             }
+    //         } catch (error) {
+    //             // Event-chapter mappings might not be implemented yet
+    //             console.log(`Chronology check error: ${error.message}`);
+    //         }
             
-            // Set overall status
-            response.issue_count = response.issues.length;
-            response.has_critical_issues = response.issues.some(issue => issue.severity === 'critical');
-            response.has_warnings = response.issues.some(issue => issue.severity === 'warning');
+    //         // Set overall status
+    //         response.issue_count = response.issues.length;
+    //         response.has_critical_issues = response.issues.some(issue => issue.severity === 'critical');
+    //         response.has_warnings = response.issues.some(issue => issue.severity === 'warning');
             
-            return response;
-        } 
-        catch (error) {
-            throw new Error(`Failed to analyze timeline: ${error.message}`);
-        }
-    }
+    //         return response;
+    //     } 
+    //     catch (error) {
+    //         throw new Error(`Failed to analyze timeline: ${error.message}`);
+    //     }
+    // }
 }

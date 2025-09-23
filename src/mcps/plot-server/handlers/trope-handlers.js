@@ -127,9 +127,9 @@ export class TropeHandlers {
                 description: 'Implement a specific scene type for a trope instance',
                 inputSchema: {
                     type: 'object',
-                    required: ['instance_id', 'scene_type_id', 'chapter_id', 'scene_summary'],
+                    required: ['trope_instance_id', 'scene_type_id', 'chapter_id', 'scene_summary'],
                     properties: {
-                        instance_id: { type: 'integer', description: 'ID of the trope instance' },
+                        trope_instance_id: { type: 'integer', description: 'ID of the trope instance' },
                         scene_type_id: { type: 'integer', description: 'ID of the scene type being implemented' },
                         chapter_id: { type: 'integer', description: 'Chapter where this scene appears' },
                         scene_number: { type: 'integer', description: 'Scene number within the chapter' },
@@ -432,7 +432,7 @@ export class TropeHandlers {
             
             // Get scene types that need to be implemented
             const sceneTypesResult = await this.db.query(
-                `SELECT scene_type_id, scene_function, scene_description, required
+                `SELECT id, scene_function, scene_description, required
                  FROM trope_scene_types
                  WHERE trope_id = $1
                  ORDER BY 
@@ -458,7 +458,7 @@ export class TropeHandlers {
                     .map(st => ({
                         scene_function: st.scene_function,
                         scene_description: st.scene_description,
-                        scene_type_id: st.scene_type_id,
+                        scene_type_id: st.id,
                         implemented: false
                     })),
                 optional_scenes: sceneTypesResult.rows
@@ -466,7 +466,7 @@ export class TropeHandlers {
                     .map(st => ({
                         scene_function: st.scene_function,
                         scene_description: st.scene_description,
-                        scene_type_id: st.scene_type_id,
+                        scene_type_id: st.id,
                         implemented: false
                     }))
             };
@@ -490,8 +490,8 @@ export class TropeHandlers {
                 `SELECT i.*, t.trope_name, t.trope_category, b.title as book_title
                  FROM trope_instances i
                  JOIN tropes t ON i.trope_id = t.id
-                 JOIN books b ON i.book_id = b.book_id
-                 WHERE i.instance_id = $1`,
+                 JOIN books b ON i.book_id = b.id
+                 WHERE i.id = $1`,
                 [instance_id]
             );
             
@@ -503,7 +503,7 @@ export class TropeHandlers {
             
             // Get all scene types for this trope
             const sceneTypesResult = await this.db.query(
-                `SELECT st.*
+                `SELECT st.* , st.id as scene_type_id
                  FROM trope_scene_types st
                  WHERE st.trope_id = $1
                  ORDER BY 
@@ -523,7 +523,7 @@ export class TropeHandlers {
                 const scenesResult = await this.db.query(
                     `SELECT ts.*, st.scene_function, st.scene_description, st.required, st.typical_placement
                      FROM trope_scenes ts
-                     JOIN trope_scene_types st ON ts.scene_type_id = st.scene_type_id
+                     JOIN trope_scene_types st ON ts.scene_type_id = st.id
                      WHERE ts.instance_id = $1`,
                     [instance_id]
                 );
@@ -623,21 +623,21 @@ export class TropeHandlers {
             const query = `
                 WITH scene_counts AS (
                     SELECT 
-                        i.instance_id,
-                        COUNT(DISTINCT st.scene_type_id) FILTER (WHERE st.required = true) AS required_total,
+                        i.id AS instance_id,
+                        COUNT(DISTINCT st.id) FILTER (WHERE st.required = true) AS required_total,
                         COUNT(DISTINCT ts.scene_type_id) FILTER (WHERE st.required = true) AS required_implemented,
-                        COUNT(DISTINCT st.scene_type_id) FILTER (WHERE st.required = false) AS optional_total,
+                        COUNT(DISTINCT st.id) FILTER (WHERE st.required = false) AS optional_total,
                         COUNT(DISTINCT ts.scene_type_id) FILTER (WHERE st.required = false) AS optional_implemented
                     FROM 
                         trope_instances i
-                        JOIN tropes t ON i.trope_id = t.trope_id
-                        JOIN trope_scene_types st ON t.trope_id = st.trope_id
-                        LEFT JOIN trope_scenes ts ON ts.instance_id = i.instance_id AND ts.scene_type_id = st.scene_type_id
+                        JOIN tropes t ON i.trope_id = t.id
+                        JOIN trope_scene_types st ON t.id = st.trope_id
+                        LEFT JOIN trope_scenes ts ON ts.instance_id = i.id AND ts.scene_type_id = st.id
                     WHERE i.book_id = $1
-                    GROUP BY i.instance_id
+                    GROUP BY i.id
                 )
                 SELECT 
-                    i.instance_id,
+                    i.id AS instance_id,
                     i.trope_id,
                     t.trope_name,
                     t.trope_category,
@@ -652,8 +652,8 @@ export class TropeHandlers {
                     i.updated_at
                 FROM 
                     trope_instances i
-                    JOIN tropes t ON i.trope_id = t.trope_id
-                    JOIN scene_counts sc ON i.instance_id = sc.instance_id
+                    JOIN tropes t ON i.trope_id = t.id
+                    JOIN scene_counts sc ON i.id = sc.instance_id
                 ${whereClause}
                 ORDER BY t.trope_name`;
             
@@ -706,7 +706,7 @@ export class TropeHandlers {
      */
     async handleImplementTropeScene(args) {
         const { 
-            instance_id, 
+            trope_instance_id: instance_id, 
             scene_type_id, 
             chapter_id, 
             scene_number, 
@@ -718,13 +718,14 @@ export class TropeHandlers {
         try {
             // Validate that the instance and scene type exist and match
             const validationResult = await this.db.query(
-                `SELECT i.instance_id, i.trope_id, st.scene_type_id, st.scene_function, 
-                        t.trope_name, b.title as book_title
+                `SELECT i.id as instance_id, i.trope_id, st.id as scene_type_id, 
+                st.scene_function, 
+                t.trope_name, b.title as book_title
                  FROM trope_instances i
-                 JOIN tropes t ON i.trope_id = t.trope_id
-                 JOIN books b ON i.book_id = b.book_id
-                 JOIN trope_scene_types st ON t.trope_id = st.trope_id
-                 WHERE i.instance_id = $1 AND st.scene_type_id = $2`,
+                 JOIN tropes t ON i.trope_id = t.id
+                 JOIN books b ON i.book_id = b.id
+                 JOIN trope_scene_types st ON t.id = st.trope_id
+                 WHERE i.id = $1 AND st.id = $2`,
                 [instance_id, scene_type_id]
             );
             
@@ -761,10 +762,10 @@ export class TropeHandlers {
             // Check if all required scenes are implemented
             const implementationStatusResult = await this.db.query(
                 `WITH required_scenes AS (
-                    SELECT st.scene_type_id
+                    SELECT st.id as scene_type_id
                     FROM trope_scene_types st
-                    JOIN tropes t ON st.trope_id = t.trope_id
-                    WHERE t.trope_id = (SELECT trope_id FROM trope_instances WHERE instance_id = $1)
+                    JOIN tropes t ON st.trope_id = t.id
+                    WHERE t.id = (SELECT trope_id FROM trope_instances WHERE id = $1)
                 ), implemented_scenes AS (
                     SELECT scene_type_id
                     FROM trope_scenes
@@ -786,7 +787,7 @@ export class TropeHandlers {
             const sceneDetailsResult = await this.db.query(
                 `SELECT ts.*, tst.scene_function, tst.scene_description
                  FROM trope_scenes ts
-                 JOIN trope_scene_types tst ON ts.scene_type_id = tst.scene_type_id
+                 JOIN trope_scene_types tst ON ts.scene_type_id = tst.id
                  WHERE ts.instance_id = $1 AND ts.scene_type_id = $2`,
                 [instance_id, scene_type_id]
             );
@@ -862,15 +863,15 @@ export class TropeHandlers {
             const query = `
                 WITH scene_requirements AS (
                     SELECT 
-                        i.instance_id,
+                        i.id as instance_id,
                         COUNT(CASE WHEN st.required = TRUE THEN 1 END) AS required_scenes,
                         COUNT(CASE WHEN st.required = FALSE THEN 1 END) AS optional_scenes
                     FROM 
                         trope_instances i
-                        JOIN tropes t ON i.trope_id = t.trope_id
-                        JOIN trope_scene_types st ON t.trope_id = st.trope_id
+                        JOIN tropes t ON i.trope_id = t.id
+                        JOIN trope_scene_types st ON t.id = st.trope_id
                     ${whereClause}
-                    GROUP BY i.instance_id
+                    GROUP BY i.id
                 ),
                 scene_implementations AS (
                     SELECT 
@@ -880,13 +881,13 @@ export class TropeHandlers {
                         AVG(ts.effectiveness_rating) AS avg_effectiveness
                     FROM 
                         trope_scenes ts
-                        JOIN trope_scene_types st ON ts.scene_type_id = st.scene_type_id
+                        JOIN trope_scene_types st ON ts.scene_type_id = st.id
                     WHERE 
                         ts.instance_id IN (SELECT instance_id FROM scene_requirements)
                     GROUP BY ts.instance_id
                 )
                 SELECT 
-                    i.instance_id,
+                    i.id as instance_id,
                     i.trope_id,
                     t.trope_name,
                     t.trope_category,
@@ -902,9 +903,9 @@ export class TropeHandlers {
                     i.updated_at
                 FROM 
                     trope_instances i
-                    JOIN tropes t ON i.trope_id = t.trope_id
-                    LEFT JOIN scene_requirements sr ON i.instance_id = sr.instance_id
-                    LEFT JOIN scene_implementations si ON i.instance_id = si.instance_id
+                    JOIN tropes t ON i.trope_id = t.id
+                    LEFT JOIN scene_requirements sr ON i.id = sr.instance_id
+                    LEFT JOIN scene_implementations si ON i.id = si.instance_id
                 ${whereClause}
                 ORDER BY t.trope_name`;
             
@@ -964,7 +965,7 @@ export class TropeHandlers {
         try {
             // Validate series exists
             const seriesResult = await this.db.query(
-                'SELECT series_name FROM series WHERE series_id = $1',
+                'SELECT title as series_name FROM series WHERE id = $1',
                 [series_id]
             );
             
@@ -979,20 +980,20 @@ export class TropeHandlers {
             if (analysis_type === 'frequency' || analysis_type === 'all') {
                 const frequencyQuery = `
                     SELECT 
-                        t.trope_id,
+                        t.id as trope_id,
                         t.trope_name,
                         t.trope_category,
                         COUNT(DISTINCT i.book_id) AS book_count,
-                        COUNT(i.instance_id) AS instance_count,
+                        COUNT(i.id) AS instance_count,
                         ARRAY_AGG(DISTINCT b.title) AS book_titles
                     FROM 
                         tropes t
-                        JOIN trope_instances i ON t.trope_id = i.trope_id
-                        JOIN books b ON i.book_id = b.book_id
+                        JOIN trope_instances i ON t.id = i.trope_id
+                        JOIN books b ON i.book_id = b.id
                     WHERE 
                         t.series_id = $1
                     GROUP BY 
-                        t.trope_id, t.trope_name, t.trope_category
+                        t.id, t.trope_name, t.trope_category
                     ORDER BY 
                         book_count DESC, instance_count DESC`;
                 
@@ -1015,21 +1016,21 @@ export class TropeHandlers {
             if (analysis_type === 'subversion' || analysis_type === 'all') {
                 const subversionQuery = `
                     SELECT 
-                        t.trope_id,
+                        t.id AS trope_id,
                         t.trope_name,
                         t.trope_category,
                         COUNT(CASE WHEN i.completion_status = 'subverted' THEN 1 END) AS subversion_count,
-                        COUNT(i.instance_id) AS total_instances,
+                        COUNT(i.id) AS total_instances,
                         ARRAY_AGG(DISTINCT CASE WHEN i.completion_status = 'subverted' THEN b.title END) 
                             FILTER (WHERE i.completion_status = 'subverted') AS subverted_in_books
                     FROM 
                         tropes t
-                        JOIN trope_instances i ON t.trope_id = i.trope_id
-                        JOIN books b ON i.book_id = b.book_id
+                        JOIN trope_instances i ON t.id = i.trope_id
+                        JOIN books b ON i.book_id = b.id
                     WHERE 
                         t.series_id = $1
                     GROUP BY 
-                        t.trope_id, t.trope_name, t.trope_category
+                        t.id, t.trope_name, t.trope_category
                     HAVING 
                         COUNT(CASE WHEN i.completion_status = 'subverted' THEN 1 END) > 0
                     ORDER BY 
@@ -1055,22 +1056,22 @@ export class TropeHandlers {
             if (analysis_type === 'effectiveness' || analysis_type === 'all') {
                 const effectivenessQuery = `
                     SELECT 
-                        t.trope_id,
+                        t.id AS trope_id,
                         t.trope_name,
                         t.trope_category,
                         AVG(ts.effectiveness_rating) AS avg_effectiveness,
-                        COUNT(ts.trope_scene_id) AS scene_count
+                        COUNT(ts.id) AS scene_count
                     FROM 
                         tropes t
-                        JOIN trope_instances i ON t.trope_id = i.trope_id
-                        JOIN trope_scenes ts ON i.instance_id = ts.instance_id
-                        JOIN books b ON i.book_id = b.book_id
+                        JOIN trope_instances i ON t.id = i.trope_id
+                        JOIN trope_scenes ts ON i.id = ts.id
+                        JOIN books b ON i.book_id = b.id
                     WHERE 
                         t.series_id = $1
                     GROUP BY 
-                        t.trope_id, t.trope_name, t.trope_category
+                        t.id, t.trope_name, t.trope_category
                     HAVING 
-                        COUNT(ts.trope_scene_id) > 0
+                        COUNT(ts.id) > 0
                     ORDER BY 
                         avg_effectiveness DESC`;
                 

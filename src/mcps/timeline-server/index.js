@@ -50,6 +50,8 @@ class TimelineMCPServer extends BaseMCPServer {
             'get_timeline_event': this.handleGetTimelineEvent,
             'create_timeline_event': this.handleCreateTimelineEvent,
             'update_timeline_event': this.handleUpdateTimelineEvent,
+            'delete_timeline_event': this.handleDeleteTimelineEvent,
+            'get_character_timeline_events': this.handleGetCharacterTimelineEvents,
             // Event-Chapter mapping handlers
             'map_event_to_chapter': this.handleMapEventToChapter,
             'get_event_mappings': this.handleGetEventMappings,
@@ -76,6 +78,8 @@ class TimelineMCPServer extends BaseMCPServer {
         this.handleGetTimelineEvent = this.timelineEventHandlers.handleGetTimelineEvent.bind(this.timelineEventHandlers);
         this.handleCreateTimelineEvent = this.timelineEventHandlers.handleCreateTimelineEvent.bind(this.timelineEventHandlers);
         this.handleUpdateTimelineEvent = this.timelineEventHandlers.handleUpdateTimelineEvent.bind(this.timelineEventHandlers);
+        this.handleDeleteTimelineEvent = this.timelineEventHandlers.handleDeleteTimelineEvent.bind(this.timelineEventHandlers);
+        this.handleGetCharacterTimelineEvents = this.timelineEventHandlers.handleGetCharacterTimeline.bind(this.timelineEventHandlers);
         
         // Event-Chapter mapping handler methods
         this.handleMapEventToChapter = this.eventChapterMappingHandlers.handleMapEventToChapter.bind(this.eventChapterMappingHandlers);

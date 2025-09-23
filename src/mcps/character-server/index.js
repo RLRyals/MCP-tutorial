@@ -202,39 +202,39 @@ class CharacterMCPServer extends BaseMCPServer {
                     required: ['character_id', 'knowledge_category', 'knowledge_item', 'learned_chapter_id']
                 }
             },
-            {
-                name: 'check_character_logistics',
-                description: 'Verify if a character can realistically be in a location at a specific time',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        character_id: { type: 'integer', description: 'Character ID' },
-                        from_chapter_id: { type: 'integer', description: 'Where they were previously' },
-                        to_chapter_id: { type: 'integer', description: 'Where they need to be' },
-                        travel_method: { type: 'string', description: 'How they travel (car, walk, teleport, etc.)' },
-                        check_time_gap: { type: 'boolean', description: 'Verify sufficient time for travel', default: true }
-                    },
-                    required: ['character_id', 'from_chapter_id', 'to_chapter_id']
-                }
-            },
-            {
-                name: 'analyze_character_development',
-                description: 'Analyze character growth patterns across chapters/books',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        character_id: { type: 'integer', description: 'Character ID' },
-                        analysis_type: { 
-                            type: 'string', 
-                            enum: ['emotional_growth', 'knowledge_progression', 'relationship_changes', 'all'],
-                            description: 'Type of development to analyze',
-                            default: 'all' 
-                        },
-                        book_id: { type: 'integer', description: 'Specific book (optional - analyzes all books if not provided)' }
-                    },
-                    required: ['character_id']
-                }
-            },
+            // {
+            //     name: 'check_character_logistics',
+            //     description: 'Verify if a character can realistically be in a location at a specific time',
+            //     inputSchema: {
+            //         type: 'object',
+            //         properties: {
+            //             character_id: { type: 'integer', description: 'Character ID' },
+            //             from_chapter_id: { type: 'integer', description: 'Where they were previously' },
+            //             to_chapter_id: { type: 'integer', description: 'Where they need to be' },
+            //             travel_method: { type: 'string', description: 'How they travel (car, walk, teleport, etc.)' },
+            //             check_time_gap: { type: 'boolean', description: 'Verify sufficient time for travel', default: true }
+            //         },
+            //         required: ['character_id', 'from_chapter_id', 'to_chapter_id']
+            //     }
+            // },
+            // {
+            //     name: 'analyze_character_development',
+            //     description: 'Analyze character growth patterns across chapters/books',
+            //     inputSchema: {
+            //         type: 'object',
+            //         properties: {
+            //             character_id: { type: 'integer', description: 'Character ID' },
+            //             analysis_type: { 
+            //                 type: 'string', 
+            //                 enum: ['emotional_growth', 'knowledge_progression', 'relationship_changes', 'all'],
+            //                 description: 'Type of development to analyze',
+            //                 default: 'all' 
+            //             },
+            //             book_id: { type: 'integer', description: 'Specific book (optional - analyzes all books if not provided)' }
+            //         },
+            //         required: ['character_id']
+            //     }
+            // },
             {
                 name: 'list_characters',
                 description: 'List all characters in a series with optional filtering',
@@ -447,9 +447,10 @@ class CharacterMCPServer extends BaseMCPServer {
             'check_character_continuity': this.handleCheckCharacterContinuity,
             'get_characters_in_chapter': this.handleGetCharactersInChapter,
             // 'get_character_interactions': this.handleGetCharacterInteractions,
-            'add_character_knowledge_with_chapter': this.handleAddCharacterKnowledgeWithChapter,
-            'check_character_logistics': this.handleCheckCharacterLogistics,
-            'analyze_character_development': this.handleAnalyzeCharacterDevelopment
+            'add_character_knowledge_with_chapter': this.handleAddCharacterKnowledgeWithChapter
+            //,
+            //'check_character_logistics': this.handleCheckCharacterLogistics,
+            //'analyze_character_development': this.handleAnalyzeCharacterDevelopment
         };
         return handlers[toolName];
     }
@@ -512,7 +513,7 @@ class CharacterMCPServer extends BaseMCPServer {
                 `SELECT c.*, s.title as series_title
                  FROM characters c
                  JOIN series s ON c.series_id = s.id
-                 WHERE c.character_id = $1`,
+                 WHERE c.id = $1`,
                 [character_id]
             );
 
@@ -613,7 +614,7 @@ class CharacterMCPServer extends BaseMCPServer {
             const query = `
                 UPDATE characters 
                 SET ${updateFields.join(', ')}
-                WHERE character_id = $1
+                WHERE id = $1
                 RETURNING *
             `;
 
@@ -1107,7 +1108,7 @@ class CharacterMCPServer extends BaseMCPServer {
             let query = `
                 SELECT 
                     c.name,
-                    c.character_id,
+                    c.id as character_id,
                     ccp.presence_type,
                     ccp.importance_level,
                     ccp.physical_state,

@@ -162,7 +162,7 @@ export class EventChapterMappingHandlers {
                     books b
                  WHERE 
                     e.id = $1 AND 
-                    c.chapter_id = $2 AND
+                    c.id = $2 AND
                     c.book_id = b.id`,
                 [event_id, chapter_id]
             );
@@ -184,7 +184,7 @@ export class EventChapterMappingHandlers {
             // Verify character exists if POV character is provided
             if (pov_character_id) {
                 const characterResult = await this.db.query(
-                    'SELECT name FROM characters WHERE character_id = $1',
+                    'SELECT name FROM characters WHERE id = $1',
                     [pov_character_id]
                 );
                 
@@ -218,7 +218,7 @@ export class EventChapterMappingHandlers {
             let povCharacterName = null;
             if (pov_character_id) {
                 const characterResult = await this.db.query(
-                    'SELECT name FROM characters WHERE character_id = $1',
+                    'SELECT name FROM characters WHERE id = $1',
                     [pov_character_id]
                 );
                 povCharacterName = characterResult.rows[0].name;
@@ -278,7 +278,7 @@ export class EventChapterMappingHandlers {
             // Get all mappings for this event
             const mappingsResult = await this.db.query(
                 `SELECT 
-                    m.mapping_id, m.chapter_id, m.scene_number, 
+                    m.id as mapping_id, m.chapter_id, m.scene_number, 
                     m.presentation_type, m.pov_character_id, m.event_aspect,
                     m.completeness, m.narrative_function,
                     c.chapter_number, c.title as chapter_title,
@@ -286,9 +286,9 @@ export class EventChapterMappingHandlers {
                     ch.name as character_name
                  FROM 
                     event_chapter_mappings m
-                    JOIN chapters c ON m.chapter_id = c.chapter_id
+                    JOIN chapters c ON m.chapter_id = c.id
                     JOIN books b ON c.book_id = b.id
-                    LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
+                    LEFT JOIN characters ch ON m.pov_character_id = ch.id
                  WHERE 
                     m.event_id = $1
                  ORDER BY 
@@ -341,7 +341,7 @@ export class EventChapterMappingHandlers {
                 `SELECT c.chapter_number, c.title as chapter_title, b.title as book_title, b.id as book_id
                  FROM chapters c
                  JOIN books b ON c.book_id = b.id
-                 WHERE c.chapter_id = $1`,
+                 WHERE c.id = $1`,
                 [chapter_id]
             );
             
@@ -373,7 +373,7 @@ export class EventChapterMappingHandlers {
             // Get all events in this chapter
             const eventsResult = await this.db.query(
                 `SELECT 
-                    m.mapping_id, m.event_id, m.scene_number, 
+                    m.id as mapping_id, m.event_id, m.scene_number, 
                     m.presentation_type, m.pov_character_id, m.event_aspect,
                     m.completeness, m.narrative_function,
                     e.event_name, e.event_date, e.event_description,
@@ -381,7 +381,7 @@ export class EventChapterMappingHandlers {
                  FROM 
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
-                    LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
+                    LEFT JOIN characters ch ON m.pov_character_id = ch.id
                  ${whereClause}
                  ORDER BY 
                     COALESCE(m.scene_number, 999)`,
@@ -447,10 +447,10 @@ export class EventChapterMappingHandlers {
                  FROM 
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
-                    JOIN chapters c ON m.chapter_id = c.chapter_id
+                    JOIN chapters c ON m.chapter_id = c.id
                     JOIN books b ON c.book_id = b.id
                  WHERE 
-                    m.mapping_id = $1`,
+                    m.id = $1`,
                 [mapping_id]
             );
             
@@ -464,7 +464,7 @@ export class EventChapterMappingHandlers {
             let povCharacterName = null;
             if (pov_character_id) {
                 const characterResult = await this.db.query(
-                    'SELECT name FROM characters WHERE character_id = $1',
+                    'SELECT name FROM characters WHERE id = $1',
                     [pov_character_id]
                 );
                 
@@ -541,7 +541,7 @@ export class EventChapterMappingHandlers {
             await this.db.query(
                 `UPDATE event_chapter_mappings
                  SET ${updates.join(', ')}
-                 WHERE mapping_id = $1`,
+                 WHERE id = $1`,
                 params
             );
             
@@ -556,11 +556,11 @@ export class EventChapterMappingHandlers {
                  FROM 
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
-                    JOIN chapters c ON m.chapter_id = c.chapter_id
+                    JOIN chapters c ON m.chapter_id = c.id
                     JOIN books b ON c.book_id = b.id
-                    LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
+                    LEFT JOIN characters ch ON m.pov_character_id = ch.id
                  WHERE 
-                    m.mapping_id = $1`,
+                    m.id = $1`,
                 [mapping_id]
             );
             
@@ -614,10 +614,10 @@ export class EventChapterMappingHandlers {
                  FROM 
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
-                    JOIN chapters c ON m.chapter_id = c.chapter_id
+                    JOIN chapters c ON m.chapter_id = c.id
                     JOIN books b ON c.book_id = b.id
                  WHERE 
-                    m.mapping_id = $1`,
+                    m.id = $1`,
                 [mapping_id]
             );
             
@@ -629,7 +629,7 @@ export class EventChapterMappingHandlers {
             
             // Delete the mapping
             await this.db.query(
-                'DELETE FROM event_chapter_mappings WHERE mapping_id = $1',
+                'DELETE FROM event_chapter_mappings WHERE id = $1',
                 [mapping_id]
             );
             
@@ -669,7 +669,7 @@ export class EventChapterMappingHandlers {
             
             // Get all chapters for this book
             const chaptersResult = await this.db.query(
-                'SELECT chapter_id, chapter_number, title FROM chapters WHERE book_id = $1 ORDER BY chapter_number',
+                'SELECT id as chapter_id, chapter_number, title FROM chapters WHERE book_id = $1 ORDER BY chapter_number',
                 [book_id]
             );
             
@@ -678,14 +678,14 @@ export class EventChapterMappingHandlers {
             const eventsQuery = `
                 SELECT 
                     e.id, e.event_name, e.event_date, e.book_id as event_book_id,
-                    m.mapping_id, m.chapter_id, m.presentation_type, m.pov_character_id,
+                    m.id as mapping_id, m.chapter_id, m.presentation_type, m.pov_character_id,
                     c.chapter_number,
                     ch.name as character_name
                 FROM 
                     event_chapter_mappings m
                     JOIN timeline_events e ON m.event_id = e.id
-                    JOIN chapters c ON m.chapter_id = c.chapter_id
-                    LEFT JOIN characters ch ON m.pov_character_id = ch.character_id
+                    JOIN chapters c ON m.chapter_id = c.id
+                    LEFT JOIN characters ch ON m.pov_character_id = ch.id
                 WHERE 
                     c.book_id = $1
                 ORDER BY 
@@ -834,7 +834,7 @@ export class EventChapterMappingHandlers {
                 const povCharacters = [];
                 for (const charId in povCounts) {
                     const characterResult = await this.db.query(
-                        'SELECT name, character_type FROM characters WHERE character_id = $1',
+                        'SELECT name, character_type FROM characters WHERE id = $1',
                         [charId]
                     );
                     

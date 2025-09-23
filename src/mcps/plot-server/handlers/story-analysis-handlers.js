@@ -190,12 +190,12 @@ export class StoryAnalysisHandlers {
             // Check if book and character exist
             const bookCharacterCheck = await this.db.query(`
                 SELECT b.id as book_id, b.title as book_title, 
-                       c.character_id, c.name as character_name,
+                       c.id as character_id, c.name as character_name,
                        s.title as series_title
                 FROM books b 
                 JOIN series s ON b.series_id = s.id
                 JOIN characters c ON c.series_id = s.id
-                WHERE b.id = $1 AND c.character_id = $2
+                WHERE b.id = $1 AND c.id = $2
             `, [args.book_id, args.character_id]);
             
             if (bookCharacterCheck.rows.length === 0) {
@@ -228,7 +228,7 @@ export class StoryAnalysisHandlers {
                     args.character_problem || null,
                     args.character_solution || null,
                     args.character_arc || null,
-                    existingThroughline.rows[0].throughline_id
+                    existingThroughline.rows[0].id
                 ]);
                 
             } else {
@@ -313,7 +313,7 @@ export class StoryAnalysisHandlers {
                               `${throughline.character_problem ? `**Problem:** ${throughline.character_problem}\n` : ''}` +
                               `${throughline.character_solution ? `**Solution:** ${throughline.character_solution}\n` : ''}` +
                               `${throughline.character_arc ? `**Arc:** ${throughline.character_arc}\n` : ''}` +
-                              `**Throughline ID:** ${throughline.throughline_id}\n` +
+                              `**Throughline ID:** ${throughline.id}\n` +
                               `**Last Updated:** ${new Date(throughline.updated_at || throughline.created_at).toLocaleString()}`
                     }
                 ]

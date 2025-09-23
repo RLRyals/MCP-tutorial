@@ -189,7 +189,7 @@ export class LocationHandlers {
             // Get parent location name if exists
             let parentName = null;
             if (location.parent_location_id) {
-                const parentQuery = 'SELECT name FROM locations WHERE location_id = $1';
+                const parentQuery = 'SELECT name FROM locations WHERE id = $1';
                 const parentResult = await this.db.query(parentQuery, [location.parent_location_id]);
                 parentName = parentResult.rows[0]?.name;
             }
@@ -198,7 +198,7 @@ export class LocationHandlers {
                 content: [{
                     type: 'text',
                     text: `Created location successfully!\n\n` +
-                          `ID: ${location.location_id}\n` +
+                          `ID: ${location.id}\n` +
                           `Name: ${location.name}\n` +
                           `Type: ${location.location_type}\n` +
                           `${parentName ? `Located in: ${parentName}\n` : ''}` +
@@ -269,7 +269,7 @@ export class LocationHandlers {
                 content: [{
                     type: 'text',
                     text: `Updated location successfully!\n\n` +
-                          `ID: ${location.location_id}\n` +
+                          `ID: ${location.id}\n` +
                           `Name: ${location.name}\n` +
                           `Type: ${location.location_type}\n` +
                           `${location.climate ? `Climate: ${location.climate}\n` : ''}` +
@@ -389,7 +389,7 @@ export class LocationHandlers {
             const { location_id, book_id, chapter_id, usage_notes } = args;
             
             // Verify location exists
-            const locationQuery = 'SELECT name, location_type FROM locations WHERE location_id = $1';
+            const locationQuery = 'SELECT name, location_type FROM locations WHERE id = $1';
             const locationResult = await this.db.query(locationQuery, [location_id]);
             
             if (locationResult.rows.length === 0) {
@@ -417,8 +417,8 @@ export class LocationHandlers {
                 SELECT b.title as book_title, 
                        ${chapter_id ? 'ch.title as chapter_title, ch.chapter_number' : 'NULL as chapter_title, NULL as chapter_number'}
                 FROM books b 
-                ${chapter_id ? 'LEFT JOIN chapters ch ON ch.chapter_id = $2 AND ch.book_id = b.book_id' : ''}
-                WHERE b.book_id = $1
+                ${chapter_id ? 'LEFT JOIN chapters ch ON ch.chapter_id = $2 AND ch.book_id = b.id' : ''}
+                WHERE b.id = $1
             `;
             
             const contextParams = chapter_id ? [book_id, chapter_id] : [book_id];

@@ -106,18 +106,18 @@ export class ExportHandlers {
             let query_params = [book_id];
             
             if (chapters_to_include && chapters_to_include.length > 0) {
-                chapter_filter = `AND c.chapter_id = ANY($2)`;
+                chapter_filter = `AND c.id = ANY($2)`;
                 query_params.push(chapters_to_include);
             }
 
             const chapters_data = await this.db.query(`
                 SELECT 
-                    c.chapter_id as id, c.chapter_number, c.title, c.subtitle, c.word_count,
+                    c.id as chapter_id, c.chapter_number, c.title, c.subtitle, c.word_count,
                     c.summary, c.primary_location, c.pov_character_id,
                     ch.name as pov_character_name,
                     c.status, c.author_notes
                 FROM chapters c
-                LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+                LEFT JOIN characters ch ON c.pov_character_id = ch.id
                 WHERE c.book_id = $1 ${chapter_filter}
                 ORDER BY c.chapter_number
             `, query_params);
@@ -164,7 +164,7 @@ export class ExportHandlers {
                 book_id, 
                 export_format,
                 chapters_to_include ? 'partial' : 'full_manuscript',
-                chapters_to_include || chapters_data.rows.map(ch => ch.character_id),
+                chapters_to_include || chapters_data.rows.map(ch => ch.id),
                 export_stats.total_words,
                 filename,
                 `AI team export for ${export_purpose}`,
@@ -208,7 +208,7 @@ export class ExportHandlers {
             const book_summary = await this.db.query(`
                 SELECT 
                     b.title, b.actual_word_count, b.target_word_count,
-                    b.status, COUNT(c.chapter_id) as chapter_count,
+                    b.status, COUNT(c.id) as chapter_count,
                     SUM(c.word_count) as chapter_total_words,
                     AVG(c.word_count) as avg_chapter_length,
                     MIN(c.word_count) as shortest_chapter,
@@ -245,12 +245,12 @@ export class ExportHandlers {
                     const chapter_details = await this.db.query(`
                         SELECT 
                             c.chapter_number, c.title, c.word_count, c.target_word_count,
-                            c.status, COUNT(s.scene_id) as scene_count,
+                            c.status, COUNT(s.id) as scene_count,
                             SUM(s.word_count) as scene_total_words
                         FROM chapters c
-                        LEFT JOIN chapter_scenes s ON c.chapter_id = s.chapter_id
+                        LEFT JOIN chapter_scenes s ON c.id = s.chapter_id
                         WHERE c.book_id = $1
-                        GROUP BY c.chapter_id, c.chapter_number, c.title, c.word_count, 
+                        GROUP BY c.id, c.chapter_number, c.title, c.word_count, 
                                 c.target_word_count, c.status
                         ORDER BY c.chapter_number
                     `, [book_id]);
@@ -270,9 +270,9 @@ export class ExportHandlers {
                         SELECT 
                             c.chapter_number, c.title as chapter_title,
                             s.scene_number, s.scene_title, s.word_count,
-                            s.status, s.scene_purpose
+                            s.writing_status as status, s.scene_purpose
                         FROM chapters c
-                        JOIN chapter_scenes s ON c.chapter_id = s.chapter_id
+                        JOIN chapter_scenes s ON c.id = s.chapter_id
                         WHERE c.book_id = $1
                         ORDER BY c.chapter_number, s.scene_number
                     `, [book_id]);
@@ -305,11 +305,11 @@ export class ExportHandlers {
                             c.chapter_number, c.title, c.word_count as chapter_words,
                             c.target_word_count, c.status as chapter_status,
                             s.scene_number, s.scene_title, s.word_count as scene_words,
-                            s.status as scene_status, s.scene_purpose,
+                            s.writing_status as scene_status, s.scene_purpose,
                             ch.name as pov_character
                         FROM chapters c
-                        LEFT JOIN chapter_scenes s ON c.chapter_id = s.chapter_id
-                        LEFT JOIN characters ch ON c.pov_character_id = ch.character_id
+                        LEFT JOIN chapter_scenes s ON c.id = s.chapter_id
+                        LEFT JOIN characters ch ON c.pov_character_id = ch.id
                         WHERE c.book_id = $1
                         ORDER BY c.chapter_number, s.scene_number
                     `, [book_id]);
