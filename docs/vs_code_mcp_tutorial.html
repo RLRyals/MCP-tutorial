@@ -1612,11 +1612,18 @@
                         <span class="terminal-tab">VS Code Terminal</span>
                         <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql')">Copy</button>
                     </div>
-                <div class="command-text">node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql</div>
+                    <div class="command-text">node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql</div>
                 </div>
-
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run metadata schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 012_add_metadata_table.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 012_add_metadata_table.sql</div>
+                </div>
                 <div class="success">
-                    <strong>This migration adds:</strong> More fields to your database tables (Adds -add subtitle, blurb, pitch and hook text columns to books and adds universal Genre tables) and updates table relationships.
+                    <strong>This migration adds:</strong> More fields to your database tables (Adds -add subtitle, blurb, pitch and hook text columns to books and adds universal Genre and Mtatdata tables) and updates table relationships.
                 </div>
 
                 <ul class="checklist">
