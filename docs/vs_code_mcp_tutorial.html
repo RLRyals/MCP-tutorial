@@ -1349,9 +1349,9 @@
                 <div class="command-block">
                     <div class="command-header">
                         <span class="command-title">Test 1: Check database connection</span>
-                        <button class="copy-btn" onclick="copyCommand(this, 'Can you list all the series in my database?')">Copy</button>
+                        <button class="copy-btn" onclick="copyCommand(this, 'Can you list all my tools?')">Copy</button>
                     </div>
-                    <div class="command-text">Can you list all the series in my database?</div>
+                    <div class="command-text">Can you list all tools?</div>
                 </div>
 
                 <div class="command-block">
@@ -1360,6 +1360,7 @@
                         <button class="copy-btn" onclick="copyCommand(this, 'Create a new author named &quot;Marina Blackwood&quot; and then create a series called &quot;The Starfire Chronicles&quot; by that author.')">Copy</button>
                     </div>
                     <div class="command-text">Create a new author named "Marina Blackwood" and then create a series called "The Starfire Chronicles" by that author.</div>
+                    <p><strong>Expected Result:</strong> You might get an error about the email address being a required field. This is an intentional error that we will fix in this tutorial.</p>
                 </div>
 
                 <div class="command-block">
@@ -1441,16 +1442,6 @@
                     </ul>
                 </div>
 
-                <p><strong>To continue to Character Management:</strong></p>
-                <div class="command-block">
-                    <div class="command-header">
-                        <span class="command-title">Switch to Character Management branch</span>
-                        <span class="terminal-tab">VS Code Terminal</span>
-                        <button class="copy-btn" onclick="copyCommand(this, 'git checkout Step_2_MCP_character')">Copy</button>
-                    </div>
-                    <div class="command-text">git checkout MCP_2_Character_Management</div>
-                </div>
-
                 <p><strong>Follow the same pattern for each new branch:</strong></p>
                 <ol>
                     <li>Switch branches using VS Code terminal</li>
@@ -1473,6 +1464,167 @@
                 </div>
             </div>
 
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">12</span>Character Management</h2>
+                <p><strong>To continue to Character Management:</strong></p>
+              <div class="command-block">
+                  <div class="command-header">
+                      <span class="command-title">Switch to Character Management branch</span>
+                      <span class="terminal-tab">VS Code Terminal</span>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout Step_2_MCP_character')">Copy</button>
+                  </div>
+                  <div class="command-text">git checkout MCP_2_Character_Management</div>
+              </div>
+                       <p>Run the additional migration for character management:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run character schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 003_add_character_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 003_add_character_schema.sql</div>
+                </div>
+
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (characters, character details, chapters) and updates table relationships.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Character Management branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Character schema migration completed successfully</li>
+                </ul>
+            </div>    
+           
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">13</span>Plot Management</h2>
+                <p><strong>To continue to Plot Management:</strong></p>
+              <div class="command-block">
+                  <div class="command-header">
+                      <span class="command-title">Switch to Plot Management branch</span>
+                      <span class="terminal-tab">VS Code Terminal</span>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_3_Plot_Management')">Copy</button>
+                  </div>
+                  <div class="command-text">git checkout MCP_3_Plot_Management</div>
+              </div>
+                       <p>Run the additional migration for plot management:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run plot schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 004_add_plot_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 004_add_plot_schema.sql</div>
+                </div>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run email fix schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 005_update_author_email_constraint.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 005_update_author_email_constraint.sql</div>
+                    <p>This will fix the database issue where the email address is a required field.</p>
+                </div>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run plot and trope schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 006_add_book_metadata_plot_thread_and_tropes_tables.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 006_add_book_metadata_plot_thread_and_tropes_tables.sql</div>
+                </div>
+                                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run timeline and events schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 007_add_event_chapter_mapping.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 007_add_event_chapter_mapping.sql</div>
+                </div>
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (plots threads, tropes, fixes author email) and updates table relationships.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Plot Management branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Plot schema migration completed successfully</li>
+                </ul>
+            </div>
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">14</span>Worldbuilding Management</h2>
+                <p><strong>To continue to MCP_4_Worldbuilding_Management:</strong></p>
+              <div class="command-block">
+                  <div class="command-header">
+                      <span class="command-title">Switch to Worldbuilding Management branch</span>
+                      <span class="terminal-tab">VS Code Terminal</span>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_4_Worldbuilding_Management')">Copy</button>
+                  </div>
+                  <div class="command-text">git checkout MCP_4_Worldbuilding_Management</div>
+              </div>
+                       <p>Run the additional migration for Worldbuilding management:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run Worldbuilding schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 008_add_world_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 008_add_world_schema.sql</div>
+                </div>
+
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (worldbuilding tables for locations, world elements, organizations).
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Worldbuilding Management branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Worldbuilding schema migration completed successfully</li>
+                </ul>
+            </div>  
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">15</span>Fixes and Universal Genre</h2>
+                <p><strong>To continue to step 6:</strong></p>
+              <div class="command-block">
+                  <div class="command-header">
+                      <span class="command-title">Switch to Universal Genre Management branch</span>
+                      <span class="terminal-tab">VS Code Terminal</span>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_6_fixes_genre_expansion')">Copy</button>
+                  </div>
+                  <div class="command-text">git checkout MCP_6_fixes_genre_expansion</div>
+              </div>
+                       <p>Run the additional migrations for fixes and Universal Genre:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run writing process schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 010_update_table_schema.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 010_update_table_schema.sql</div>
+                </div>
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run genre expansion schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql')">Copy</button>
+                    </div>
+                <div class="command-text">node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql</div>
+                </div>
+
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (Adds -add subtitle, blurb, pitch and hook text columns to books and adds universal Genre tables) and updates table relationships.
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Fixes and Universal Genre branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Fixes and Universal Genre schema migration completed successfully</li>
+                </ul>
+            </div>  
             <div class="step-section">
                 <h2>VS Code Tips and Troubleshooting</h2>
 
