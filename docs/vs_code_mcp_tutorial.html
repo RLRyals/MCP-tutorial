@@ -424,56 +424,6 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="vs-code-badge">VS Code Integrated Tutorial</div>
-            <h1>MCP Writing Tools Setup Guide</h1>
-            <p>Build your AI writing system directly in Visual Studio Code</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-        </div>
-
-        <div class="content">
-            <div class="note">
-                <strong>Prerequisites:</strong> Make sure you've completed the software installation guide. You should have Node.js, Git, Docker Desktop, VS Code with extensions, and Claude Desktop installed.
-            </div>
-
-            <div class="vs-code-step">
-                <h4><span class="vs-code-icon"></span> Open VS Code First</h4>
-                <p>Before we start, let's open Visual Studio Code - this will be your primary workspace for the entire tutorial:</p>
-                
-                <div class="platform-tabs">
-                    <button class="platform-tab active" onclick="showPlatform('open-windows')">Windows</button>
-                    <button class="platform-tab" onclick="showPlatform('open-mac')">Mac</button>
-                </div>
-
-                <div class="platform-content active" id="open-windows">
-                    <p><strong>Windows Options:</strong></p>
-                    <ul>
-                        <li><strong>Start Menu:</strong> Click Start → type "Visual Studio Code"</li>
-                        <li><strong>Desktop:</strong> Double-click VS Code icon if you have one</li>
-                        <li><strong>Quick:</strong> Press <span class="keyboard-shortcut">Win</span> + <span class="keyboard-shortcut">R</span>, type "code", press Enter</li>
-                    </ul>
-                </div>
-
-                <div class="platform-content" id="open-mac">
-                    <p><strong>Mac Options:</strong></p>
-                    <ul>
-                        <li><strong>Spotlight:</strong> Press <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Space</span>, type "Visual Studio Code"</li>
-                        <li><strong>Applications:</strong> Finder → Applications → Visual Studio Code</li>
-                        <li><strong>Dock:</strong> Click VS Code in your dock if pinned</li>
-                    </ul>
-                </div>
-
-                <div class="success">
-                    <strong>You've successfully set up a professional MCP development environment!</strong> You now have VS Code configured as your command center with your first AI writing tool working with Claude Desktop.
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         function copyCommand(button, command) {
             navigator.clipboard.writeText(command).then(() => {
@@ -672,8 +622,55 @@
             });
         });
     </script>
-</body>
-</html>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="vs-code-badge">VS Code Integrated Tutorial</div>
+            <h1>MCP Writing Tools Setup Guide</h1>
+            <p>Build your AI writing system directly in Visual Studio Code</p>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="note">
+                <strong>Prerequisites:</strong> Make sure you've completed the software installation guide. You should have Node.js, Git, Docker Desktop, VS Code with extensions, and Claude Desktop installed.
+            </div>
+
+            <div class="vs-code-step">
+                <h4><span class="vs-code-icon"></span> Open VS Code First</h4>
+                <p>Before we start, let's open Visual Studio Code - this will be your primary workspace for the entire tutorial:</p>
+                
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('open-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('open-mac')">Mac</button>
+                </div>
+
+                <div class="platform-content active" id="open-windows">
+                    <p><strong>Windows Options:</strong></p>
+                    <ul>
+                        <li><strong>Start Menu:</strong> Click Start → type "Visual Studio Code"</li>
+                        <li><strong>Desktop:</strong> Double-click VS Code icon if you have one</li>
+                        <li><strong>Quick:</strong> Press <span class="keyboard-shortcut">Win</span> + <span class="keyboard-shortcut">R</span>, type "code", press Enter</li>
+                    </ul>
+                </div>
+
+                <div class="platform-content" id="open-mac">
+                    <p><strong>Mac Options:</strong></p>
+                    <ul>
+                        <li><strong>Spotlight:</strong> Press <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Space</span>, type "Visual Studio Code"</li>
+                        <li><strong>Applications:</strong> Finder → Applications → Visual Studio Code</li>
+                        <li><strong>Dock:</strong> Click VS Code in your dock if pinned</li>
+                    </ul>
+                </div>
+
+                <div class="success">
+                    <strong>You've successfully set up a professional MCP development environment!</strong> You now have VS Code configured as your command center with your first AI writing tool working with Claude Desktop.
+                </div>
+            </div>
+
+
                     <strong>VS Code Should Open:</strong> You'll see the VS Code welcome screen with dark theme (default) and various panels like Explorer, Extensions, etc. in the sidebar.
                 </div>
 
@@ -1543,3 +1540,12 @@
                 </div>
 
                 <div class="success">
+                    <strong>You're now a VS Code Pro!</strong> With this setup, you're ready to tackle the rest of the MCP tutorial and build powerful writing tools. Happy coding!     🚀  
+                </div>
+            </div>
+        </div>           
+    </div>
+
+
+</body>
+</html>
