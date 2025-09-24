@@ -1,5 +1,25 @@
-# MCP-tutorial
-This is a tutorial project that demonstrates how to build a Model Context Protocol (MCP) server system for managing a book series database. The tutorial is structured in steps, each building upon the previous to create a complete system.
+# MCP Tutorial: Building AI Writing Tools for Authors
+
+This project demonstrates how to build Model Context Protocol (MCP) servers that connect Claude Desktop AI with a PostgreSQL database to help authors manage book series, characters, plots, timelines, and continuity across writing projects.
+
+## 📖 Interactive Tutorial Guide
+
+**[VS Code MCP Writing Tools Setup Guide](docs/vs_code_mcp_tutorial.html)** - Our comprehensive, interactive guide with step-by-step instructions, visual aids, code blocks, and troubleshooting tips.
+
+> **Start Here**: We recommend following the interactive guide above for the best learning experience. The README below provides only a high-level overview and reference.
+
+## What You'll Build
+
+This tutorial teaches you how to create specialized AI writing tools that allow authors to:
+
+- Organize book series and their metadata
+- Track characters and their attributes 
+- Manage plot structures and story arcs
+- Build coherent story worlds and settings
+- Monitor timelines and continuity
+- Implement specialized writing tools
+
+Each component is implemented as an MCP server that extends Claude Desktop's capabilities with database-backed tools.
 
 ## Prerequisites
 - Node.js (Latest LTS version recommended)
@@ -16,30 +36,20 @@ This is a tutorial project that demonstrates how to build a Model Context Protoc
 
 👆 **Students: Click this link first!** This opens an interactive, step-by-step tutorial that guides you through the entire setup process. It has copy buttons for all commands and works in any browser - no cloning required!
 
-**After cloning the repo:** You can also double-click `open-tutorial.bat` in the project folder to open the same tutorial locally.
-
 ## Quick Start
 
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/RLRyals/MCP-tutorial.git
    cd MCP-tutorial
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
-   ```bash
-   cp template.env .env
-   ```
-   Then edit `.env` with your preferred settings.
-
-4. Start the database using Docker:
-
-   **Option A: Using the startup script (Recommended)**
+3. **Start the database** (using PowerShell):
    ```powershell
    .\scripts\start-database.ps1
    ```
@@ -164,12 +174,12 @@ mcp-tutorial/
 ├── scripts/            # Utility scripts
 │   ├── start-database.ps1   # Full-featured database startup script
 │   └── start-database.bat   # Batch file alternative
-├── src/               # Source code
-│   └── shared/        # Shared utilities
-├── docker-compose.yml # Docker services configuration
-├── Dockerfile        # Application container definition
-├── quick-start.ps1    # Quick database launcher
-└── template.env      # Environment variable template
+├── src/                # Source code
+│   └── shared/         # Shared utilities
+├── docker-compose.yml  # Docker services configuration
+├── Dockerfile          # Application container definition
+├── quick-start.ps1     # Quick database launcher
+└── template.env        # Environment variable template
 ```
 
 ## Database Setup Scripts
