@@ -1,74 +1,63 @@
-# MCP-tutorial
-This is a tutorial project that demonstrates how to build a Model Context Protocol (MCP) server system for managing a book series database. The tutorial is structured in steps, each building upon the previous to create a complete system.
+# MCP Tutorial: Building AI Writing Tools for Authors
+
+This project demonstrates how to build Model Context Protocol (MCP) servers that connect Claude Desktop AI with a PostgreSQL database to help authors manage book series, characters, plots, timelines, and continuity across writing projects.
+
+## 📖 Interactive Tutorial Guide
+
+**[VS Code MCP Writing Tools Setup Guide](docs/vs_code_mcp_tutorial.html)** - Our comprehensive, interactive guide with step-by-step instructions, visual aids, code blocks, and troubleshooting tips.
+
+> **Start Here**: We recommend following the interactive guide above for the best learning experience. The README below provides only a high-level overview and reference.
+
+## What You'll Build
+
+This tutorial teaches you how to create specialized AI writing tools that allow authors to:
+
+- Organize book series and their metadata
+- Track characters and their attributes 
+- Manage plot structures and story arcs
+- Build coherent story worlds and settings
+- Monitor timelines and continuity
+- Implement specialized writing tools
+
+Each component is implemented as an MCP server that extends Claude Desktop's capabilities with database-backed tools.
 
 ## Prerequisites
-- Node.js (Latest LTS version recommended)
-- Docker Desktop
-- Git
-- A code editor (VS Code recommended)
 
-## 🚀 START HERE: Interactive Tutorial Guide
+- **Node.js** (v18+ recommended) - [Download](https://nodejs.org)
+- **Docker Desktop** - [Download](https://docs.docker.com/desktop)
+- **Git** - [Download](https://git-scm.com)
+- **VS Code** (recommended) - [Download](https://code.visualstudio.com)
+- **Claude Desktop** - [Download](https://claude.ai/download)
+
+⚠️ **Important**: You need the Claude Desktop application, not the web version. Only Claude Desktop supports local MCP servers.
 
 **📖 CLICK TO START:** <a href="https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/vs_code_mcp_tutorial.html" target="_blank">**VS Code MCP Writing Tools Setup Guide**</a>
 
 👆 **Students: Click this link first!** This opens an interactive, step-by-step tutorial that guides you through the entire setup process. It has copy buttons for all commands and works in any browser - no cloning required!
 
-**After cloning the repo:** You can also double-click `open-tutorial.bat` in the project folder to open the same tutorial locally.
-
 ## Quick Start
 
-1. Clone the repository:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/RLRyals/MCP-tutorial.git
    cd MCP-tutorial
    ```
 
-2. Install dependencies:
+2. **Install dependencies**:
    ```bash
    npm install
    ```
 
-3. Set up environment variables:
-   ```bash
-   cp template.env .env
-   ```
-   Then edit `.env` with your preferred settings.
-
-4. Start the database using Docker:
-
-   **Option A: Using the startup script (Recommended)**
+3. **Start the database** (using PowerShell):
    ```powershell
    .\scripts\start-database.ps1
    ```
-   This script will:
-   - Check if Docker Desktop is running
-   - Start Docker Desktop if needed (with your permission)
-   - Create `.env` from template if needed
-   - Start database services and verify they're healthy
-   
-   **Option B: Quick launcher**
-   ```powershell
-   .\quick-start.ps1
-   ```
-   
-   **Option C: Manual (if Docker Desktop is already running)**
-   ```bash
-   docker-compose up -d
-   ```
 
-   **Note**: The startup scripts will handle Docker Desktop management automatically. If you prefer to start Docker Desktop manually, you can use Option C after ensuring Docker Desktop is running.
-
-5. Run database migrations:
-   ```bash
-   node src/shared/run-migration.js 001_create_core_schema.sql
-   ```
-
-6. Switch to the Series Management MCP branch:
-   ```bash
-   git checkout MCP_1_Series_Management
-   ```
-   This branch implements the first Model Context Protocol for managing book series data.
-   Follow the updated instructions in this branch to set up the Series Management functionality.
+4. **Follow the interactive guide** for detailed instructions on:
+   - Setting up your development environment
+   - Running database migrations
+   - Configuring and testing MCP servers
+   - Working through each tutorial branch
 
 ## Project Structure
 ```
@@ -78,12 +67,12 @@ mcp-tutorial/
 ├── scripts/            # Utility scripts
 │   ├── start-database.ps1   # Full-featured database startup script
 │   └── start-database.bat   # Batch file alternative
-├── src/               # Source code
-│   └── shared/        # Shared utilities
-├── docker-compose.yml # Docker services configuration
-├── Dockerfile        # Application container definition
-├── quick-start.ps1    # Quick database launcher
-└── template.env      # Environment variable template
+├── src/                # Source code
+│   └── shared/         # Shared utilities
+├── docker-compose.yml  # Docker services configuration
+├── Dockerfile          # Application container definition
+├── quick-start.ps1     # Quick database launcher
+└── template.env        # Environment variable template
 ```
 
 ## Database Setup Scripts
@@ -116,19 +105,52 @@ A simple launcher for quick database startup when Docker Desktop is already runn
 .\quick-start.ps1
 ```
 
-### `scripts/start-database.bat`
-A batch file alternative for users who prefer .bat files over PowerShell scripts.
+## MCP Server Setup
+
+This tutorial demonstrates dual-transport MCP servers that work with both Claude Projects and web-based tools.
+
+### Quick Start Commands
+
+**For Claude Desktop (Recommended):**
+- **Database:** `.\scripts\start-database.ps1` 
+- **MCP Configuration:** Generate and install config with `.\scripts\generate-configs.ps1`
+- **⚠️ Do NOT manually start MCP servers** - Claude Desktop manages them automatically via stdio transport
+
+**For Web Tools (Typing Mind, etc.):**
+```bash
+.\scripts\start-database.ps1                         # Start database first
+node src/mcps/series-server/index.js --http --port 3500  # Start series MCP in HTTP mode
+# Test with: curl http://localhost:3500/health
+```
+
+**Testing Your MCPs:**
+```bash
+# Quick database health check
+node -e "import('./src/shared/database.js').then(({DatabaseManager}) => { const db = new DatabaseManager(); db.healthCheck().then(console.log).finally(() => db.close()); });"
+
+# Test MCP server stdio mode (simulates Claude Desktop)
+echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | node src/mcps/series-server/index.js
+```
+
+### Available MCP Servers
+
+- **Author Management** - Create and manage authors
+- **Series Management** - Organize book series 
+- **Book Management** - Track individual books
+- **Timeline Management** - Series timeline tracking
+- **Metadata Management** - Flexible metadata storage
 
 ## Tutorial Steps
 
 The tutorial is organized into branches, each representing a different stage of development:
 
 1. `main` - Basic setup and project structure
-2. `character-server` - Implementing the character management server
-3. `world-server` - Adding world-building functionality
-4. `plot-server` - Creating the plot management system
-5. `writing-server` - Implementing writing progress tracking
-6. `research-server` - Adding research management capabilities
+2. `MCP_1_Series_Management` - Core series management MCPs
+3. `MCP_2_Character_Management` - Character management system
+4. `MCP_3_Plot_Management` - Plot and story structure
+5. `MCP_4_Worldbuilding_Management` - World-building and setting management
+6. `MCP_5_Writing_Process_Analysis` - Writing production management
+7. `MCP_6_fixes_genre_expansion` - Bug fixes and universal genre features
 
 Each branch builds upon the previous one, gradually introducing new concepts and functionality.
 
@@ -137,7 +159,10 @@ Each branch builds upon the previous one, gradually introducing new concepts and
 For detailed information about the project, please refer to the following documentation:
 
 - [Core Series Schema](docs/core-series-schema.md)
-- [Project Structure Guide](docs/mcp-tutorial-structure.md)
+- [MCP Series Management](docs/MCP_1_Series_management.md)
+- [Plot Server Guide](docs/corrected_plot_server_guide.md)
+- [World Server Guide](docs/corrected_world_server_guide.md)
+- [Writing Server Guide](docs/corrected_writing_server_guide.md)
 
 ## License
 

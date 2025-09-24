@@ -839,18 +839,64 @@
                 <div class="vs-code-step">
                     <h4><span class="vs-code-icon"></span> Open the MCP-tutorial Folder</h4>
                     
-                    <p><strong>Method 1: Using VS Code Explorer</strong></p>
-                    <ol>
-                        <li>In VS Code Explorer, <strong>double-click</strong> the "MCP-tutorial" folder</li>
-                        <li>OR right-click "MCP-tutorial" → <strong>"Open in New Window"</strong></li>
-                    </ol>
+                    <div class="platform-tabs">
+                        <button class="platform-tab active" onclick="showPlatform('open-folder-windows')">Windows</button>
+                        <button class="platform-tab" onclick="showPlatform('open-folder-mac')">Mac</button>
+                    </div>
 
-                    <p><strong>Method 2: Using Menu</strong></p>
-                    <ol>
-                        <li>File → Open Folder</li>
-                        <li>Navigate to and select the MCP-tutorial folder</li>
-                        <li>Click "Open"</li>
-                    </ol>
+                    <div class="platform-content active" id="open-folder-windows">
+                        <p><strong>Windows: Method 1 - From File Explorer</strong></p>
+                        <ol>
+                            <li>Open Windows File Explorer</li>
+                            <li>Navigate to where you cloned the MCP-tutorial folder</li>
+                            <li>Right-click on the folder</li>
+                            <li>Select <strong>"Open with Code"</strong> (if this option appears)</li>
+                            <li>Or double-click to open the folder, then use "File → Open Folder" in VS Code</li>
+                        </ol>
+                        
+                        <p><strong>Windows: Method 2 - Using File Menu</strong></p>
+                        <ol>
+                            <li>Click <strong>File → Open Folder</strong></li>
+                            <li>Navigate to where you cloned or downloaded the MCP-tutorial folder</li>
+                            <li>Select the "MCP-tutorial" folder</li>
+                            <li>Click <strong>"Select Folder"</strong></li>
+                        </ol>
+                        
+                        <p><strong>Windows: Method 3 - Using Command Line</strong></p>
+                        <ol>
+                            <li>Open Command Prompt or PowerShell</li>
+                            <li>Navigate to where you cloned the repository</li>
+                            <li>Type <code>cd MCP-tutorial</code></li>
+                            <li>Type <code>code .</code> to open VS Code in the current folder</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="platform-content" id="open-folder-mac">
+                        <p><strong>Mac: Method 1 - From Finder</strong></p>
+                        <ol>
+                            <li>Open Finder</li>
+                            <li>Navigate to where you cloned the MCP-tutorial folder</li>
+                            <li>Right-click on the folder</li>
+                            <li>Select <strong>"Open with"</strong> → <strong>"Visual Studio Code"</strong> (if this option appears)</li>
+                            <li>Or open the folder and use Method 2 below</li>
+                        </ol>
+                        
+                        <p><strong>Mac: Method 2 - Using File Menu</strong></p>
+                        <ol>
+                            <li>Click <strong>File → Open...</strong></li>
+                            <li>Navigate to where you cloned or downloaded the MCP-tutorial folder</li>
+                            <li>Select the "MCP-tutorial" folder</li>
+                            <li>Click <strong>"Open"</strong></li>
+                        </ol>
+                        
+                        <p><strong>Mac: Method 3 - From Terminal</strong></p>
+                        <ol>
+                            <li>Open Terminal</li>
+                            <li>Navigate to where you cloned the repository</li>
+                            <li>Type <code>cd MCP-tutorial</code></li>
+                            <li>Type <code>code .</code> to open VS Code in the current folder</li>
+                        </ol>
+                    </div>
 
                     <div class="file-explorer">
                         <div class="sidebar-title">VS Code Explorer Should Now Show:</div>
@@ -873,23 +919,44 @@
                 </div>
 
                 <p><strong>Update the terminal location:</strong></p>
-                <div class="command-block">
-                    <div class="command-header">
-                        <span class="command-title">Navigate into project directory</span>
-                        <span class="terminal-tab">VS Code Terminal</span>
-                        <button class="copy-btn" onclick="copyCommand(this, 'cd MCP-tutorial')">Copy</button>
+                
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('terminal-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('terminal-mac')">Mac</button>
+                </div>
+                
+                <div class="platform-content active" id="terminal-windows">
+                    <p>If your VS Code window is already open to the MCP-tutorial folder, your terminal should automatically start in the correct location. If not, or if you're in a different folder:</p>
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Navigate to project directory (Windows)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'cd MCP-tutorial')">Copy</button>
+                        </div>
+                        <div class="command-text">cd MCP-tutorial</div>
                     </div>
-                    <div class="command-text">cd MCP-tutorial</div>
+                </div>
+                
+                <div class="platform-content" id="terminal-mac">
+                    <p>If your VS Code window is already open to the MCP-tutorial folder, your terminal should automatically start in the correct location. If not, or if you're in a different folder:</p>
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Navigate to project directory (Mac)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'cd MCP-tutorial')">Copy</button>
+                        </div>
+                        <div class="command-text">cd MCP-tutorial</div>
+                    </div>
                 </div>
 
                 <div class="note">
-                    <strong>Pro Tip:</strong> After running <code>cd MCP-tutorial</code>, your terminal prompt should show that you're inside the project folder. All future commands will run from here.
+                    <strong>Pro Tip:</strong> After running this command, your terminal prompt should show that you're inside the project folder. You'll see the path ending with "MCP-tutorial" in your prompt. All future commands will run from here.
                 </div>
 
                 <ul class="checklist">
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>MCP-tutorial project is open in VS Code</li>
-                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see project files in Explorer</li>
-                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal is in the MCP-tutorial directory</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see project files (README.md, package.json, etc.) in Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Terminal is showing a prompt that ends with "MCP-tutorial"</li>
                 </ul>
             </div>
 
@@ -1005,6 +1072,7 @@
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>.env file appears in VS Code Explorer</li>
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can open and edit the .env file in VS Code</li>
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>Changed the default values</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Saved the .env file after editing</li>
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>No error messages in terminal</li>
                 </ul>
             </div>
@@ -1052,7 +1120,46 @@
                         </ul>
                     </div>
                 </div>
+                <div class="warning">
+                    <strong>PowerShell Script Execution Error?</strong>
+                    <p>If you get an error about script execution being disabled, run this command in VS Code terminal first:</p>
+                    
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Enable PowerShell script execution</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser')">Copy</button>
+                        </div>
+                        <div class="command-text">Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</div>
+                    </div>
 
+                    <p>After running this command:</p>
+                    <ul>
+                        <li>Type "Y" and press Enter if prompted</li>
+                        <li>Try running the database script again</li>
+                        <li>This only needs to be done once per user account</li>
+                    </ul>
+                    <div >
+                        <strong>Docker Login Required:</strong>
+                        <p>If you get errors about Docker access or rate limits, you need to have a Docker account and be logged in:</p>
+                        
+                        <ol>
+                            <li><strong>Create Account:</strong> Visit <a href="https://hub.docker.com/signup" target="_blank">Docker Hub</a> and create a free account</li>
+                            <li><strong>Log in via Terminal:</strong></li>
+                        </ol>
+
+                        <div class="command-block">
+                            <div class="command-header">
+                                <span class="command-title">Log into Docker</span>
+                                <span class="terminal-tab">VS Code Terminal</span>
+                                <button class="copy-btn" onclick="copyCommand(this, 'docker login')">Copy</button>
+                            </div>
+                            <div class="command-text">docker login</div>
+                        </div>
+
+                        <p>Enter your Docker Hub username and password when prompted. After logging in, try running the database commands again.</p>
+                    </div>
+                </div>
                 <div class="platform-content" id="docker-mac">
                     <div class="command-block">
                         <div class="command-header">
