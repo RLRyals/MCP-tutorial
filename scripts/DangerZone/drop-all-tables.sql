@@ -75,6 +75,14 @@ DROP TABLE IF EXISTS event_chapter_mappings CASCADE;
 -- Drop series and metadata tables
 DROP TABLE IF EXISTS series_metadata CASCADE;
 
+-- Drop character tables (from 003_add_character_schema.sql)
+DROP TABLE IF EXISTS characters CASCADE;
+DROP TABLE IF EXISTS character_details CASCADE;
+DROP TABLE IF EXISTS character_relationships CASCADE;
+DROP TABLE IF EXISTS chapters CASCADE;
+DROP TABLE IF EXISTS scenes CASCADE;
+DROP TABLE IF EXISTS character_chapter_presence CASCADE;
+
 -- Drop core content tables
 DROP TABLE IF EXISTS books CASCADE;
 DROP TABLE IF EXISTS series CASCADE;

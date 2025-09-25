@@ -1,7 +1,17 @@
 // src/shared/database.js - Shared database connection and utilities
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 if (!process.env.DATABASE_URL) {
+    // Find the project root by looking for package.json
+    const projectRoot = path.resolve(__dirname, '../../');
+    const envPath = path.join(projectRoot, '.env');
+    
     // Completely suppress dotenv output in MCP stdio mode
     if (process.env.MCP_STDIO_MODE === 'true') {
         // Temporarily redirect stdout to prevent dotenv pollution
@@ -9,13 +19,14 @@ if (!process.env.DATABASE_URL) {
         process.stdout.write = () => true;
         
         try {
-            dotenv.config({ silent: true, debug: false });
+            dotenv.config({ path: envPath, silent: true, debug: false });
         } finally {
             // Restore stdout
             process.stdout.write = originalWrite;
         }
     } else {
-        dotenv.config({ silent: true });
+        dotenv.config({ path: envPath, silent: true });
+        console.error(`Loading .env from: ${envPath}`);
     }
 }
 
