@@ -69,6 +69,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     properties: {
                         character_id: { type: 'integer', description: 'Character ID' },
                         chapter_id: { type: 'integer', description: 'Chapter ID' },
+                        scene_id: { type: 'integer', description: 'Specific scene within chapter (optional)' },
                         presence_type: { 
                             type: 'string', 
                             enum: ['present', 'mentioned', 'flashback', 'dream', 'phone_call'],
@@ -139,6 +140,7 @@ class CharacterMCPServer extends BaseMCPServer {
                     type: 'object',
                     properties: {
                         chapter_id: { type: 'integer', description: 'Chapter ID' },
+                        scene_number: { type: 'integer', description: 'Filter to specific scene within chapter (optional)' },
                         presence_type: { 
                             type: 'string', 
                             enum: ['present', 'mentioned', 'flashback', 'dream', 'phone_call'],
@@ -882,18 +884,19 @@ class CharacterMCPServer extends BaseMCPServer {
 
     async handleTrackCharacterPresence(args) {
         try {
-            const { character_id, chapter_id, presence_type, importance_level, 
+            const { character_id, chapter_id, scene_id, presence_type, importance_level, 
                     physical_state, emotional_state, enters_at_scene, exits_at_scene,
                     learns_this_chapter, reveals_this_chapter, character_growth } = args;
 
             const result = await this.db.query(
                 `INSERT INTO character_chapter_presence 
-                 (character_id, chapter_id, presence_type, importance_level, physical_state, 
+                 (character_id, chapter_id, scene_id, presence_type, importance_level, physical_state, 
                   emotional_state, enters_at_scene, exits_at_scene, learns_this_chapter, 
                   reveals_this_chapter, character_growth)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                  ON CONFLICT (character_id, chapter_id)
                  DO UPDATE SET 
+                   scene_id = EXCLUDED.scene_id,
                    presence_type = EXCLUDED.presence_type,
                    importance_level = EXCLUDED.importance_level,
                    physical_state = EXCLUDED.physical_state,
@@ -905,7 +908,7 @@ class CharacterMCPServer extends BaseMCPServer {
                    character_growth = EXCLUDED.character_growth,
                    updated_at = CURRENT_TIMESTAMP
                  RETURNING *`,
-                [character_id, chapter_id, presence_type, importance_level || null,
+                [character_id, chapter_id, scene_id || null, presence_type, importance_level || null,
                  physical_state || null, emotional_state || null, enters_at_scene || null,
                  exits_at_scene || null, learns_this_chapter || [], reveals_this_chapter || [],
                  character_growth || null]
@@ -1103,7 +1106,7 @@ class CharacterMCPServer extends BaseMCPServer {
 
     async handleGetCharactersInChapter(args) {
         try {
-            const { chapter_id, presence_type, importance_level } = args;
+            const { chapter_id, scene_number, presence_type, importance_level } = args;
 
             let query = `
                 SELECT 
@@ -1115,14 +1118,24 @@ class CharacterMCPServer extends BaseMCPServer {
                     ccp.emotional_state,
                     ccp.enters_at_scene,
                     ccp.exits_at_scene,
-                    ccp.character_function
+                    ccp.character_function,
+                    ccp.scene_id
                 FROM character_chapter_presence ccp
                 JOIN characters c ON ccp.character_id = c.id
-                WHERE ccp.chapter_id = $1
+                WHERE ccp.chapter_id = $1 
             `;
             
             const params = [chapter_id];
             let paramCount = 1;
+
+            if (scene_number) {
+                paramCount++;
+                query += ` AND (ccp.scene_id IS NULL OR ccp.scene_id IN (
+                    SELECT scene_id FROM chapter_scenes 
+                    WHERE chapter_id = $1 AND scene_number = $${paramCount}
+                ))`;
+                params.push(scene_number);
+            }
 
             if (presence_type) {
                 paramCount++;

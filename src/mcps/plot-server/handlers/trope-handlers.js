@@ -131,6 +131,7 @@ export class TropeHandlers {
                     properties: {
                         trope_instance_id: { type: 'integer', description: 'ID of the trope instance' },
                         scene_type_id: { type: 'integer', description: 'ID of the scene type being implemented' },
+                        scene_id: { type: 'integer', description: 'Actual scene ID (optional)' },
                         chapter_id: { type: 'integer', description: 'Chapter where this scene appears' },
                         scene_number: { type: 'integer', description: 'Scene number within the chapter' },
                         scene_summary: { type: 'string', description: 'Summary of how this scene implements the trope' },
@@ -141,7 +142,31 @@ export class TropeHandlers {
                             description: 'Rating of how effectively this scene implements the trope (1-10)',
                             default: 7
                         },
-                        variation_notes: { type: 'string', description: 'How this implementation varies from the typical pattern' }
+                        variation_notes: { type: 'string', description: 'How this implementation varies from the typical pattern' },
+                        kinks_featured: { 
+                            type: 'array', 
+                            items: { type: 'string' },
+                            description: 'Genre-specific elements featured (kinks, investigation techniques, magic types, etc.)'
+                        },
+                        implementation_notes: { type: 'string', description: 'Additional implementation details' }
+                    },
+                    required: ['instance_id', 'scene_type_id', 'scene_summary']
+                }
+            },
+            {
+                name: 'get_trope_scenes',
+                description: 'Get all trope scene implementations for an instance or series',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        instance_id: { type: 'integer', description: 'Get scenes for specific trope instance' },
+                        series_id: { type: 'integer', description: 'Get all trope scenes in series' },
+                        trope_category: { type: 'string', description: 'Filter by trope category (romance_trope, etc.)' },
+                        kinks_filter: { 
+                            type: 'array', 
+                            items: { type: 'string' },
+                            description: 'Filter by specific genre elements/kinks featured'
+                        }
                     }
                 }
             },
@@ -708,11 +733,14 @@ export class TropeHandlers {
         const { 
             trope_instance_id: instance_id, 
             scene_type_id, 
+            scene_id,
             chapter_id, 
             scene_number, 
             scene_summary, 
             effectiveness_rating = 7,
-            variation_notes 
+            variation_notes,
+            kinks_featured,
+            implementation_notes
         } = args;
         
         try {
@@ -738,24 +766,31 @@ export class TropeHandlers {
             // Insert or update the trope scene implementation
             await this.db.query(
                 `INSERT INTO trope_scenes
-                 (instance_id, scene_type_id, chapter_id, scene_number, 
-                  scene_summary, effectiveness_rating, variation_notes)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 (instance_id, scene_type_id, scene_id, chapter_id, scene_number, 
+                  scene_summary, effectiveness_rating, variation_notes, 
+                  kinks_featured, implementation_notes)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                  ON CONFLICT (instance_id, scene_type_id) 
                  DO UPDATE SET 
-                    chapter_id = $3,
-                    scene_number = $4,
-                    scene_summary = $5,
-                    effectiveness_rating = $6,
-                    variation_notes = $7`,
+                    scene_id = $3,
+                    chapter_id = $4,
+                    scene_number = $5,
+                    scene_summary = $6,
+                    effectiveness_rating = $7,
+                    variation_notes = $8,
+                    kinks_featured = $9,
+                    implementation_notes = $10`,
                 [
                     instance_id, 
                     scene_type_id, 
+                    scene_id || null,
                     chapter_id, 
                     scene_number,
                     scene_summary, 
                     effectiveness_rating, 
-                    variation_notes
+                    variation_notes || null,
+                    kinks_featured || [],
+                    implementation_notes || null
                 ]
             );
             

@@ -478,6 +478,12 @@ export const sceneToolsSchema = [
                     items: { type: 'integer' },
                     description: 'Array of character IDs present in this scene'
                 },
+                intensity_level: { 
+                type: 'integer', 
+                minimum: 1, 
+                maximum: 10, 
+                description: 'Scene intensity for pacing (1=low, 10=maximum)' 
+                },
                 writing_status: {
                     type: 'string',
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
@@ -548,6 +554,7 @@ export const sceneToolsSchema = [
                     type: 'integer', 
                     description: 'POV character ID' 
                 },
+                intensity_level: { type: 'integer', minimum: 1, maximum: 10 },
                 scene_participants: {
                     type: 'array',
                     items: { type: 'integer' },
@@ -580,7 +587,8 @@ export const sceneToolsSchema = [
                     type: 'boolean',
                     default: false,
                     description: 'Include character participant details'
-                }
+                },
+                include_tropes: { type: 'boolean', default: false, description: 'Include trope implementations' }
             },
             required: ['scene_id']
         }
@@ -595,6 +603,8 @@ export const sceneToolsSchema = [
                     type: 'integer', 
                     description: 'ID of the chapter' 
                 },
+                include_participants: { 
+                    type: 'boolean', default: false, description: 'Include character details' },
                 scene_type: {
                     type: 'string',
                     enum: ['dramatic', 'comedic', 'action', 'romance', 'mystery', 'horror', 'slice_of_life'],
@@ -664,9 +674,13 @@ export const sceneToolsSchema = [
         inputSchema: {
             type: 'object',
             properties: {
-                chapter_id: {
-                    type: 'integer',
-                    description: 'ID of the chapter to analyze'
+                book_id: { type: 'integer', description: 'Analyze entire book' },
+                chapter_id: { type: 'integer', description: 'Analyze specific chapter' },
+                analysis_type: { 
+                    type: 'string', 
+                    enum: ['intensity_distribution', 'character_presence', 'scene_types'],
+                    default: 'intensity_distribution',
+                    description: 'Type of analysis to perform'
                 },
                 include_suggestions: {
                     type: 'boolean',

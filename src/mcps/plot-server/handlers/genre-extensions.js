@@ -215,6 +215,10 @@ export class GenreExtensions {
                             type: 'integer',
                             description: 'Chapter where change occurs (optional)'
                         },
+                        scene_id: {
+                            type: 'integer',
+                            description: 'Specific scene where change occurs (optional)'
+                        },
                         dynamic_change: {
                             type: 'string',
                             description: 'Description of how dynamic changed'
@@ -563,15 +567,16 @@ export class GenreExtensions {
             // Create the dynamic change
             const insertQuery = `
                 INSERT INTO relationship_dynamics (
-                    arc_id, chapter_id, dynamic_change, tension_change,
+                    arc_id, chapter_id, scene_id, dynamic_change, tension_change,
                     change_type, trigger_event
-                ) VALUES ($1, $2, $3, $4, $5, $6)
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
                 RETURNING id, created_at
             `;
             
             const result = await this.db.query(insertQuery, [
                 args.arc_id,
                 args.chapter_id || null,
+                args.scene_id || null,
                 args.dynamic_change,
                 args.tension_change || null,
                 args.change_type,

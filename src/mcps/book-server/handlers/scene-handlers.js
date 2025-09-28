@@ -75,6 +75,12 @@ export class SceneHandlers {
                             type: 'integer', 
                             description: 'Target word count for this scene' 
                         },
+                        intensity_level: {
+                            type: 'integer',
+                            minimum: 1,
+                            maximum: 10,
+                            description: 'Scene intensity for pacing (1=low, 10=maximum)'
+                        },
                         notes: { 
                             type: 'string', 
                             description: 'Author notes and reminders for this scene' 
@@ -144,6 +150,12 @@ export class SceneHandlers {
                             type: 'string',
                             enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
                             description: 'Writing status'
+                        },
+                        intensity_level: {
+                            type: 'integer',
+                            minimum: 1,
+                            maximum: 10,
+                            description: 'Scene intensity for pacing (1=low, 10=maximum)'
                         },
                         notes: { 
                             type: 'string', 
@@ -276,7 +288,7 @@ export class SceneHandlers {
             const { chapter_id, scene_number, scene_title, scene_purpose, scene_type, 
                     location, time_of_day, duration, summary, pov_character_id, 
                     scene_participants, writing_status = 'planned', target_word_count, 
-                    notes } = args;
+                    intensity_level, notes } = args;
             
             // Check if scene number already exists in this chapter
             const checkQuery = 'SELECT scene_id FROM chapter_scenes WHERE chapter_id = $1 AND scene_number = $2';
@@ -303,9 +315,9 @@ export class SceneHandlers {
                 INSERT INTO chapter_scenes (
                     chapter_id, scene_number, scene_title, scene_purpose, scene_type,
                     location, time_of_day, duration, summary, pov_character_id,
-                    scene_participants, writing_status, target_word_count, notes
+                    scene_participants, writing_status, target_word_count, intensity_level, notes
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
                 RETURNING *
             `;
             
@@ -314,7 +326,7 @@ export class SceneHandlers {
                 scene_type || null, location || null, time_of_day || null, 
                 duration || null, summary || null, pov_character_id || null,
                 scene_participants || [], writing_status, target_word_count || null,
-                notes || null
+                intensity_level || null, notes || null
             ]);
             
             const scene = result.rows[0];
@@ -344,6 +356,9 @@ export class SceneHandlers {
             }
             if (scene.target_word_count) {
                 responseText += `Target Words: ${scene.target_word_count}\n`;
+            }
+            if (scene.intensity_level) {
+                responseText += `Intensity Level: ${scene.intensity_level}/10\n`;
             }
             if (scene.summary) {
                 responseText += `Summary: ${scene.summary}\n`;
