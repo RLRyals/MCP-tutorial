@@ -65,14 +65,20 @@ class WorldMCPServer extends BaseMCPServer {
         this.handleCreateWorldElement = this.worldElementHandlers.handleCreateWorldElement.bind(this.worldElementHandlers);
         this.handleUpdateWorldElement = this.worldElementHandlers.handleUpdateWorldElement.bind(this.worldElementHandlers);
         this.handleGetWorldElements = this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers);
-        
+        this.handleTrackElementUsage = this.worldElementHandlers.handleTrackElementUsage.bind(this.worldElementHandlers);
+
         // Bind organization handler methods
         this.handleCreateOrganization = this.organizationHandlers.handleCreateOrganization.bind(this.organizationHandlers);
         this.handleGetOrganizations = this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers);
-        
+        this.handleTrackOrganizationActivity = this.organizationHandlers.handleTrackOrganizationActivity.bind(this.organizationHandlers);
+        this.handleUpdateOrganization = this.organizationHandlers.handleUpdateOrganization.bind(this.organizationHandlers);
+
         // Bind world management handler methods
         this.handleCheckWorldConsistency = this.worldManagementHandlers.handleCheckWorldConsistency.bind(this.worldManagementHandlers);
         this.handleGenerateWorldGuide = this.worldManagementHandlers.handleGenerateWorldGuide.bind(this.worldManagementHandlers);
+        this.handleValidateWorldRelationships = this.worldManagementHandlers.handleValidateWorldRelationships.bind(this.worldManagementHandlers);
+        this.handleAnalyzeWorldComplexity = this.worldManagementHandlers.handleAnalyzeWorldComplexity.bind(this.worldManagementHandlers);
+        this.handleFindWorldGaps = this.worldManagementHandlers.handleFindWorldGaps.bind(this.worldManagementHandlers);
     }
 
     async testDatabaseConnection() {

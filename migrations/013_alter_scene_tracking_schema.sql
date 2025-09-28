@@ -29,7 +29,7 @@ ALTER TABLE trope_scenes ADD COLUMN IF NOT EXISTS implementation_notes TEXT;
 -- Index for performance
 CREATE INDEX IF NOT EXISTS idx_chapter_scenes_intensity ON chapter_scenes(intensity_level);
 CREATE INDEX IF NOT EXISTS idx_trope_scenes_scene_id ON trope_scenes(id);
-CREATE INDEX IF NOT EXISTS idx_trope_scenes_kinks ON trope_scenes USING GIN(kinks_featured);
+CREATE INDEX IF NOT EXISTS idx_trope_scenes_elements ON trope_scenes USING GIN(scene_elements);
 
 -- Record this migration
     INSERT INTO migrations (filename) VALUES ('013_alter_scene_tracking_schema.sql');
