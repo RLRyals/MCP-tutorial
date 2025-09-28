@@ -478,12 +478,6 @@ export const sceneToolsSchema = [
                     items: { type: 'integer' },
                     description: 'Array of character IDs present in this scene'
                 },
-                intensity_level: { 
-                type: 'integer', 
-                minimum: 1, 
-                maximum: 10, 
-                description: 'Scene intensity for pacing (1=low, 10=maximum)' 
-                },
                 writing_status: {
                     type: 'string',
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
@@ -494,9 +488,24 @@ export const sceneToolsSchema = [
                     type: 'integer', 
                     description: 'Target word count for this scene' 
                 },
+                intensity_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
+                    description: 'Scene intensity for pacing (1=low, 10=maximum)'
+                },
+                scene_elements: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Tags for scene elements (e.g., tropes, kinks, themes, moods)'
+                },
+                implementation_notes: {
+                    type: 'string',
+                    description: 'Detailed notes about how this scene implements specific elements or requirements'
+                },
                 notes: { 
                     type: 'string', 
-                    description: 'Author notes and reminders for this scene' 
+                    description: 'General author notes and reminders for this scene' 
                 }
             },
             required: ['chapter_id', 'scene_number']
@@ -554,7 +563,6 @@ export const sceneToolsSchema = [
                     type: 'integer', 
                     description: 'POV character ID' 
                 },
-                intensity_level: { type: 'integer', minimum: 1, maximum: 10 },
                 scene_participants: {
                     type: 'array',
                     items: { type: 'integer' },
@@ -565,9 +573,24 @@ export const sceneToolsSchema = [
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
                     description: 'Writing status'
                 },
+                intensity_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
+                    description: 'Scene intensity for pacing (1=low, 10=maximum)'
+                },
+                scene_elements: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Tags for scene elements (e.g., tropes, kinks, themes, moods)'
+                },
+                implementation_notes: {
+                    type: 'string',
+                    description: 'Detailed notes about how this scene implements specific elements or requirements'
+                },
                 notes: { 
                     type: 'string', 
-                    description: 'Scene notes' 
+                    description: 'General scene notes' 
                 }
             },
             required: ['scene_id']
@@ -587,8 +610,7 @@ export const sceneToolsSchema = [
                     type: 'boolean',
                     default: false,
                     description: 'Include character participant details'
-                },
-                include_tropes: { type: 'boolean', default: false, description: 'Include trope implementations' }
+                }
             },
             required: ['scene_id']
         }
@@ -603,8 +625,6 @@ export const sceneToolsSchema = [
                     type: 'integer', 
                     description: 'ID of the chapter' 
                 },
-                include_participants: { 
-                    type: 'boolean', default: false, description: 'Include character details' },
                 scene_type: {
                     type: 'string',
                     enum: ['dramatic', 'comedic', 'action', 'romance', 'mystery', 'horror', 'slice_of_life'],
@@ -619,6 +639,19 @@ export const sceneToolsSchema = [
                     type: 'boolean',
                     default: false,
                     description: 'Include word count statistics'
+                },
+                intensity_filter: {
+                    type: 'object',
+                    properties: {
+                        min_intensity: { type: 'integer', minimum: 1, maximum: 10 },
+                        max_intensity: { type: 'integer', minimum: 1, maximum: 10 }
+                    },
+                    description: 'Filter by intensity level range'
+                },
+                scene_elements: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Filter scenes containing specific elements'
                 }
             },
             required: ['chapter_id']
@@ -674,12 +707,14 @@ export const sceneToolsSchema = [
         inputSchema: {
             type: 'object',
             properties: {
-                book_id: { type: 'integer', description: 'Analyze entire book' },
-                chapter_id: { type: 'integer', description: 'Analyze specific chapter' },
-                analysis_type: { 
-                    type: 'string', 
-                    enum: ['intensity_distribution', 'character_presence', 'scene_types'],
-                    default: 'intensity_distribution',
+                chapter_id: {
+                    type: 'integer',
+                    description: 'ID of the chapter to analyze'
+                },
+                analysis_type: {
+                    type: 'string',
+                    enum: ['intensity_flow', 'element_distribution', 'character_presence', 'scene_balance'],
+                    default: 'intensity_flow',
                     description: 'Type of analysis to perform'
                 },
                 include_suggestions: {
@@ -691,6 +726,7 @@ export const sceneToolsSchema = [
             required: ['chapter_id']
         }
     }
+
 ];
 
 // =============================================
