@@ -143,10 +143,10 @@ export class TropeHandlers {
                             default: 7
                         },
                         variation_notes: { type: 'string', description: 'How this implementation varies from the typical pattern' },
-                        kinks_featured: { 
+                        scene_elements: { 
                             type: 'array', 
                             items: { type: 'string' },
-                            description: 'Genre-specific elements featured (kinks, investigation techniques, magic types, etc.)'
+                            description: 'Genre-specific elements featured (investigation techniques, magic types, themes, etc.)'
                         },
                         implementation_notes: { type: 'string', description: 'Additional implementation details' }
                     },
@@ -739,7 +739,7 @@ export class TropeHandlers {
             scene_summary, 
             effectiveness_rating = 7,
             variation_notes,
-            kinks_featured,
+            scene_elements,
             implementation_notes
         } = args;
         
@@ -768,7 +768,7 @@ export class TropeHandlers {
                 `INSERT INTO trope_scenes
                  (instance_id, scene_type_id, scene_id, chapter_id, scene_number, 
                   scene_summary, effectiveness_rating, variation_notes, 
-                  kinks_featured, implementation_notes)
+                  scene_elements, implementation_notes)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                  ON CONFLICT (instance_id, scene_type_id) 
                  DO UPDATE SET 
@@ -778,7 +778,7 @@ export class TropeHandlers {
                     scene_summary = $6,
                     effectiveness_rating = $7,
                     variation_notes = $8,
-                    kinks_featured = $9,
+                    scene_elements = $9,
                     implementation_notes = $10`,
                 [
                     instance_id, 
@@ -789,7 +789,7 @@ export class TropeHandlers {
                     scene_summary, 
                     effectiveness_rating, 
                     variation_notes || null,
-                    kinks_featured || [],
+                    scene_elements || [],
                     implementation_notes || null
                 ]
             );

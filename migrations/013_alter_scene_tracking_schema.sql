@@ -23,7 +23,7 @@ ALTER TABLE relationship_dynamics ADD CONSTRAINT relationship_dynamics_scene_id_
 
 -- Add missing fields to existing trope_scenes table
 ALTER TABLE trope_scenes ADD COLUMN IF NOT EXISTS scene_id INTEGER REFERENCES chapter_scenes(id) ON DELETE SET NULL;
-ALTER TABLE trope_scenes ADD COLUMN IF NOT EXISTS kinks_featured TEXT[]; -- "kinks featured" request fits here
+ALTER TABLE trope_scenes ADD COLUMN IF NOT EXISTS scene_elements TEXT[]; -- "kinks featured" request fits here
 ALTER TABLE trope_scenes ADD COLUMN IF NOT EXISTS implementation_notes TEXT;
 
 -- Index for performance

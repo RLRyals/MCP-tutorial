@@ -124,10 +124,10 @@ javascript{
                 description: 'How effectively this scene implements the trope (1-10)' 
             },
             variation_notes: { type: 'string', description: 'How this scene varies from typical implementation' },
-            kinks_featured: { 
+            scene_elements: { 
                 type: 'array', 
                 items: { type: 'string' },
-                description: 'Genre-specific elements featured (kinks, investigation techniques, magic types, etc.)'
+                description: 'Genre-specific elements featured (investigation techniques, magic types, themes, etc.)'
             },
             implementation_notes: { type: 'string', description: 'Additional implementation details' }
         },
@@ -145,10 +145,10 @@ javascript{
             instance_id: { type: 'integer', description: 'Get scenes for specific trope instance' },
             series_id: { type: 'integer', description: 'Get all trope scenes in series' },
             trope_category: { type: 'string', description: 'Filter by trope category (romance_trope, etc.)' },
-            kinks_filter: { 
+            elements_filter: { 
                 type: 'array', 
                 items: { type: 'string' },
-                description: 'Filter by specific genre elements/kinks featured'
+                description: 'Filter by specific scene elements featured'
             }
         }
     }
