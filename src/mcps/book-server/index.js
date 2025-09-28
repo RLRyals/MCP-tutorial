@@ -69,8 +69,13 @@ class BookMCPServer extends BaseMCPServer {
         //this.handleReorderChapters = this.chapterHandlers.handleReorderChapters.bind(this.chapterHandlers);
         
         // Bind scene handler methods (when scene handlers are implemented)
-        // this.handleCreateScene = this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers);
-        // ... etc
+        this.handleCreateScene = this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers);
+        this.handleUpdateScene = this.sceneHandlers.handleUpdateScene.bind(this.sceneHandlers);
+        this.handleGetScene = this.sceneHandlers.handleGetScene.bind(this.sceneHandlers);
+        this.handleListScenes = this.sceneHandlers.handleListScenes.bind(this.sceneHandlers);
+        this.handleDeleteScene = this.sceneHandlers.handleDeleteScene.bind(this.sceneHandlers);
+        this.handleReorderScenes = this.sceneHandlers.handleReorderScenes.bind(this.sceneHandlers);
+        this.handleAnalyzeSceneFlow = this.sceneHandlers.handleAnalyzeSceneFlow.bind(this.sceneHandlers);
     }
 
     async testDatabaseConnection() {
@@ -105,7 +110,7 @@ class BookMCPServer extends BaseMCPServer {
             ...this.chapterHandlers.getChapterTools(),
             
             // Scene Management Tools (when implemented)
-            // ...this.sceneHandlers.getSceneTools()
+             ...this.sceneHandlers.getSceneTools()
         ];
     }
 
