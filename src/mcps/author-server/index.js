@@ -70,6 +70,7 @@ class AuthorMCPServer extends BaseMCPServer {
                     properties: {
                         author_id: { type: 'integer', description: 'The ID of the author to update' },
                         name: { type: 'string', description: 'Full name of the author' },
+                        email: { type: 'string', description: 'Author\'s email address' },
                         bio: { type: 'string', description: 'Author biography' },
                         birth_year: { type: 'integer', description: 'Year of birth' }
                     },
@@ -102,6 +103,7 @@ class AuthorMCPServer extends BaseMCPServer {
                               result.rows.map(author => 
                                   `ID: ${author.id}\n` +
                                   `Name: ${author.name}\n` +
+                                  `Email: ${author.email || 'Not provided'}\n` +
                                   `Birth Year: ${author.birth_year || 'Unknown'}\n` +
                                   `Bio: ${author.bio || 'No biography available'}\n`
                               ).join('\n---\n\n')
@@ -139,6 +141,7 @@ class AuthorMCPServer extends BaseMCPServer {
                         text: `Author Details:\n\n` +
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
+                              `Email: ${author.email || 'Not provided'}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography available'}\n` +
                               `Created: ${author.created_at}\n` +
@@ -186,7 +189,7 @@ class AuthorMCPServer extends BaseMCPServer {
 
     async handleUpdateAuthor(args) {
         try {
-            const { author_id, name, bio, birth_year } = args;
+            const { author_id, name, email, bio, birth_year } = args;
             
             // Build dynamic update query
             const updates = [];
@@ -196,6 +199,10 @@ class AuthorMCPServer extends BaseMCPServer {
             if (name !== undefined) {
                 updates.push(`name = $${paramCount++}`);
                 values.push(name);
+            }
+            if (email !== undefined) {
+                updates.push(`email = $${paramCount++}`);
+                values.push(email);
             }
             if (bio !== undefined) {
                 updates.push(`bio = $${paramCount++}`);
@@ -242,6 +249,7 @@ class AuthorMCPServer extends BaseMCPServer {
                         text: `Updated author successfully!\n\n` +
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
+                              `Email: ${author.email || 'Not provided'}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
                               `Bio: ${author.bio || 'No biography available'}\n` +
                               `Updated: ${author.updated_at}`
