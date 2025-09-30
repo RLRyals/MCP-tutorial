@@ -1119,16 +1119,15 @@
                             <li>Provides helpful status messages</li>
                         </ul>
                     </div>
-                </div>
-                <div class="warning">
-                    <strong>PowerShell Script Execution Error?</strong>
-                    <p>If you get an error about script execution being disabled, run this command in VS Code terminal first:</p>
-                    
-                    <div class="command-block">
-                        <div class="command-header">
-                            <span class="command-title">Enable PowerShell script execution</span>
-                            <span class="terminal-tab">VS Code Terminal</span>
-                            <button class="copy-btn" onclick="copyCommand(this, 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser')">Copy</button>
+                    <div class="warning">
+                        <strong>PowerShell Script Execution Error?</strong>
+                        <p>If you get an error about script execution being disabled, run this command in VS Code terminal first:</p>
+                        
+                        <div class="command-block">
+                            <div class="command-header">
+                                <span class="command-title">Enable PowerShell script execution</span>
+                                <span class="terminal-tab">VS Code Terminal</span>
+                                <button class="copy-btn" onclick="copyCommand(this, 'Set-ExecutionPolicy RemoteSigned -Scope CurrentUser')">Copy</button>
                         </div>
                         <div class="command-text">Set-ExecutionPolicy RemoteSigned -Scope CurrentUser</div>
                     </div>
@@ -1159,6 +1158,7 @@
 
                         <p>Enter your Docker Hub username and password when prompted. After logging in, try running the database commands again.</p>
                     </div>
+                </div>
                 </div>
                 <div class="platform-content" id="docker-mac">
                     <div class="command-block">
@@ -1218,7 +1218,111 @@
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see postgres container with "docker ps"</li>
                 </ul>
             </div>
+            <div class="step-section vs-code-highlight">
+                <h2><span class="step-number">7.5</span>Connect to PostgreSQL in VS Code</h2>
+                
+                <div class="note">
+                    <strong>Why connect to PostgreSQL?</strong> This allows you to view your database tables, run queries, and verify your data directly in VS Code. It's optional but very helpful for understanding what's happening behind the scenes.
+                </div>
 
+                <div class="vs-code-step">
+                    <h4><span class="vs-code-icon"></span> Install PostgreSQL Extension (If Not Already Installed)</h4>
+                    
+                    <ol>
+                        <li>In VS Code, click the Extensions icon (or press <span class="keyboard-shortcut">Ctrl/⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">X</span>)</li>
+                        <li>Search for "PostgreSQL" by Chris Kolkman</li>
+                        <li>Click Install if not already installed</li>
+                    </ol>
+                </div>
+
+                <p><strong>Connect to your database:</strong></p>
+
+                <div class="platform-tabs">
+                    <button class="platform-tab active" onclick="showPlatform('postgres-windows')">Windows</button>
+                    <button class="platform-tab" onclick="showPlatform('postgres-mac')">Mac</button>
+                </div>
+
+                <div class="platform-content active" id="postgres-windows">
+                    <ol>
+                        <li>Click the PostgreSQL icon in VS Code's left sidebar</li>
+                        <li>Click the "+" icon to add a new connection</li>
+                        <li>Select <strong>"Connection String"</strong> tab</li>
+                        <li>Paste your connection string (without the password):</li>
+                    </ol>
+
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Connection string (Windows)</span>
+                            <span class="terminal-tab">PostgreSQL Extension</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'postgresql://writer:@localhost:5432/mcp_series')">Copy</button>
+                        </div>
+                        <div class="command-text">postgresql://writer:@localhost:5432/mcp_series</div>
+                    </div>
+
+                    <div class="note">
+                        <strong>Important:</strong> Notice there's no password in the connection string above (it's after the colon <code>:@</code>). The extension will prompt you for the password separately.
+                    </div>
+
+                    <ol start="5">
+                        <li>Enter your database password when prompted (the one you set in your .env file)</li>
+                        <li>Give the connection a name like "MCP Writing Tools"</li>
+                        <li>Click <strong>"Connect"</strong></li>
+                    </ol>
+                </div>
+
+                <div class="platform-content" id="postgres-mac">
+                    <ol>
+                        <li>Click the PostgreSQL icon in VS Code's left sidebar</li>
+                        <li>Click the "+" icon to add a new connection</li>
+                        <li>Select <strong>"Connection String"</strong> tab</li>
+                        <li>Paste your connection string (without the password):</li>
+                    </ol>
+
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Connection string (Mac)</span>
+                            <span class="terminal-tab">PostgreSQL Extension</span>
+                            <button class="copy-btn" onclick="copyCommand(this, 'postgresql://writer:@localhost:5432/mcp_series')">Copy</button>
+                        </div>
+                        <div class="command-text">postgresql://writer:@localhost:5432/mcp_series</div>
+                    </div>
+
+                    <div class="note">
+                        <strong>Important:</strong> Notice there's no password in the connection string above (it's after the colon <code>:@</code>). The extension will prompt you for the password separately.
+                    </div>
+
+                    <ol start="5">
+                        <li>Enter your database password when prompted (the one you set in your .env file)</li>
+                        <li>Give the connection a name like "MCP Writing Tools"</li>
+                        <li>Click <strong>"Connect"</strong></li>
+                    </ol>
+                </div>
+
+                <div class="success">
+                    <strong>Success!</strong> You should now see your database connection in the PostgreSQL sidebar. Expand it to see:
+                    <ul>
+                        <li><strong>Databases</strong> → mcp_series</li>
+                        <li><strong>Schemas</strong> → public</li>
+                        <li><strong>Tables</strong> → authors, series, books, etc.</li>
+                    </ul>
+                </div>
+
+                <div class="warning">
+                    <strong>Connection Issues?</strong>
+                    <ul>
+                        <li><strong>Can't connect:</strong> Make sure Docker is running and the database is up (<code>docker ps</code>)</li>
+                        <li><strong>Wrong credentials:</strong> Check your .env file for the correct username and password</li>
+                        <li><strong>Port already in use:</strong> Make sure port 5432 isn't being used by another application</li>
+                        <li><strong>Password authentication failed:</strong> Double-check the password matches what's in your .env file</li>
+                    </ul>
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>PostgreSQL extension installed in VS Code</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully connected to mcp_series database</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Can see database tables in PostgreSQL sidebar</li>
+                </ul>
+            </div>
             <div class="step-section vs-code-highlight">
                 <h2><span class="step-number">8</span>Create Database Schema</h2>
                 
@@ -1359,7 +1463,33 @@
                     </div>
                     <div class="command-text">.\scripts\generate-configs.ps1 -Claude</div>
                 </div>
+                <div class="platform-content" id="config-mac">
+                    <p><strong>Using Terminal for Mac:</strong></p>
+                    
+                    <p><strong>Method 1: Generate config (if script works on Mac)</strong></p>
+                    <div class="command-block">
+                        <div class="command-header">
+                            <span class="command-title">Generate Claude Desktop configuration (Mac)</span>
+                            <span class="terminal-tab">VS Code Terminal</span>
+                            <button class="copy-btn" onclick="copyCommand(this, './scripts/generate-configs.ps1 -Claude')">Copy</button>
+                        </div>
+                        <div class="command-text">./scripts/generate-configs.ps1 -Claude</div>
+                    </div>
 
+                    <div class="note">
+                        <strong>Note:</strong> If the PowerShell script doesn't work on Mac, you may need to manually copy the generated claude-desktop.json file or use the alternative method below.
+                    </div>
+
+                    <p><strong>Method 2: Manual copy using Finder</strong></p>
+                    <ol>
+                        <li><strong>In VS Code Explorer:</strong> Right-click "claude-desktop.json" → "Reveal in Finder"</li>
+                        <li><strong>Copy the file:</strong> <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">C</span></li>
+                        <li><strong>Open config folder:</strong> Press <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">Shift</span> + <span class="keyboard-shortcut">G</span></li>
+                        <li><strong>Type path:</strong> <code>~/Library/Application Support/Claude</code> and press Enter</li>
+                        <li><strong>Paste file:</strong> <span class="keyboard-shortcut">⌘</span> + <span class="keyboard-shortcut">V</span></li>
+                        <li><strong>Rename to:</strong> <code>claude_desktop_config.json</code></li>
+                    </ol>
+                </div>
                 <div class="vs-code-step">
                     <h4><span class="vs-code-icon"></span> Watch the Configuration File Appear</h4>
                     
@@ -1578,7 +1708,7 @@
                   <div class="command-header">
                       <span class="command-title">Switch to Character Management branch</span>
                       <span class="terminal-tab">VS Code Terminal</span>
-                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout Step_2_MCP_character')">Copy</button>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_2_Character_Management')">Copy</button>
                   </div>
                   <div class="command-text">git checkout MCP_2_Character_Management</div>
               </div>
@@ -1621,9 +1751,9 @@
                     <div class="command-header">
                         <span class="command-title">Run plot schema migration</span>
                         <span class="terminal-tab">VS Code Terminal</span>
-                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 004_add_plot_schema.sql')">Copy</button>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql')">Copy</button>
                     </div>
-                    <div class="command-text">node src/shared/run-migration.js 004_add_plot_schema.sql</div>
+                    <div class="command-text">node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql</div>
                 </div>
                 <div class="command-block">
                     <div class="command-header">
@@ -1692,8 +1822,39 @@
                     <li><div class="checkbox" onclick="toggleCheck(this)"></div>Worldbuilding schema migration completed successfully</li>
                 </ul>
             </div>  
+            <div clsss="step-section vs-code-highlight">
+                <h2><span class="step-number">15</span>Writing Process Analysis</h2>
+                <p><strong>To continue to Writing Process Analysis:</strong></p>
+              <div class="command-block">
+                  <div class="command-header">
+                      <span class="command-title">Switch to Writing Process Analysis branch</span>
+                      <span class="terminal-tab">VS Code Terminal</span>
+                      <button class="copy-btn" onclick="copyCommand(this, 'git checkout MCP_5_Writing_Process_Analysis')">Copy</button>
+                  </div>
+                  <div class="command-text">git checkout MCP_5_Writing_Process_Analysis</div>
+              </div>
+                       <p>Run the additional migration for Writing Process Analysis:</p>
+                
+                <div class="command-block">
+                    <div class="command-header">
+                        <span class="command-title">Run writing process schema migration</span>
+                        <span class="terminal-tab">VS Code Terminal</span>
+                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 009_add_writing_process_tables.sql')">Copy</button>
+                    </div>
+                    <div class="command-text">node src/shared/run-migration.js 009_add_writing_process_tables.sql</div>
+                </div>
+
+                <div class="success">
+                    <strong>This migration adds:</strong> More fields to your database tables (writing process tracking tables for sessions, goals, productivity).
+                </div>
+
+                <ul class="checklist">
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Successfully switched to Writing Process Analysis branch</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>New MCP server files appear in VS Code Explorer</li>
+                    <li><div class="checkbox" onclick="toggleCheck(this)"></div>Writing Process Analysis schema migration completed successfully</li>
+                </ul>
             <div class="step-section vs-code-highlight">
-                <h2><span class="step-number">15</span>Fixes and Universal Genre</h2>
+                <h2><span class="step-number">16</span>Fixes and Universal Genre</h2>
                 <p><strong>To continue to step 6:</strong></p>
               <div class="command-block">
                   <div class="command-header">
@@ -1720,14 +1881,6 @@
                         <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql')">Copy</button>
                     </div>
                     <div class="command-text">node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql</div>
-                </div>
-                <div class="command-block">
-                    <div class="command-header">
-                        <span class="command-title">Run metadata schema migration</span>
-                        <span class="terminal-tab">VS Code Terminal</span>
-                        <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 012_add_metadata_table.sql')">Copy</button>
-                    </div>
-                    <div class="command-text">node src/shared/run-migration.js 012_add_metadata_table.sql</div>
                 </div>
                 <div class="success">
                     <strong>This migration adds:</strong> More fields to your database tables (Adds -add subtitle, blurb, pitch and hook text columns to books and adds universal Genre and Mtatdata tables) and updates table relationships.
