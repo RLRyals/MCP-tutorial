@@ -418,18 +418,24 @@ export { MetadataMCPServer };
 // CLI runner when called directly (not when imported or run by MCP clients)
 import { fileURLToPath } from 'url';
 
-// Convert paths to handle Windows path differences
+// Normalize paths for cross-platform compatibility (Windows and Mac)
 const currentModuleUrl = import.meta.url;
-const scriptPath = process.argv[1];
-const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+let scriptPath = process.argv[1];
+// Handle Windows paths
+if (scriptPath.includes('\\')) {
+    scriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+} else {
+    // Handle Mac/Unix paths
+    scriptPath = `file://${scriptPath}`;
+}
+// Decode the URLs to ensure proper comparison
+const normalizedCurrentUrl = decodeURIComponent(currentModuleUrl);
+const normalizedScriptPath = decodeURIComponent(scriptPath);
+const isDirectExecution = normalizedCurrentUrl === normalizedScriptPath || process.env.MCP_STDIO_MODE === 'true';
 
-if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
-    const { CLIRunner } = await import('../../shared/cli-runner.js');
-    const runner = new CLIRunner(MetadataMCPServer);
-    await runner.run();
-} else if (isDirectExecution) {
-    // When running directly as MCP server (via Claude Desktop)
+// Prioritize MCP_STDIO_MODE environment variable
+if (process.env.MCP_STDIO_MODE === 'true') {
+    // When running in STDIO mode (via Claude Desktop)
     console.error('[METADATA-SERVER] Running in MCP stdio mode - starting server...');
     try {
         const server = new MetadataMCPServer();
@@ -439,4 +445,12 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
         console.error('[METADATA-SERVER] Stack:', error.stack);
         process.exit(1);
     }
+} else if (isDirectExecution) {
+    // When running as CLI (direct node execution)
+    const { CLIRunner } = await import('../../shared/cli-runner.js');
+    const runner = new CLIRunner(MetadataMCPServer);
+    await runner.run();
+} else {
+    // Module was imported, not directly executed
+    console.error('[METADATA-SERVER] Module imported - not starting server');
 }

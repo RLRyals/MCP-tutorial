@@ -360,18 +360,59 @@ if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[SERIES-SERVER] process.argv[1]:', process.argv[1]);
 }
 
-// Convert paths to handle Windows path differences
+// Convert paths to handle cross-platform differences
 const currentModuleUrl = import.meta.url;
 const scriptPath = process.argv[1];
-const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+
+// Function to normalize paths across platforms for more reliable comparison
+const normalizePath = (path) => {
+    if (!path) return '';
+    
+    // Replace backslashes with forward slashes for Windows
+    let normalizedPath = path.replace(/\\/g, '/');
+    
+    // Add correct file:// protocol prefix based on platform
+    if (!normalizedPath.startsWith('file:')) {
+        if (process.platform === 'win32') {
+            // Windows paths need triple slash: file:///C:/path
+            normalizedPath = `file:///${normalizedPath}`;
+        } else {
+            // Mac/Linux paths need double slash: file:///Users/path
+            normalizedPath = `file://${normalizedPath}`;
+        }
+    }
+    
+    // Fix any malformed protocol slashes (file:/ or file:// to file:///)
+    normalizedPath = normalizedPath.replace(/^file:\/+/, 'file:///');
+    
+    return normalizedPath;
+};
+
+const normalizedScriptPath = normalizePath(scriptPath);
+const normalizedCurrentModuleUrl = currentModuleUrl.replace(/\/{3,}/g, '///')
+    .replace(/^file:\/([^\/])/, 'file:///$1'); // Ensure proper file:/// format
+
+const isDirectExecution = normalizedCurrentModuleUrl === normalizedScriptPath || 
+    decodeURIComponent(normalizedCurrentModuleUrl) === normalizedScriptPath;
 
 if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[SERIES-SERVER] normalized current module url:', normalizedCurrentModuleUrl);
     console.error('[SERIES-SERVER] normalized script path:', normalizedScriptPath);
     console.error('[SERIES-SERVER] is direct execution:', isDirectExecution);
 }
 
-if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
+if (process.env.MCP_STDIO_MODE) {
+    // When running in MCP stdio mode, always start the server
+    console.error('[SERIES-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new SeriesMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[SERIES-SERVER] Failed to start MCP server:', error.message);
+        console.error('[SERIES-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
+} else if (isDirectExecution) {
     if (process.env.MCP_STDIO_MODE !== 'true') {
         console.error('[SERIES-SERVER] Starting CLI runner...');
     }
@@ -387,28 +428,16 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
         throw error;
     }
 } else if (isDirectExecution) {
-    // When running directly as MCP server (via Claude Desktop)
-    console.error('[SERIES-SERVER] Running in MCP stdio mode - starting server...');
-    
-    // When in MCP stdio mode, ensure clean stdout for JSON messages
-    if (process.env.MCP_STDIO_MODE === 'true') {
-        console.error('[SERIES-SERVER] Setting up stdio mode handlers');
-        // Redirect all console.log to stderr
-        console.log = function(...args) {
-            console.error('[SERIES-SERVER]', ...args);
-        };
-    }
-    
+    // When running directly as a CLI tool
+    console.error('[SERIES-SERVER] Starting CLI runner...');
     try {
-        console.error('[SERIES-SERVER] Creating server instance...');
-        const server = new SeriesMCPServer();
-        console.error('[SERIES-SERVER] Server instance created, starting run()...');
-        await server.run();
-        console.error('[SERIES-SERVER] Server run() completed successfully');
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(SeriesMCPServer);
+        await runner.run();
     } catch (error) {
-        console.error('[SERIES-SERVER] Failed to start MCP server:', error.message);
-        console.error('[SERIES-SERVER] Stack:', error.stack);
-        process.exit(1);
+        console.error('[SERIES-SERVER] CLI runner failed:', error.message);
+        console.error('[SERIES-SERVER] CLI runner stack:', error.stack);
+        throw error;
     }
 } else {
     if (process.env.MCP_STDIO_MODE !== 'true') {

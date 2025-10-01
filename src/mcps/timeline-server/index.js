@@ -110,36 +110,30 @@ if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[TIMELINE-SERVER] Module loaded');
 }
 
-// Convert paths to handle Windows path differences
+// Normalize paths for cross-platform compatibility (Windows and Mac)
 const currentModuleUrl = import.meta.url;
-const scriptPath = process.argv[1];
-const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+let scriptPath = process.argv[1];
+// Handle Windows paths
+if (scriptPath.includes('\\')) {
+    scriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+} else {
+    // Handle Mac/Unix paths
+    scriptPath = `file://${scriptPath}`;
+}
+// Decode the URLs to ensure proper comparison
+const normalizedCurrentUrl = decodeURIComponent(currentModuleUrl);
+const normalizedScriptPath = decodeURIComponent(scriptPath);
+const isDirectExecution = normalizedCurrentUrl === normalizedScriptPath || process.env.MCP_STDIO_MODE === 'true';
 
-
-
-if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
-    console.error('[TIMELINE-SERVER] Starting CLI runner...');
-    try {
-        const { CLIRunner } = await import('../../shared/cli-runner.js');
-        const runner = new CLIRunner(TimelineMCPServer);
-        await runner.run();
-    } catch (error) {
-        console.error('[TIMELINE-SERVER] CLI runner failed:', error.message);
-        process.exit(1);
-    }
-} else if (isDirectExecution) {
-    // When running directly as MCP server (via Claude Desktop)
+// Prioritize MCP_STDIO_MODE environment variable
+if (process.env.MCP_STDIO_MODE === 'true') {
+    // When running in STDIO mode (via Claude Desktop)
     console.error('[TIMELINE-SERVER] Running in MCP stdio mode - starting server...');
     
     // When in MCP stdio mode, ensure clean stdout for JSON messages
-    if (process.env.MCP_STDIO_MODE === 'true') {
-        console.error('[TIMELINE-SERVER] Setting up stdio mode handlers');
-        // Redirect all console.log to stderr
-        console.log = function(...args) {
-            console.error('[TIMELINE-SERVER]', ...args);
-        };
-    }
+    console.log = function(...args) {
+        console.error('[TIMELINE-SERVER]', ...args);
+    };
     
     try {
         console.error('[TIMELINE-SERVER] Creating server instance...');
@@ -152,7 +146,19 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
         console.error('[TIMELINE-SERVER] Stack:', error.stack);
         process.exit(1);
     }
+} else if (isDirectExecution) {
+    // When running as CLI (direct node execution)
+    console.error('[TIMELINE-SERVER] Starting CLI runner...');
+    try {
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(TimelineMCPServer);
+        await runner.run();
+    } catch (error) {
+        console.error('[TIMELINE-SERVER] CLI runner failed:', error.message);
+        process.exit(1);
+    }
 } else {
+    // Module was imported, not directly executed
     if (process.env.MCP_STDIO_MODE !== 'true') {
         console.error('[TIMELINE-SERVER] Module imported - not starting server');
     }
