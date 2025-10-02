@@ -336,23 +336,23 @@ if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[PLOT-SERVER] Module loaded');
 }
 
-// Convert paths to handle Windows path differences
+// Normalize paths for cross-platform compatibility (Windows and Mac)
 const currentModuleUrl = import.meta.url;
-const scriptPath = process.argv[1];
-const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-const isDirectExecution = currentModuleUrl === normalizedScriptPath;
+let scriptPath = process.argv[1];
+// Handle Windows paths
+if (scriptPath.includes('\\')) {
+    scriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
+} else {
+    // Handle Mac/Unix paths
+    scriptPath = `file://${scriptPath}`;
+}
+// Decode the URLs to ensure proper comparison
+const normalizedCurrentUrl = decodeURIComponent(currentModuleUrl);
+const normalizedScriptPath = decodeURIComponent(scriptPath);
+const isDirectExecution = normalizedCurrentUrl === normalizedScriptPath || process.env.MCP_STDIO_MODE === 'true';
 
-if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
-    console.error('[PLOT-SERVER] Starting CLI runner...');
-    try {
-        const { CLIRunner } = await import('../../shared/cli-runner.js');
-        const runner = new CLIRunner(PlotMCPServer);
-        await runner.run();
-    } catch (error) {
-        console.error('[PLOT-SERVER] CLI runner failed:', error.message);
-        process.exit(1);
-    }
-} else if (isDirectExecution) {
+// Prioritize MCP_STDIO_MODE environment variable
+if (process.env.MCP_STDIO_MODE === 'true') {
     // When running directly as MCP server (via Claude Desktop)
     console.error('[PLOT-SERVER] Running in MCP stdio mode - starting server...');
     
@@ -376,7 +376,19 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
         console.error('[PLOT-SERVER] Stack:', error.stack);
         process.exit(1);
     }
+} else if (isDirectExecution) {
+    // When running as CLI (direct node execution)
+    console.error('[PLOT-SERVER] Starting CLI runner...');
+    try {
+        const { CLIRunner } = await import('../../shared/cli-runner.js');
+        const runner = new CLIRunner(PlotMCPServer);
+        await runner.run();
+    } catch (error) {
+        console.error('[PLOT-SERVER] CLI runner failed:', error.message);
+        process.exit(1);
+    }
 } else {
+    // Module was imported, not directly executed
     if (process.env.MCP_STDIO_MODE !== 'true') {
         console.error('[PLOT-SERVER] Module imported - not starting server');
     }

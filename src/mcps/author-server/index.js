@@ -265,16 +265,58 @@ console.error('[AUTHOR-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
 console.error('[AUTHOR-SERVER] import.meta.url:', import.meta.url);
 console.error('[AUTHOR-SERVER] process.argv[1]:', process.argv[1]);
 
-// Convert paths to handle Windows path differences
+// Convert paths to handle cross-platform differences
 const currentModuleUrl = import.meta.url;
 const scriptPath = process.argv[1];
-const normalizedScriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-const isDirectExecution = currentModuleUrl === normalizedScriptPath;
 
+// Function to normalize paths across platforms for more reliable comparison
+const normalizePath = (path) => {
+    if (!path) return '';
+    
+    // Replace backslashes with forward slashes for Windows
+    let normalizedPath = path.replace(/\\/g, '/');
+    
+    // Add correct file:// protocol prefix based on platform
+    if (!normalizedPath.startsWith('file:')) {
+        if (process.platform === 'win32') {
+            // Windows paths need triple slash: file:///C:/path
+            normalizedPath = `file:///${normalizedPath}`;
+        } else {
+            // Mac/Linux paths need double slash: file:///Users/path
+            normalizedPath = `file://${normalizedPath}`;
+        }
+    }
+    
+    // Fix any malformed protocol slashes (file:/ or file:// to file:///)
+    normalizedPath = normalizedPath.replace(/^file:\/+/, 'file:///');
+    
+    return normalizedPath;
+};
+
+const normalizedScriptPath = normalizePath(scriptPath);
+const normalizedCurrentModuleUrl = currentModuleUrl.replace(/\/{3,}/g, '///')
+    .replace(/^file:\/([^\/])/, 'file:///$1'); // Ensure proper file:/// format
+
+const isDirectExecution = normalizedCurrentModuleUrl === normalizedScriptPath || 
+    decodeURIComponent(normalizedCurrentModuleUrl) === normalizedScriptPath;
+
+console.error('[AUTHOR-SERVER] normalized current module url:', normalizedCurrentModuleUrl);
 console.error('[AUTHOR-SERVER] normalized script path:', normalizedScriptPath);
 console.error('[AUTHOR-SERVER] is direct execution:', isDirectExecution);
 
-if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
+if (process.env.MCP_STDIO_MODE) {
+    // When running in MCP stdio mode, always start the server
+    console.error('[AUTHOR-SERVER] Running in MCP stdio mode - starting server...');
+    try {
+        const server = new AuthorMCPServer();
+        await server.run();
+    } catch (error) {
+        console.error('[AUTHOR-SERVER] Failed to start MCP server:', error.message);
+        console.error('[AUTHOR-SERVER] Stack:', error.stack);
+        process.exit(1);
+    }
+} else if (isDirectExecution) {
+    // When running directly as a CLI tool
     console.error('[AUTHOR-SERVER] Starting CLI runner...');
     try {
         const { CLIRunner } = await import('../../shared/cli-runner.js');
@@ -284,17 +326,6 @@ if (!process.env.MCP_STDIO_MODE && isDirectExecution) {
         console.error('[AUTHOR-SERVER] CLI runner failed:', error.message);
         console.error('[AUTHOR-SERVER] CLI runner stack:', error.stack);
         throw error;
-    }
-} else if (isDirectExecution) {
-    // When running directly as MCP server (via Claude Desktop)
-    console.error('[AUTHOR-SERVER] Running in MCP stdio mode - starting server...');
-    try {
-        const server = new AuthorMCPServer();
-        await server.run();
-    } catch (error) {
-        console.error('[AUTHOR-SERVER] Failed to start MCP server:', error.message);
-        console.error('[AUTHOR-SERVER] Stack:', error.stack);
-        process.exit(1);
     }
 } else {
     console.error('[AUTHOR-SERVER] Module imported - not starting server');

@@ -132,13 +132,29 @@ function generateClaudeDesktopConfig() {
                 }
             }
             
-            // Normalize path with forward slashes
-            const scriptPath = path.join(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, indexFileName)
-                .replace(/\\/g, '/');
+            // Platform-specific path handling
+            let scriptPath;
+            
+            // For Mac/Linux, use absolute path with forward slashes
+            if (process.platform === 'darwin' || process.platform === 'linux') {
+                scriptPath = path.resolve(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, indexFileName);
+            } else {
+                // For Windows, normalize with forward slashes
+                scriptPath = path.join(config.MCP_TUTORIAL_PATH, 'src', 'mcps', server.name, indexFileName)
+                    .replace(/\\/g, '/');
+            }
+            
+            // Determine correct node command path
+            let nodeCommand = 'node';
+            
+            // On macOS, check if we need to use full node path
+            if (process.platform === 'darwin' && process.env.NODE_PATH) {
+                nodeCommand = process.env.NODE_PATH;
+            }
             
             // Add server configuration using the standard pattern
             dynamicConfig.mcpServers[server.name] = {
-                command: 'node',
+                command: nodeCommand,
                 args: [scriptPath],
                 env: {
                     NODE_ENV: config.NODE_ENV,
