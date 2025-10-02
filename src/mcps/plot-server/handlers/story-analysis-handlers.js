@@ -1,5 +1,5 @@
 // src/mcps/plot-server/handlers/story-analysis-handlers.js
-// Dramatica-inspired story analysis without rigid structure
+//  story analysis without rigid structure
 
 import { storyAnalysisToolsSchema } from '../schemas/plot-tools-schema.js';
 import { PlotValidators } from '../utils/plot-validators.js';

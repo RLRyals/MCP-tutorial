@@ -137,7 +137,7 @@ CREATE TABLE plot_thread_relationships (
 -- STORY ANALYSIS (Dramatica-inspired, LOOKUP-BASED)
 -- =============================================
 
--- Core story analysis table for Dramatica-inspired flexible analysis
+-- Core story analysis table for  flexible analysis
 CREATE TABLE story_analysis (
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,

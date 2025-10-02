@@ -126,7 +126,7 @@ export const plotThreadToolsSchema = [
 export const storyAnalysisToolsSchema = [
     {
         name: 'analyze_story_dynamics',
-        description: 'Analyze story dynamics using Dramatica-inspired elements',
+        description: 'Analyze story dynamics using  elements',
         inputSchema: {
             type: 'object',
             properties: {
