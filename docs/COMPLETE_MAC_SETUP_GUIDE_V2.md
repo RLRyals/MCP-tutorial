@@ -20,7 +20,7 @@ Everyone has been using HomeBrew to install some of these
 ### 2.1 Clone and Initialize the Repository
 These commands go in your terminal in VS code one line at a a time and then enter before pasting the next one.
 
-```zhs
+```zsh
 # Create GitHub directory if it doesn't exist
 mkdir -p ~/Documents/GitHub
 cd ~/Documents/GitHub
@@ -39,12 +39,12 @@ npm install
 ### 2.2 Environment Configuration (CRITICAL STEP)
 
 1. First, copy the template environment file:
-```zhs
+```zsh
 cp template.env .env
 ```
 
 2. Open the .env file in a text editor:
-```zhs
+```zsh
 # Using VS Code (recommended)
 code .env
 
@@ -66,29 +66,29 @@ POSTGRES_CONTAINER_NAME=mcp-series-db
    - For VS Code: Press Cmd + S
 
 5. Verify your .env file was saved correctly:
-```zhs
+```zsh
 cat .env
 ```
 
 ### 2.3 Run Initial Database Migrations
 
 1. Start the PostgreSQL database:
-```zhs
+```zsh
 docker compose up -d
 ```
 
 2. Verify the database is running:
-```zhs
+```zsh
 docker ps | grep postgres
 ```
 
 3. Run the initial migrations:
-```zhs
+```zsh
 node src/shared/run-migration.js 001_create_core_schema.sql
 ```
 
 4. Verify the database connection:
-```zhs
+```zsh
 node tests/test-db.js
 ```
 
@@ -97,18 +97,18 @@ node tests/test-db.js
 Complete each MCP tutorial branch in order:
 
 1. MCP_1_Series_Management (current)
-```zhs
-git checkout [branch_name]
+```zsh
+git checkout MCP_1_Series_Management
 npm install
 node src/shared/run-migration.js 002_update_series_schema.sql
 ```
 ## Optional 
-for branches MCP_2 through MCP_5
+for branches MCP_2 through MCP_5 you can go through them or simply continue to MCP_6
 
 ## Mandatory
 6. MCP_6_fixes_genre_expansion (latest completed)
 
-```zhs
+```zsh
 git checkout MCP_6_fixes_genre_expansion
 node src/shared/run-migration.js 003_add_character_schema.sql
 node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql
@@ -119,7 +119,7 @@ node src/shared/run-migration.js 008_add_world_schema.sql
 node src/shared/run-migration.js 009_writing_migration.sql
 ```
 
-```zhs
+```zsh
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 ```
@@ -131,7 +131,7 @@ IMPORTANT: Only proceed with this step after completing through MCP_6_fixes_genr
 ### Option A: Direct File Copy (Recommended)
 
 1. First, find your Claude Desktop configuration directory:
-```zhs
+```zsh
 # Create directory if it doesn't exist
 mkdir -p ~/Library/Application\ Support/Claude
 
@@ -140,7 +140,7 @@ node scripts/generate-configs.js --claude
 ```
 
 2. Copy the configuration file directly (RECOMMENDED METHOD):
-```zhs
+```zsh
 cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
@@ -151,12 +151,12 @@ cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_deskt
 If the direct copy doesn't work:
 
 1. Generate the configuration:
-```zhs
+```zsh
 node scripts/generate-configs.js
 ```
 
 2. Open both files:
-```zhs
+```zsh
 # Open the generated config
 open config/claude-desktop.json
 
@@ -170,7 +170,7 @@ open ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ## 5. Verify Configuration
 
-```zhs
+```zsh
 # Check if config file exists in Claude Desktop directory
 ls -l ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
