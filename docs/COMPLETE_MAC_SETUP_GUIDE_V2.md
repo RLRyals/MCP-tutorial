@@ -109,19 +109,17 @@ for branches MCP_2 through MCP_5
 6. MCP_6_fixes_genre_expansion (latest completed)
 
 ```zhs
-git checkout [branch_name]
-node src/shared/run-migration.js [additional_migrations].sql 
+git checkout MCP_6_fixes_genre_expansion
 node src/shared/run-migration.js 003_add_character_schema.sql
 node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql
 node src/shared/run-migration.js 005_update_author_email_constraint.sql
 node src/shared/run-migration.js 006_add_book_metadata_plot_thread_and_tropes_tables.sql
 node src/shared/run-migration.js 007_add_event_chapter_mapping.sql
 node src/shared/run-migration.js 008_add_world_schema.sql
-node src/shared/run-migration.js 009_add_writing_process_tables.sql
+node src/shared/run-migration.js 009_writing_migration.sql
 ```
 
 ```zhs
-git checkout MCP_6_fixes_genre_expansion
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 ```
