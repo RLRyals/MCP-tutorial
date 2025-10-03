@@ -186,31 +186,31 @@ if (-not (Test-DockerDesktop)) {
 # Check if services are already running (unless -Force is used)
 if (-not $Force) {
     try {
-        $runningContainers = docker-compose ps --services --filter "status=running" 2>$null
+        $runningContainers = docker compose ps --services --filter "status=running" 2>$null
         if ($runningContainers) {
             Write-ColorOutput "Database services are already running!" $SuccessColor
             $response = Read-Host "Would you like to restart them? (y/N)"
             if ($response -ne "y" -and $response -ne "Y") {
                 Write-ColorOutput "Use -Force flag to restart services automatically." $InfoColor
                 Write-ColorOutput "Current services status:" $InfoColor
-                docker-compose ps
+                docker compose ps
                 exit 0
             }
             Write-ColorOutput "Restarting services..." $InfoColor
-            docker-compose down
+            docker compose down
         }
     }
     catch {
-        # If docker-compose command fails, continue with startup
+        # If docker compose command fails, continue with startup
     }
 }
 
 # Start the database services
 Write-ColorOutput "Starting database services..." $InfoColor
-Write-ColorOutput "Running: docker-compose up -d" $InfoColor
+Write-ColorOutput "Running: docker compose up -d" $InfoColor
 
 try {
-    docker-compose up -d
+    docker compose up -d
     
     if ($LASTEXITCODE -eq 0) {
         Write-ColorOutput "=" * 70 $SuccessColor
@@ -219,10 +219,10 @@ try {
         
         # Verify all services are running
         Write-ColorOutput "`nVerifying services..." $InfoColor
-        $services = docker-compose ps --services
+        $services = docker compose ps --services
         
         if (-not $services) {
-            Write-ColorOutput "ERROR: No services found in docker-compose configuration!" $ErrorColor
+            Write-ColorOutput "ERROR: No services found in docker compose configuration!" $ErrorColor
             Write-ColorOutput "Check your docker-compose.yml file." $ErrorColor
             exit 1
         }
@@ -231,7 +231,7 @@ try {
         $failedServices = @()
         
         foreach ($service in $services) {
-            $containerStatus = docker-compose ps --format json 2>$null | ConvertFrom-Json | Where-Object { $_.Service -eq $service }
+            $containerStatus = docker compose ps --format json 2>$null | ConvertFrom-Json | Where-Object { $_.Service -eq $service }
             
             if (-not $containerStatus) {
                 $allServicesRunning = $false
@@ -250,24 +250,24 @@ try {
             foreach ($service in $failedServices) {
                 Write-ColorOutput "- $service" $ErrorColor
                 Write-ColorOutput ("Logs for " + $service + ":") $InfoColor
-                docker-compose logs $service 2>&1
+                docker compose logs $service 2>&1
             }
             Write-ColorOutput "`nPlease check the logs above for errors." $ErrorColor
-            Write-ColorOutput "You may need to run 'docker-compose down' and try again." $WarningColor
+            Write-ColorOutput "You may need to run 'docker compose down' and try again." $WarningColor
             exit 1
         }
         
         # Show service status
         Write-ColorOutput "`nService Status:" $InfoColor
-        docker-compose ps
+        docker compose ps
         
         # Show connection information
         Write-ColorOutput "`nConnection Information:" $InfoColor
         Write-ColorOutput "Database Host: localhost" $InfoColor
         Write-ColorOutput "Database Port: 5432" $InfoColor
         Write-ColorOutput "Database Name: mcp_series (or as configured in .env)" $InfoColor
-        Write-ColorOutput "`nTo view logs: docker-compose logs -f" $InfoColor
-        Write-ColorOutput "To stop services: docker-compose down" $InfoColor
+        Write-ColorOutput "`nTo view logs: docker compose logs -f" $InfoColor
+        Write-ColorOutput "To stop services: docker compose down" $InfoColor
         
         # Check database health and container status
         Write-ColorOutput "`nWaiting for services to be fully ready..." $InfoColor
@@ -284,7 +284,7 @@ try {
                 # Skip if we already know this service is healthy
                 if ($healthyServices[$service]) { continue }
                 
-                $containerInfo = docker-compose ps --format json 2>$null | ConvertFrom-Json | 
+                $containerInfo = docker compose ps --format json 2>$null | ConvertFrom-Json | 
                     Where-Object { $_.Service -eq $service }
                 
                 if ($containerInfo) {
@@ -327,7 +327,7 @@ try {
                     Write-ColorOutput "- $service" $WarningColor
                 }
             }
-            Write-ColorOutput "Services may still be starting. Check status with: docker-compose ps" $InfoColor
+            Write-ColorOutput "Services may still be starting. Check status with: docker compose ps" $InfoColor
         }
         
     } else {

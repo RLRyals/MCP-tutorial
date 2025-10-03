@@ -66,8 +66,8 @@ if errorlevel 1 (
 REM Start the database services
 echo.
 echo Starting database services...
-echo Running: docker-compose up -d
-docker-compose up -d
+echo Running: docker compose up -d
+docker compose up -d
 
 if errorlevel 1 (
     echo.
@@ -83,7 +83,7 @@ echo SUCCESS: Database services started!
 echo ======================================================================
 echo.
 echo Service Status:
-docker-compose ps
+docker compose ps
 
 echo.
 echo Connection Information:
@@ -91,7 +91,7 @@ echo Database Host: localhost
 echo Database Port: 5432
 echo Database Name: mcp_series (or as configured in .env)
 echo.
-echo To view logs: docker-compose logs -f
-echo To stop services: docker-compose down
+echo To view logs: docker compose logs -f
+echo To stop services: docker compose down
 echo.
 pause
