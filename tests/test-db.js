@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // test-db.js - Quick database connection test
 
-import { DatabaseManager } from './src/shared/database.js';
+import { DatabaseManager } from '../src/shared/database.js';
 
 async function testDatabase() {
     console.log('Testing database connection...\n');
