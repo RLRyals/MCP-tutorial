@@ -285,7 +285,7 @@ export class ChapterHandlers {
             const bookTitle = bookResult.rows[0].title;
             
             let responseText = `Created chapter successfully!\n\n`;
-            responseText += `ID: ${chapter.chapter_id}\n`;
+            responseText += `ID: ${chapter.id}\n`;
             responseText += `Book: ${bookTitle}\n`;
             responseText += `Chapter: ${chapter.chapter_number}${chapter.title ? ` - ${chapter.title}` : ''}\n`;
             responseText += `Status: ${chapter.status}\n`;
@@ -368,7 +368,7 @@ export class ChapterHandlers {
             const bookTitle = bookResult.rows[0]?.title || 'Unknown';
             
             let responseText = `Updated chapter successfully!\n\n`;
-            responseText += `ID: ${chapter.chapter_id}\n`;
+            responseText += `ID: ${chapter.id}\n`;
             responseText += `Book: ${bookTitle}\n`;
             responseText += `Chapter: ${chapter.chapter_number}${chapter.title ? ` - ${chapter.title}` : ''}\n`;
             responseText += `Status: ${chapter.status}\n`;
@@ -414,7 +414,7 @@ export class ChapterHandlers {
             const chapter = result.rows[0];
             
             let chapterText = `Chapter Details:\n\n`;
-            chapterText += `ID: ${chapter.chapter_id}\n`;
+            chapterText += `ID: ${chapter.id}\n`;
             chapterText += `Book: ${chapter.book_title}\n`;
             chapterText += `Chapter: ${chapter.chapter_number}${chapter.title ? ` - ${chapter.title}` : ''}\n`;
             
@@ -562,7 +562,8 @@ export class ChapterHandlers {
             let chaptersText = `Chapters for "${bookTitle}" (${result.rows.length} chapters):\n\n`;
             
             for (const chapter of result.rows) {
-                chaptersText += `Chapter ${chapter.chapter_number}${chapter.title ? `: ${chapter.title}` : ' (Untitled)'}\n`;
+                chaptersText += `Id: ${chapter.id}\n`;
+                chaptersText += `  Chapter ${chapter.chapter_number}${chapter.title ? `: ${chapter.title}` : ' (Untitled)'}\n`;
                 chaptersText += `  Status: ${chapter.status}\n`;
                 chaptersText += `  Words: ${chapter.word_count || 0}`;
                 
@@ -583,7 +584,7 @@ export class ChapterHandlers {
                 if (include_stats) {
                     // Get scene count
                     const sceneCountQuery = 'SELECT COUNT(*) as scene_count FROM chapter_scenes WHERE chapter_id = $1';
-                    const sceneCountResult = await this.db.query(sceneCountQuery, [chapter.chapter_id]);
+                    const sceneCountResult = await this.db.query(sceneCountQuery, [chapter.id]);
                     const sceneCount = sceneCountResult.rows[0].scene_count;
                     
                     chaptersText += `  Scenes: ${sceneCount}\n`;

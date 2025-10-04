@@ -135,13 +135,13 @@ class BookMCPServer extends BaseMCPServer {
             //'reorder_chapters': this.handleReorderChapters,
             
             // Scene Management Handlers (when implemented)
-            // 'create_scene': this.handleCreateScene,
-            // 'update_scene': this.handleUpdateScene,
-            // 'get_scene': this.handleGetScene,
-            // 'list_scenes': this.handleListScenes,
-            // 'delete_scene': this.handleDeleteScene,
-            // 'reorder_scenes': this.handleReorderScenes,
-            // 'analyze_scene_flow': this.handleAnalyzeSceneFlow,
+            'create_scene': this.handleCreateScene,
+            'update_scene': this.handleUpdateScene,
+            'get_scene': this.handleGetScene,
+            'list_scenes': this.handleListScenes,
+            'delete_scene': this.handleDeleteScene,
+            'reorder_scenes': this.handleReorderScenes,
+            'analyze_scene_flow': this.handleAnalyzeSceneFlow,
             
             // Cross-component Analysis Tools
             'get_book_structure': this.handleGetBookStructure,

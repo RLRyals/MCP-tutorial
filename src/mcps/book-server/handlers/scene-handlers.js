@@ -83,7 +83,20 @@ export class SceneHandlers {
                         },
                         notes: { 
                             type: 'string', 
-                            description: 'Author notes and reminders for this scene' 
+                            description: 'Quick notes and reminders for this scene' 
+                        },
+                        scene_outline: {
+                            type: 'string',
+                            description: 'Detailed scene planning, beat sheet, and structural notes'
+                        },
+                        scene_content: {
+                            type: 'string',
+                            description: 'The actual written content of the scene'
+                        },
+                        scene_revisions: {
+                            type: 'array',
+                            items: { type: 'string' },
+                            description: 'Array of previous versions for tracking major revisions'
                         }
                     },
                     required: ['chapter_id', 'scene_number']
@@ -159,7 +172,20 @@ export class SceneHandlers {
                         },
                         notes: { 
                             type: 'string', 
-                            description: 'Scene notes' 
+                            description: 'Quick scene notes' 
+                        },
+                        scene_outline: {
+                            type: 'string',
+                            description: 'Detailed scene planning and structure'
+                        },
+                        scene_content: {
+                            type: 'string',
+                            description: 'The actual written content of the scene'
+                        },
+                        scene_revisions: {
+                            type: 'array',
+                            items: { type: 'string' },
+                            description: 'Array of previous versions for tracking revisions'
                         }
                     },
                     required: ['scene_id']
@@ -288,7 +314,8 @@ export class SceneHandlers {
             const { chapter_id, scene_number, scene_title, scene_purpose, scene_type, 
                     location, time_of_day, duration, summary, pov_character_id, 
                     scene_participants, writing_status = 'planned', target_word_count, 
-                    intensity_level, scene_elements, implementation_notes, notes } = args;
+                    intensity_level, scene_elements, scene_outline, scene_content, 
+                    scene_revisions, notes } = args;
             
             // Check if scene number already exists in this chapter
             const checkQuery = 'SELECT id FROM chapter_scenes WHERE chapter_id = $1 AND scene_number = $2';
@@ -316,9 +343,9 @@ export class SceneHandlers {
                     chapter_id, scene_number, scene_title, scene_purpose, scene_type,
                     location, time_of_day, duration, summary, pov_character_id,
                     scene_participants, writing_status, target_word_count, intensity_level,
-                    scene_elements, implementation_notes, notes
+                    scene_elements, scene_outline, scene_content, scene_revisions, notes
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
                 RETURNING *
             `;
             
@@ -327,7 +354,8 @@ export class SceneHandlers {
                 scene_type || null, location || null, time_of_day || null, 
                 duration || null, summary || null, pov_character_id || null,
                 scene_participants || [], writing_status, target_word_count || null,
-                intensity_level || null, scene_elements || [], implementation_notes || null, notes || null
+                intensity_level || null, scene_elements || [], scene_outline || null, 
+                scene_content || null, scene_revisions || [], notes || null
             ]);
             
             const scene = result.rows[0];
@@ -461,8 +489,15 @@ export class SceneHandlers {
             if (scene.scene_elements && scene.scene_elements.length > 0) {
                 responseText += `Scene Elements: ${scene.scene_elements.join(', ')}\n`;
             }
-            if (scene.implementation_notes) {
-                responseText += `Implementation Notes: ${scene.implementation_notes}\n`;
+            if (scene.scene_outline) {
+                responseText += `Outline: ${scene.scene_outline.substring(0, 100)}${scene.scene_outline.length > 100 ? '...' : ''}\n`;
+            }
+            if (scene.scene_content) {
+                const wordCount = scene.scene_content.split(/\s+/).length;
+                responseText += `Content: ${wordCount} words (${scene.scene_content.substring(0, 50)}...)\n`;
+            }
+            if (scene.scene_revisions && scene.scene_revisions.length > 0) {
+                responseText += `Revisions: ${scene.scene_revisions.length} version(s)\n`;
             }
             responseText += `Updated: ${scene.updated_at}\n`;
             
@@ -547,16 +582,33 @@ export class SceneHandlers {
                 sceneText += `Scene Elements: ${scene.scene_elements.join(', ')}\n`;
             }
             
-            if (scene.implementation_notes) {
-                sceneText += `Implementation Notes: ${scene.implementation_notes}\n`;
-            }
-            
             if (scene.summary) {
                 sceneText += `Summary: ${scene.summary}\n`;
             }
             
             if (scene.notes) {
                 sceneText += `Notes: ${scene.notes}\n`;
+            }
+            
+            // Display outline information
+            if (scene.scene_outline) {
+                sceneText += `\nScene Outline:\n----------------\n${scene.scene_outline}\n`;
+            }
+            
+            // Display content information (maybe truncate if too long)
+            if (scene.scene_content) {
+                const wordCount = scene.scene_content.split(/\s+/).length;
+                sceneText += `\nScene Content (${wordCount} words):\n----------------\n`;
+                if (scene.scene_content.length > 1000) {
+                    sceneText += `${scene.scene_content.substring(0, 1000)}...\n(Content truncated, ${scene.scene_content.length} characters total)\n`;
+                } else {
+                    sceneText += `${scene.scene_content}\n`;
+                }
+            }
+            
+            // Display revision information
+            if (scene.scene_revisions && scene.scene_revisions.length > 0) {
+                sceneText += `\nRevisions: ${scene.scene_revisions.length} version(s) stored\n`;
             }
             
             sceneText += `Created: ${scene.created_at}\n`;
@@ -716,6 +768,22 @@ export class SceneHandlers {
                         ? scene.implementation_notes.substring(0, 60) + '...' 
                         : scene.implementation_notes;
                     scenesText += `  Implementation: ${shortNotes}\n`;
+                }
+                
+                if (scene.scene_outline) {
+                    const shortOutline = scene.scene_outline.length > 60
+                        ? scene.scene_outline.substring(0, 60) + '...'
+                        : scene.scene_outline;
+                    scenesText += `  Outline: ${shortOutline}\n`;
+                }
+
+                if (scene.scene_content) {
+                    const contentWordCount = scene.scene_content.split(/\s+/).filter(Boolean).length;
+                    scenesText += `  Content: ${contentWordCount} words\n`;
+                }
+
+                if (scene.scene_revisions && scene.scene_revisions.length > 0) {
+                    scenesText += `  Revisions: ${scene.scene_revisions.length}\n`;
                 }
                 
                 if (scene.summary) {
