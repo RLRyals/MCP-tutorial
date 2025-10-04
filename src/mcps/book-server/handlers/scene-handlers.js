@@ -392,8 +392,8 @@ export class SceneHandlers {
             if (scene.scene_elements && scene.scene_elements.length > 0) {
                 responseText += `Scene Elements: ${scene.scene_elements.join(', ')}\n`;
             }
-            if (scene.implementation_notes) {
-                responseText += `Implementation Notes: ${scene.implementation_notes}\n`;
+            if (scene.notes) {
+                responseText += `Implementation Notes: ${scene.notes}\n`;
             }
             if (scene.summary) {
                 responseText += `Summary: ${scene.summary}\n`;
@@ -763,10 +763,10 @@ export class SceneHandlers {
                     scene.scene_elements.forEach(element => allElements.add(element));
                 }
                 
-                if (scene.implementation_notes) {
-                    const shortNotes = scene.implementation_notes.length > 60 
-                        ? scene.implementation_notes.substring(0, 60) + '...' 
-                        : scene.implementation_notes;
+                if (scene.notes) {
+                    const shortNotes = scene.notes.length > 60 
+                        ? scene.notes.substring(0, 60) + '...' 
+                        : scene.notes;
                     scenesText += `  Implementation: ${shortNotes}\n`;
                 }
                 
@@ -851,7 +851,7 @@ export class SceneHandlers {
                 FROM chapter_scenes s
                 JOIN chapters c ON s.chapter_id = c.id
                 JOIN books b ON c.book_id = b.id
-                WHERE s.scene_id = $1
+                WHERE s.id = $1
             `;
             const sceneResult = await this.db.query(sceneQuery, [scene_id]);
             
@@ -891,10 +891,10 @@ export class SceneHandlers {
             // Start a transaction for atomic reordering
             return await this.db.transaction(async (client) => {
                 // Verify all scenes belong to the specified chapter
-                const sceneIds = scene_order.map(item => item.scene_id);
+                const sceneIds = scene_order.map(item => item.id);
                 const verifyQuery = `
-                    SELECT scene_id FROM chapter_scenes 
-                    WHERE chapter_id = $1 AND scene_id = ANY($2)
+                    SELECT id FROM chapter_scenes 
+                    WHERE chapter_id = $1 AND id = ANY($2)
                 `;
                 const verifyResult = await client.query(verifyQuery, [chapter_id, sceneIds]);
                 
@@ -918,7 +918,7 @@ export class SceneHandlers {
                         WHERE id = $2
                         RETURNING id, scene_number, scene_title
                     `;
-                    const updateResult = await client.query(updateQuery, [item.new_scene_number, item.scene_id]);
+                    const updateResult = await client.query(updateQuery, [item.new_scene_number, item.id]);
                     updates.push(updateResult.rows[0]);
                 }
                 
@@ -960,7 +960,7 @@ export class SceneHandlers {
             const scenesQuery = `
                 SELECT id, scene_number, scene_title, scene_purpose, scene_type,
                     location, time_of_day, duration, word_count, pov_character_id,
-                    intensity_level, scene_elements, implementation_notes
+                    intensity_level, scene_elements, notes
                 FROM chapter_scenes 
                 WHERE chapter_id = $1 
                 ORDER BY scene_number
@@ -1326,7 +1326,7 @@ export class SceneHandlers {
     async getScenesByElements(chapter_id, elements) {
         try {
             const query = `
-                SELECT id, scene_number, scene_title, scene_elements, implementation_notes
+                SELECT id, scene_number, scene_title, scene_elements, notes
                 FROM chapter_scenes 
                 WHERE chapter_id = $1 
                 AND scene_elements && $2
