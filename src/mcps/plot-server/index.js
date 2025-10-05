@@ -12,15 +12,11 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 
 import { BaseMCPServer } from '../../shared/base-server.js';
 import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
-import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
 import { GenreExtensions } from './handlers/genre-extensions.js';
 import {
     lookupSystemToolsSchema,
     plotThreadToolsSchema,
-
-    storyAnalysisToolsSchema,
     genreExtensionToolsSchema
-
 } from './schemas/plot-tools-schema.js';
 
 class PlotMCPServer extends BaseMCPServer {
@@ -39,11 +35,8 @@ class PlotMCPServer extends BaseMCPServer {
             this.plotThreadHandlers = new PlotThreadHandlers(this.db);
             console.error('[PLOT-SERVER] Plot thread handlers initialized');
 
-            this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
-            console.error('[PLOT-SERVER] Story analysis handlers initialized');
-
-             this.genreExtensions = new GenreExtensions(this.db);
-             console.error('[PLOT-SERVER] Genre extensions initialized');
+            this.genreExtensions = new GenreExtensions(this.db);
+            console.error('[PLOT-SERVER] Genre extensions initialized');
 
         } catch (error) {
             console.error('[PLOT-SERVER] Handler initialization failed:', error.message);
@@ -79,13 +72,7 @@ class PlotMCPServer extends BaseMCPServer {
             //this.handleLinkPlotThreads = this.plotThreadHandlers.handleLinkPlotThreads.bind(this.plotThreadHandlers);
             this.handleResolvePlotThread = this.plotThreadHandlers.handleResolvePlotThread.bind(this.plotThreadHandlers);
 
-            // Bind story analysis handler methods
-            this.handleAnalyzeStoryDynamics = this.storyAnalysisHandlers.handleAnalyzeStoryDynamics.bind(this.storyAnalysisHandlers);
-            this.handleTrackCharacterThroughlines = this.storyAnalysisHandlers.handleTrackCharacterThroughlines.bind(this.storyAnalysisHandlers);
-            this.handleIdentifyStoryAppreciations = this.storyAnalysisHandlers.handleIdentifyStoryAppreciations.bind(this.storyAnalysisHandlers);
-            this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
-
-             // Bind universal genre extension methods
+            // Bind universal genre extension methods
             this.handleCreateInformationReveal = this.genreExtensions.handleCreateInformationReveal.bind(this.genreExtensions);
             this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
             this.handleDefineWorldSystem = this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions);
@@ -132,12 +119,8 @@ class PlotMCPServer extends BaseMCPServer {
                 // Core plot thread tools
                 ...plotThreadToolsSchema,
 
-                // Story analysis tools
-                ...storyAnalysisToolsSchema,
-
-                //Universal genre tools
+                // Universal genre tools
                 ...genreExtensionToolsSchema
-
             ];
 
             console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);
@@ -163,12 +146,6 @@ class PlotMCPServer extends BaseMCPServer {
             'get_plot_threads': this.handleGetPlotThreads,
             //'link_plot_threads': this.handleLinkPlotThreads,
             'resolve_plot_thread': this.handleResolvePlotThread,
-
-            // Story Analysis Handlers
-            'analyze_story_dynamics': this.handleAnalyzeStoryDynamics,
-            'track_character_throughlines': this.handleTrackCharacterThroughlines,
-            'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
-            'map_problem_solutions': this.handleMapProblemSolutions,
 
             // Universal Genre Handlers (replaces old genre-specific ones)
             'create_information_reveal': this.handleCreateInformationReveal,

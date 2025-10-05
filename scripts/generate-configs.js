@@ -37,12 +37,23 @@ config.MCP_SERVER_URL = `http://${config.MCP_SERVER_HOST}:${config.MCP_SERVER_PO
 function discoverMCPServers() {
     const mcpsDir = path.join(projectRoot, 'src', 'mcps');
     const mcpServers = [];
-    
+
+    // Optional servers that should be excluded by default
+    // Set INCLUDE_OPTIONAL_SERVERS=true environment variable to include them
+    const optionalServers = ['story-analysis-server'];
+    const includeOptional = process.env.INCLUDE_OPTIONAL_SERVERS === 'true';
+
     try {
         const entries = fs.readdirSync(mcpsDir, { withFileTypes: true });
-        
+
         for (const entry of entries) {
             if (entry.isDirectory()) {
+                // Skip optional servers unless explicitly included
+                if (optionalServers.includes(entry.name) && !includeOptional) {
+                    console.log(`⏭️  Skipping optional server: ${entry.name} (set INCLUDE_OPTIONAL_SERVERS=true to include)`);
+                    continue;
+                }
+
                 const serverPath = path.join(mcpsDir, entry.name);
                 // Try different possible index file names
                 const possibleNames = [
@@ -50,7 +61,7 @@ function discoverMCPServers() {
                     `${entry.name}_index.js`,
                     `${entry.name.replace('-', '_')}_index.js`  // handle world-server -> world_server
                 ];
-                
+
                 let foundIndexPath = null;
                 for (const name of possibleNames) {
                     const testPath = path.join(serverPath, name);
@@ -59,14 +70,14 @@ function discoverMCPServers() {
                         break;
                     }
                 }
-                
+
                 // Check if we found a valid index file
                 if (foundIndexPath) {
                     // Convert directory name to display name
                     const displayName = entry.name
                         .replace(/-/g, ' ')
                         .replace(/\b\w/g, l => l.toUpperCase());
-                    
+
                     mcpServers.push({
                         name: entry.name,
                         displayName: displayName,
@@ -81,7 +92,7 @@ function discoverMCPServers() {
         // Return empty array - templates will still work but no servers will be listed
         return [];
     }
-    
+
     return mcpServers.sort((a, b) => a.name.localeCompare(b.name));
 }
 
@@ -264,11 +275,12 @@ Examples:
   node scripts/generate-configs.js --show-config      # Show current settings
 
 Environment Variables:
-  MCP_TUTORIAL_PATH    Path to the MCP tutorial project (default: current directory)
-  NODE_ENV             Node environment (default: development)
-  DATABASE_URL         PostgreSQL connection string
-  MCP_SERVER_HOST      HTTP server host for Typing Mind (default: localhost)
-  MCP_SERVER_PORT      HTTP server port for Typing Mind (default: 3500)
+  MCP_TUTORIAL_PATH          Path to the MCP tutorial project (default: current directory)
+  NODE_ENV                   Node environment (default: development)
+  DATABASE_URL               PostgreSQL connection string
+  MCP_SERVER_HOST            HTTP server host for Typing Mind (default: localhost)
+  MCP_SERVER_PORT            HTTP server port for Typing Mind (default: 3500)
+  INCLUDE_OPTIONAL_SERVERS   Include optional servers like story-analysis (default: false)
 
 Configuration files will be generated in the config/ directory.
 `);
