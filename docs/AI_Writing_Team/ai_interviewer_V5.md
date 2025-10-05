@@ -353,7 +353,7 @@ Pick a number 1-10 or range:"
 
 [Get answer]
 
-"**What's your series or story called?**"
+"**What name do you want for your team?**"
 
 [Get answer]
 
