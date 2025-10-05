@@ -14,9 +14,9 @@ export const plotThreadToolsSchema = [
                 series_id: { type: 'integer', description: 'Series ID' },
                 title: { type: 'string', description: 'Plot thread title' },
                 description: { type: 'string', description: 'Plot thread description' },
-                thread_type: { 
-                    type: 'string', 
-                    description: 'Type of plot thread (use get_available_options with option_type="plot_thread_types" to see valid values)'
+                thread_type: {
+                    type: 'string',
+                    description: 'Type of plot thread (use metadata-server\'s get_available_options with option_type="plot_thread_types" to see valid values)'
                 },
                 importance_level: { 
                     type: 'integer', 
@@ -402,31 +402,7 @@ export const genreExtensionToolsSchema = [
 // =============================================
 // LOOKUP SYSTEM TOOL SCHEMAS
 // =============================================
-// NOTE: Lookup management (create/update/delete) has been moved to metadata-server
-// This server only retains read-only lookup access for convenience
-export const lookupSystemToolsSchema = [
-    {
-        name: 'get_available_options',
-        description: 'Get available options from lookup tables (genres, plot thread types, story elements, etc.) - READ ONLY. For management use metadata-server.',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                option_type: {
-                    type: 'string',
-                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
-                    description: 'Type of options to retrieve'
-                },
-                genre_filter: {
-                    type: 'string',
-                    description: 'Filter by specific genre name (optional)'
-                },
-                active_only: {
-                    type: 'boolean',
-                    default: true,
-                    description: 'Only return active/available options'
-                }
-            },
-            required: ['option_type']
-        }
-    }
-];
+// NOTE: Lookup tools have been consolidated in metadata-server to avoid name conflicts.
+// Use the metadata-server's 'get_available_options' tool to retrieve lookup values.
+// This eliminates duplicate tool names across servers.
+export const lookupSystemToolsSchema = [];

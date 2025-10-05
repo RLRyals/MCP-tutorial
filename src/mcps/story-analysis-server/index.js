@@ -111,9 +111,6 @@ class StoryAnalysisMCPServer extends BaseMCPServer {
 
     getToolHandler(toolName) {
         const handlers = {
-            // Lookup System Handler (read-only)
-            'get_available_options': this.handleGetAvailableOptions,
-
             // Story Analysis Handlers
             'analyze_story_dynamics': this.handleAnalyzeStoryDynamics,
             'track_character_throughlines': this.handleTrackCharacterThroughlines,
@@ -126,86 +123,6 @@ class StoryAnalysisMCPServer extends BaseMCPServer {
             console.error(`[STORY-ANALYSIS-SERVER] No handler found for tool: ${toolName}`);
         }
         return handler;
-    }
-
-    // =============================================
-    // LOOKUP SYSTEM HANDLER
-    // =============================================
-    async handleGetAvailableOptions(args) {
-        try {
-            const { option_type } = args;
-
-            // Map option types to their corresponding lookup tables
-            const lookupTables = {
-                'story_concerns': { table: 'story_concerns', nameCol: 'concern_name', descCol: 'concern_description' },
-                'story_outcomes': { table: 'story_outcomes', nameCol: 'outcome_name', descCol: 'outcome_description' },
-                'story_judgments': { table: 'story_judgments', nameCol: 'judgment_name', descCol: 'judgment_description' }
-            };
-
-            const lookupInfo = lookupTables[option_type];
-            if (!lookupInfo) {
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: `Unknown option type: ${option_type}\n\n` +
-                                  `Available types: ${Object.keys(lookupTables).join(', ')}`
-                        }
-                    ]
-                };
-            }
-
-            try {
-                const query = `
-                    SELECT ${lookupInfo.nameCol}, ${lookupInfo.descCol}
-                    FROM ${lookupInfo.table}
-                    WHERE is_active = true
-                    ORDER BY ${lookupInfo.nameCol}
-                `;
-
-                const result = await this.db.query(query);
-
-                if (result.rows.length > 0) {
-                    let output = `# Available ${option_type.replace('_', ' ').toUpperCase()}\n\n`;
-                    result.rows.forEach(row => {
-                        const name = row[lookupInfo.nameCol];
-                        const desc = row[lookupInfo.descCol];
-                        output += `**${name}** - ${desc || 'No description'}\n`;
-                    });
-
-                    return {
-                        content: [
-                            {
-                                type: 'text',
-                                text: output
-                            }
-                        ]
-                    };
-                } else {
-                    return {
-                        content: [
-                            {
-                                type: 'text',
-                                text: `No active ${option_type.replace('_', ' ')} found in lookup table.`
-                        }
-                    ]
-                };
-                }
-
-            } catch (dbError) {
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: `Lookup table for ${option_type} not available. This requires the story analysis database schema.\n\n` +
-                                  `Error: ${dbError.message}`
-                        }
-                    ]
-                };
-            }
-        } catch (error) {
-            throw new Error(`Failed to get available options: ${error.message}`);
-        }
     }
 }
 
