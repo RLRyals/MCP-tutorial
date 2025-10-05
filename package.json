@@ -20,7 +20,9 @@
     "start:timeline": "node src/mcps/timeline-server.js --stdio",
     "start:timeline:http": "node src/mcps/timeline-server.js --http --port 3005",
     "start:metadata": "node src/mcps/metadata-server.js --stdio",
-    "start:metadata:http": "node src/mcps/metadata-server.js --http --port 3006"
+    "start:metadata:http": "node src/mcps/metadata-server.js --http --port 3006",
+    "start:trope": "node src/mcps/trope-server/index.js --stdio",
+    "start:trope:http": "node src/mcps/trope-server/index.js --http --port 3007"
   },
   "repository": {
     "type": "git",

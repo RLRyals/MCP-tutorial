@@ -162,10 +162,20 @@ export class TropeHandlers {
                         instance_id: { type: 'integer', description: 'Get scenes for specific trope instance' },
                         series_id: { type: 'integer', description: 'Get all trope scenes in series' },
                         trope_category: { type: 'string', description: 'Filter by trope category (romance_trope, etc.)' },
-                        kinks_filter: { 
-                            type: 'array', 
+                        kinks_filter: {
+                            type: 'array',
                             items: { type: 'string' },
                             description: 'Filter by specific genre elements/kinks featured'
+                        },
+                        written_only: {
+                            type: 'boolean',
+                            description: 'If true, only return trope scenes linked to actual chapter_scenes (scene_id IS NOT NULL)',
+                            default: false
+                        },
+                        unwritten_only: {
+                            type: 'boolean',
+                            description: 'If true, only return planned trope scenes not yet written (scene_id IS NULL)',
+                            default: false
                         }
                     }
                 }
@@ -686,7 +696,7 @@ export class TropeHandlers {
             
             // Get book title for the response
             const bookResult = await this.db.query(
-                'SELECT title FROM books WHERE book_id = $1',
+                'SELECT title FROM books WHERE id = $1',
                 [book_id]
             );
             
@@ -842,7 +852,9 @@ export class TropeHandlers {
                               `- **Chapter:** ${chapter_id ? chapter_id : 'Not specified'}\n` +
                               `- **Scene Number:** ${scene_number ? scene_number : 'Not specified'}\n` +
                               `- **Effectiveness Rating:** ${effectiveness_rating}/10\n` +
+                              `${scene_elements && scene_elements.length > 0 ? `- **Scene Elements:** ${scene_elements.join(', ')}\n` : ''}` +
                               `${variation_notes ? `- **Variation Notes:** ${variation_notes}\n` : ''}` +
+                              `${implementation_notes ? `- **Implementation Notes:** ${implementation_notes}\n` : ''}` +
                               `\n### Scene Summary\n${scene_summary}\n\n` +
                               `### Implementation Status\n` +
                               `- **Completion:** ${completionPercentage}% (${status.matched}/${status.total_required} scenes implemented)\n` +
@@ -873,7 +885,7 @@ export class TropeHandlers {
         try {
             // Validate book exists
             const bookResult = await this.db.query(
-                'SELECT title FROM books WHERE book_id = $1',
+                'SELECT title FROM books WHERE id = $1',
                 [book_id]
             );
             
@@ -1145,6 +1157,203 @@ export class TropeHandlers {
             if (rating >= 6) return 'good';
             if (rating >= 4) return 'average';
             return 'needs improvement';
+        }
+    }
+
+    /**
+     * Get all trope scene implementations for an instance or series
+     * @param {Object} args - Function arguments
+     * @returns {Object} Trope scene implementations with filtering
+     */
+    async handleGetTropeScenes(args) {
+        const {
+            instance_id,
+            series_id,
+            trope_category,
+            kinks_filter: scene_elements_filter,
+            written_only = false,
+            unwritten_only = false
+        } = args;
+
+        try {
+            let query = `
+                SELECT
+                    ts.id,
+                    ts.instance_id,
+                    ts.scene_type_id,
+                    ts.scene_id,
+                    ts.chapter_id,
+                    ts.scene_number,
+                    ts.scene_summary,
+                    ts.effectiveness_rating,
+                    ts.variation_notes,
+                    ts.scene_elements,
+                    ts.implementation_notes,
+                    ts.created_at,
+                    ts.updated_at,
+                    tst.scene_function,
+                    tst.scene_description,
+                    tst.typical_placement,
+                    t.id as trope_id,
+                    t.trope_name,
+                    t.trope_category,
+                    b.id as book_id,
+                    b.title as book_title,
+                    b.book_number,
+                    i.completion_status as instance_status
+                FROM
+                    trope_scenes ts
+                    JOIN trope_scene_types tst ON ts.scene_type_id = tst.id
+                    JOIN trope_instances i ON ts.instance_id = i.id
+                    JOIN tropes t ON i.trope_id = t.id
+                    JOIN books b ON i.book_id = b.id
+            `;
+
+            const conditions = [];
+            const params = [];
+            let paramCount = 0;
+
+            // Filter by instance_id
+            if (instance_id) {
+                paramCount++;
+                conditions.push(`ts.instance_id = $${paramCount}`);
+                params.push(instance_id);
+            }
+
+            // Filter by series_id
+            if (series_id) {
+                paramCount++;
+                conditions.push(`t.series_id = $${paramCount}`);
+                params.push(series_id);
+            }
+
+            // Filter by trope_category
+            if (trope_category) {
+                paramCount++;
+                conditions.push(`t.trope_category = $${paramCount}`);
+                params.push(trope_category);
+            }
+
+            // Filter by scene_elements (kinks)
+            if (scene_elements_filter && scene_elements_filter.length > 0) {
+                paramCount++;
+                conditions.push(`ts.scene_elements && $${paramCount}`);
+                params.push(scene_elements_filter);
+            }
+
+            // Filter by written status
+            if (written_only) {
+                conditions.push(`ts.scene_id IS NOT NULL`);
+            }
+
+            if (unwritten_only) {
+                conditions.push(`ts.scene_id IS NULL`);
+            }
+
+            if (conditions.length > 0) {
+                query += ` WHERE ${conditions.join(' AND ')}`;
+            }
+
+            query += `
+                ORDER BY
+                    b.book_number,
+                    ts.chapter_id,
+                    ts.scene_number
+            `;
+
+            const result = await this.db.query(query, params);
+
+            if (result.rows.length === 0) {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: 'No trope scenes found matching the specified criteria.'
+                    }]
+                };
+            }
+
+            // Group by trope for better organization
+            const scenesByTrope = result.rows.reduce((acc, scene) => {
+                const key = `${scene.trope_id}_${scene.trope_name}`;
+                if (!acc[key]) {
+                    acc[key] = {
+                        trope_id: scene.trope_id,
+                        trope_name: scene.trope_name,
+                        trope_category: scene.trope_category,
+                        scenes: []
+                    };
+                }
+                acc[key].scenes.push(scene);
+                return acc;
+            }, {});
+
+            // Collect all unique scene elements
+            const allElements = new Set();
+            result.rows.forEach(scene => {
+                if (scene.scene_elements && scene.scene_elements.length > 0) {
+                    scene.scene_elements.forEach(element => allElements.add(element));
+                }
+            });
+
+            // Format response
+            let responseText = `# Trope Scene Implementations\n\n`;
+            responseText += `**Total Scenes Found:** ${result.rows.length}\n`;
+
+            if (scene_elements_filter && scene_elements_filter.length > 0) {
+                responseText += `**Filtered by Elements:** ${scene_elements_filter.join(', ')}\n`;
+            }
+            if (trope_category) {
+                responseText += `**Filtered by Category:** ${trope_category}\n`;
+            }
+
+            if (allElements.size > 0) {
+                responseText += `**Elements Used:** ${Array.from(allElements).sort().join(', ')}\n`;
+            }
+
+            responseText += `\n---\n\n`;
+
+            // Display scenes grouped by trope
+            Object.values(scenesByTrope).forEach(tropeGroup => {
+                responseText += `## ${tropeGroup.trope_name}\n`;
+                responseText += `**Category:** ${tropeGroup.trope_category}\n\n`;
+
+                tropeGroup.scenes.forEach((scene, index) => {
+                    const isWritten = scene.scene_id !== null;
+                    const statusEmoji = isWritten ? '✅' : '📝';
+
+                    responseText += `### ${statusEmoji} Scene ${index + 1}: ${scene.scene_function}\n`;
+                    responseText += `**Book:** ${scene.book_title} (Book ${scene.book_number})\n`;
+                    responseText += `**Location:** Chapter ${scene.chapter_id}, Scene ${scene.scene_number}\n`;
+                    responseText += `**Status:** ${isWritten ? 'Written (linked to scene #' + scene.scene_id + ')' : 'Planned (not yet written)'}\n`;
+                    responseText += `**Effectiveness:** ${scene.effectiveness_rating}/10\n`;
+
+                    if (scene.scene_elements && scene.scene_elements.length > 0) {
+                        responseText += `**Scene Elements:** ${scene.scene_elements.join(', ')}\n`;
+                    }
+
+                    if (scene.variation_notes) {
+                        responseText += `**Variation:** ${scene.variation_notes}\n`;
+                    }
+
+                    responseText += `\n**Summary:** ${scene.scene_summary}\n`;
+
+                    if (scene.implementation_notes) {
+                        responseText += `**Notes:** ${scene.implementation_notes}\n`;
+                    }
+
+                    responseText += `\n---\n\n`;
+                });
+            });
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: responseText
+                }]
+            };
+
+        } catch (error) {
+            throw new Error(`Failed to get trope scenes: ${error.message}`);
         }
     }
 }

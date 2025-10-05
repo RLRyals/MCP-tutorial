@@ -14,14 +14,12 @@ import { BaseMCPServer } from '../../shared/base-server.js';
 import { PlotThreadHandlers } from './handlers/plot-thread-handlers.js';
 import { StoryAnalysisHandlers } from './handlers/story-analysis-handlers.js';
 import { GenreExtensions } from './handlers/genre-extensions.js';
-import { TropeHandlers } from './handlers/trope-handlers.js'; 
-import { 
-    lookupSystemToolsSchema, 
-    plotThreadToolsSchema, 
+import {
+    lookupSystemToolsSchema,
+    plotThreadToolsSchema,
 
     storyAnalysisToolsSchema,
-    genreExtensionToolsSchema,
-    tropeToolsSchema 
+    genreExtensionToolsSchema
 
 } from './schemas/plot-tools-schema.js';
 
@@ -40,16 +38,13 @@ class PlotMCPServer extends BaseMCPServer {
         try {
             this.plotThreadHandlers = new PlotThreadHandlers(this.db);
             console.error('[PLOT-SERVER] Plot thread handlers initialized');
-            
+
             this.storyAnalysisHandlers = new StoryAnalysisHandlers(this.db);
             console.error('[PLOT-SERVER] Story analysis handlers initialized');
-            
+
              this.genreExtensions = new GenreExtensions(this.db);
              console.error('[PLOT-SERVER] Genre extensions initialized');
 
-            this.tropeHandlers = new TropeHandlers(this.db);
-            console.error('[PLOT-SERVER] Trope handlers initialized');
-       
         } catch (error) {
             console.error('[PLOT-SERVER] Handler initialization failed:', error.message);
             throw error;
@@ -83,13 +78,13 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleGetPlotThreads = this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers);
             //this.handleLinkPlotThreads = this.plotThreadHandlers.handleLinkPlotThreads.bind(this.plotThreadHandlers);
             this.handleResolvePlotThread = this.plotThreadHandlers.handleResolvePlotThread.bind(this.plotThreadHandlers);
-            
+
             // Bind story analysis handler methods
             this.handleAnalyzeStoryDynamics = this.storyAnalysisHandlers.handleAnalyzeStoryDynamics.bind(this.storyAnalysisHandlers);
             this.handleTrackCharacterThroughlines = this.storyAnalysisHandlers.handleTrackCharacterThroughlines.bind(this.storyAnalysisHandlers);
             this.handleIdentifyStoryAppreciations = this.storyAnalysisHandlers.handleIdentifyStoryAppreciations.bind(this.storyAnalysisHandlers);
             this.handleMapProblemSolutions = this.storyAnalysisHandlers.handleMapProblemSolutions.bind(this.storyAnalysisHandlers);
-            
+
              // Bind universal genre extension methods
             this.handleCreateInformationReveal = this.genreExtensions.handleCreateInformationReveal.bind(this.genreExtensions);
             this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
@@ -97,18 +92,6 @@ class PlotMCPServer extends BaseMCPServer {
             this.handleAddRevealEvidence = this.genreExtensions.handleAddRevealEvidence.bind(this.genreExtensions);
             this.handleTrackRelationshipDynamics = this.genreExtensions.handleTrackRelationshipDynamics.bind(this.genreExtensions);
             this.handleTrackSystemProgression = this.genreExtensions.handleTrackSystemProgression.bind(this.genreExtensions);
-
-            
-            // Bind trope handler methods
-            this.handleCreateTrope = this.tropeHandlers.handleCreateTrope.bind(this.tropeHandlers);
-            this.handleGetTrope = this.tropeHandlers.handleGetTrope.bind(this.tropeHandlers);
-            this.handleListTropes = this.tropeHandlers.handleListTropes.bind(this.tropeHandlers);
-            this.handleCreateTropeInstance = this.tropeHandlers.handleCreateTropeInstance.bind(this.tropeHandlers);
-            this.handleGetTropeInstance = this.tropeHandlers.handleGetTropeInstance.bind(this.tropeHandlers);
-            this.handleListTropeInstances = this.tropeHandlers.handleListTropeInstances.bind(this.tropeHandlers);
-            this.handleImplementTropeScene = this.tropeHandlers.handleImplementTropeScene.bind(this.tropeHandlers);
-            this.handleGetTropeProgress = this.tropeHandlers.handleGetTropeProgress.bind(this.tropeHandlers);
-            this.handleAnalyzeTropePatterns = this.tropeHandlers.handleAnalyzeTropePatterns.bind(this.tropeHandlers);
 
             console.error('[PLOT-SERVER] All handler methods bound successfully');
         } catch (error) {
@@ -145,22 +128,18 @@ class PlotMCPServer extends BaseMCPServer {
             const tools = [
                 // Lookup system tools (always working)
                 ...lookupSystemToolsSchema,
-                
+
                 // Core plot thread tools
                 ...plotThreadToolsSchema,
-                
-                // Story analysis tools  
-                ...storyAnalysisToolsSchema,
-                
 
-                // Trope system tools
-                ...tropeToolsSchema,
+                // Story analysis tools
+                ...storyAnalysisToolsSchema,
 
                 //Universal genre tools
                 ...genreExtensionToolsSchema
 
             ];
-            
+
             console.error(`[PLOT-SERVER] Tools registered: ${tools.length} total`);
             return tools;
         } catch (error) {
@@ -177,40 +156,29 @@ class PlotMCPServer extends BaseMCPServer {
         const handlers = {
             // Lookup System Handlers
             'get_available_options': this.handleGetAvailableOptions,
-            
+
             // Plot Thread Handlers
             'create_plot_thread': this.handleCreatePlotThread,
             'update_plot_thread': this.handleUpdatePlotThread,
             'get_plot_threads': this.handleGetPlotThreads,
             //'link_plot_threads': this.handleLinkPlotThreads,
             'resolve_plot_thread': this.handleResolvePlotThread,
-            
+
             // Story Analysis Handlers
             'analyze_story_dynamics': this.handleAnalyzeStoryDynamics,
             'track_character_throughlines': this.handleTrackCharacterThroughlines,
             'identify_story_appreciations': this.handleIdentifyStoryAppreciations,
             'map_problem_solutions': this.handleMapProblemSolutions,
-            
+
             // Universal Genre Handlers (replaces old genre-specific ones)
             'create_information_reveal': this.handleCreateInformationReveal,
             'create_relationship_arc': this.handleCreateRelationshipArc,
             'define_world_system': this.handleDefineWorldSystem,
             'add_reveal_evidence': this.handleAddRevealEvidence,
             'track_relationship_dynamics': this.handleTrackRelationshipDynamics,
-            'track_system_progression': this.handleTrackSystemProgression,
-            
-            // Trope Handlers (optional chaining for safety)
-            'create_trope': this.handleCreateTrope,
-            'get_trope': this.handleGetTrope,
-            'list_tropes': this.handleListTropes,
-            'create_trope_instance': this.handleCreateTropeInstance,
-            'get_trope_instance': this.handleGetTropeInstance,
-            'list_trope_instances': this.handleListTropeInstances,
-            'implement_trope_scene': this.handleImplementTropeScene,
-            'get_trope_progress': this.handleGetTropeProgress,
-            'analyze_trope_patterns': this.handleAnalyzeTropePatterns
+            'track_system_progression': this.handleTrackSystemProgression
         };
-        
+
         const handler = handlers[toolName];
         if (!handler) {
             console.error(`[PLOT-SERVER] No handler found for tool: ${toolName}`);
