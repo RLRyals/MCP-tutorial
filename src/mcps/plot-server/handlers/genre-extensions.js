@@ -62,60 +62,6 @@ export class GenreExtensions {
                 }
             },
             {
-                name: 'create_relationship_arc',
-                description: 'Track any relationship development across all genres and relationship types',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        plot_thread_id: {
-                            type: 'integer',
-                            description: 'Associated plot thread ID'
-                        },
-                        arc_name: {
-                            type: 'string',
-                            description: 'Name for this relationship arc'
-                        },
-                        participants: {
-                            type: 'array',
-                            items: {
-                                type: 'object',
-                                properties: {
-                                    character_id: { type: 'integer' },
-                                    role_in_relationship: {
-                                        type: 'string',
-                                        description: 'primary, secondary, catalyst, observer'
-                                    },
-                                    character_name: { type: 'string' }
-                                },
-                                required: ['character_id', 'role_in_relationship']
-                            },
-                            description: 'Characters involved (2 or more, flexible roles)'
-                        },
-                        relationship_type: {
-                            type: 'string',
-                            enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
-                            description: 'Type of relationship'
-                        },
-                        current_dynamic: {
-                            type: 'string',
-                            description: 'Current relationship dynamic/stage'
-                        },
-                        development_factors: {
-                            type: 'array',
-                            items: { type: 'string' },
-                            description: 'What drives development in this relationship'
-                        },
-                        complexity_level: {
-                            type: 'integer',
-                            minimum: 1,
-                            maximum: 10,
-                            description: 'Relationship complexity (1=simple, 10=very complex)'
-                        }
-                    },
-                    required: ['plot_thread_id', 'arc_name', 'participants', 'relationship_type']
-                }
-            },
-            {
                 name: 'define_world_system',
                 description: 'Define any systematic supernatural/advanced element with rules and limitations',
                 inputSchema: {
@@ -199,47 +145,6 @@ export class GenreExtensions {
                         }
                     },
                     required: ['reveal_id', 'evidence_type', 'evidence_description']
-                }
-            },
-            {
-                name: 'track_relationship_dynamics',
-                description: 'Track how relationship dynamics change over time',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        arc_id: {
-                            type: 'integer',
-                            description: 'Relationship arc ID'
-                        },
-                        chapter_id: {
-                            type: 'integer',
-                            description: 'Chapter where change occurs (optional)'
-                        },
-                        scene_id: {
-                            type: 'integer',
-                            description: 'Specific scene where change occurs (optional)'
-                        },
-                        dynamic_change: {
-                            type: 'string',
-                            description: 'Description of how dynamic changed'
-                        },
-                        tension_change: {
-                            type: 'integer',
-                            minimum: -10,
-                            maximum: 10,
-                            description: 'Change in tension level (-10 to +10)'
-                        },
-                        change_type: {
-                            type: 'string',
-                            enum: ['emotional', 'power', 'trust', 'commitment', 'conflict'],
-                            description: 'Type of dynamic change'
-                        },
-                        trigger_event: {
-                            type: 'string',
-                            description: 'What triggered this change'
-                        }
-                    },
-                    required: ['arc_id', 'dynamic_change', 'change_type']
                 }
             },
             {
@@ -362,81 +267,6 @@ export class GenreExtensions {
     }
     
     // =============================================
-    // UNIVERSAL RELATIONSHIP ARCS (replaces romance-specific tools)
-    // =============================================
-    
-    async handleCreateRelationshipArc(args) {
-        try {
-            // Validate plot thread exists
-            const threadCheck = await this.db.query(
-                'SELECT id, title FROM plot_threads WHERE id = $1',
-                [args.plot_thread_id]
-            );
-            
-            if (threadCheck.rows.length === 0) {
-                throw new Error(`Plot thread with ID ${args.plot_thread_id} not found`);
-            }
-            
-            // Validate all characters exist
-            const characterIds = args.participants.map(p => p.character_id);
-            const charactersCheck = await this.db.query(
-                'SELECT id, name FROM characters WHERE id = ANY($1)',
-                [characterIds]
-            );
-            
-            if (charactersCheck.rows.length !== characterIds.length) {
-                throw new Error('One or more characters not found');
-            }
-            
-
-            // Create the relationship arc
-            const insertQuery = `
-                INSERT INTO relationship_arcs (
-                    plot_thread_id, arc_name, participants, relationship_type,
-                    current_dynamic, development_factors, complexity_level
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING id, created_at
-            `;
-            
-            const result = await this.db.query(insertQuery, [
-                args.plot_thread_id,
-                args.arc_name,
-                JSON.stringify(args.participants),
-                args.relationship_type,
-                args.current_dynamic || null,
-                args.development_factors || null,
-                args.complexity_level || 5
-            ]);
-            
-            const thread = threadCheck.rows[0];
-            const characterNames = charactersCheck.rows.map(c => c.name);
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Relationship arc created!\n\n` +
-                              `**Arc ID:** ${result.rows[0].id}\n` +
-                              `**Arc Name:** ${args.arc_name}\n` +
-                              `**Type:** ${args.relationship_type}\n` +
-                              `**Characters:** ${characterNames.join(', ')}\n` +
-                              `**Participants:** ${args.participants.length}\n` +
-                              `**Complexity Level:** ${args.complexity_level || 5}/10\n` +
-                              `**Associated Thread:** "${thread.title}"\n` +
-                              `${args.current_dynamic ? `**Current Dynamic:** ${args.current_dynamic}\n` : ''}` +
-                              `**Created:** ${new Date(result.rows[0].created_at).toLocaleString()}\n\n` +
-                              `*This works for: romantic pairs, love triangles, family dynamics, friendships, professional relationships, antagonistic relationships*`
-                    }
-                ]
-            };
-
-            
-        } catch (error) {
-            throw new Error(`Failed to create relationship arc: ${error.message}`);
-        }
-    }
-    
-    // =============================================
     // UNIVERSAL WORLD SYSTEMS (replaces magic-specific tools)
     // =============================================
     
@@ -549,61 +379,6 @@ export class GenreExtensions {
             
         } catch (error) {
             throw new Error(`Failed to add evidence: ${error.message}`);
-        }
-    }
-    
-    async handleTrackRelationshipDynamics(args) {
-        try {
-            // Validate arc exists
-            const arcCheck = await this.db.query(
-                'SELECT id, arc_name FROM relationship_arcs WHERE id = $1',
-                [args.arc_id]
-            );
-            
-            if (arcCheck.rows.length === 0) {
-                throw new Error(`Relationship arc with ID ${args.arc_id} not found`);
-            }
-            
-            // Create the dynamic change
-            const insertQuery = `
-                INSERT INTO relationship_dynamics (
-                    arc_id, chapter_id, scene_id, dynamic_change, tension_change,
-                    change_type, trigger_event
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-                RETURNING id, created_at
-            `;
-            
-            const result = await this.db.query(insertQuery, [
-                args.arc_id,
-                args.chapter_id || null,
-                args.scene_id || null,
-                args.dynamic_change,
-                args.tension_change || null,
-                args.change_type,
-                args.trigger_event || null
-            ]);
-            
-            const arc = arcCheck.rows[0];
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Relationship dynamics tracked!\n\n` +
-                              `**Dynamic ID:** ${result.rows[0].id}\n` +
-                              `**Arc:** "${arc.arc_name}"\n` +
-                              `**Change Type:** ${args.change_type}\n` +
-                              `**Dynamic Change:** ${args.dynamic_change}\n` +
-                              `${args.tension_change ? `**Tension Change:** ${args.tension_change > 0 ? '+' : ''}${args.tension_change}\n` : ''}` +
-                              `${args.trigger_event ? `**Trigger:** ${args.trigger_event}\n` : ''}` +
-                              `${args.chapter_id ? `**Chapter:** ${args.chapter_id}\n` : ''}` +
-                              `**Tracked:** ${new Date(result.rows[0].created_at).toLocaleString()}`
-                    }
-                ]
-            };
-            
-        } catch (error) {
-            throw new Error(`Failed to track relationship dynamics: ${error.message}`);
         }
     }
     

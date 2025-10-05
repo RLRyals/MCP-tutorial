@@ -5,11 +5,12 @@
 
 ## Quick Decision Tree
 
-**Need to track author/series/book structure?** → Author/Series/Book Servers  
-**Need to track character details/presence/knowledge?** → Character Server  
-**Need to track plot threads/reveals/relationships?** → Plot Server  
-**Need to track chronology vs narrative presentation?** → Timeline Server  
-**Need to track locations/magic systems/organizations?** → World Server  
+**Need to track author/series/book structure?** → Author/Series/Book Servers
+**Need to track character details/presence/knowledge?** → Character Server
+**Need to track plot threads/information reveals?** → Plot Server
+**Need to track character relationships and dynamics?** → Relationship Server
+**Need to track chronology vs narrative presentation?** → Timeline Server
+**Need to track locations/magic systems/organizations?** → World Server
 **Need to track writing sessions/validate/export?** → Writing Server  
 
 ---
@@ -47,14 +48,21 @@
 - **Critical Rule:** ALWAYS check knowledge before writing scenes
 
 ### Plot Server
-- **Primary Use:** Universal genre framework (reveals, relationships, systems)
+- **Primary Use:** Plot threads and information reveals across genres
 - **Main Tools:**
   - Threads: `create_plot_thread`, `update_plot_thread`, `get_plot_threads`
   - Reveals: `create_information_reveal`, `add_reveal_evidence`
-  - Relationships: `create_relationship_arc`, `track_relationship_dynamics`
   - Systems: `define_world_system`, `track_system_progression`
-- **AI Team Usage:** Track story structure across all genres
+- **AI Team Usage:** Track story structure and reveals
 - **Critical Rule:** Universal tools work for ALL genres
+
+### Relationship Server
+- **Primary Use:** Track relationship arcs and dynamics across all relationship types
+- **Main Tools:**
+  - Arcs: `create_relationship_arc`, `get_relationship_arc`, `list_relationship_arcs`
+  - Dynamics: `track_relationship_dynamics`, `get_relationship_timeline`
+- **AI Team Usage:** Track relationships (romantic, family, friendship, political, etc.)
+- **Critical Rule:** Works for ALL relationship types, not just romance
 
 ### Timeline Server
 - **Primary Use:** Chronology vs narrative presentation
@@ -89,11 +97,12 @@
 
 ### Planning a Book
 1. **Series Server:** Verify series exists
-2. **Book Server:** `create_book` 
+2. **Book Server:** `create_book`
 3. **Character Server:** `create_character` for main cast
 4. **Plot Server:** `create_plot_thread` for main storylines
-5. **World Server:** `create_location` for settings
-6. **Timeline Server:** `create_timeline_event` for backstory
+5. **Relationship Server:** `create_relationship_arc` for key relationships
+6. **World Server:** `create_location` for settings
+7. **Timeline Server:** `create_timeline_event` for backstory
 
 ### Planning a Chapter
 1. **Book Server:** `create_chapter`
@@ -107,7 +116,8 @@
 2. **Book Server:** `create_scene` or `update_scene`
 3. **Character Server:** `track_character_presence` - who's here
 4. **Plot Server:** `create_information_reveal` - what's revealed
-5. **World Server:** `track_location_usage` - where used
+5. **Relationship Server:** `track_relationship_dynamics` - relationship changes
+6. **World Server:** `track_location_usage` - where used
 
 ### After Writing Session
 1. **Book Server:** `update_chapter` with status/word count
@@ -221,8 +231,9 @@ series_id
 - **Important:** Timeline Server (alibis, chronology)
 
 ### Romance
-- **Heavy Use:** Plot Server (relationship arcs, dynamics)
+- **Heavy Use:** Relationship Server (relationship arcs, dynamics)
 - **Critical:** Character Server (emotional states, presence)
+- **Important:** Plot Server (information reveals, secrets)
 - **Important:** Timeline Server (relationship progression)
 
 ### Fantasy/Sci-Fi

@@ -181,60 +181,6 @@ export const genreExtensionToolsSchema = [
         }
     },
     {
-        name: 'create_relationship_arc',
-        description: 'Track any relationship development across all genres and relationship types',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                plot_thread_id: {
-                    type: 'integer',
-                    description: 'Associated plot thread ID'
-                },
-                arc_name: {
-                    type: 'string',
-                    description: 'Name for this relationship arc'
-                },
-                participants: {
-                    type: 'array',
-                    items: {
-                        type: 'object',
-                        properties: {
-                            character_id: { type: 'integer' },
-                            role_in_relationship: {
-                                type: 'string',
-                                description: 'primary, secondary, catalyst, observer'
-                            },
-                            character_name: { type: 'string' }
-                        },
-                        required: ['character_id', 'role_in_relationship']
-                    },
-                    description: 'Characters involved (2 or more, flexible roles)'
-                },
-                relationship_type: {
-                    type: 'string',
-                    enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
-                    description: 'Type of relationship'
-                },
-                current_dynamic: {
-                    type: 'string',
-                    description: 'Current relationship dynamic/stage'
-                },
-                development_factors: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: 'What drives development in this relationship'
-                },
-                complexity_level: {
-                    type: 'integer',
-                    minimum: 1,
-                    maximum: 10,
-                    description: 'Relationship complexity (1=simple, 10=very complex)'
-                }
-            },
-            required: ['plot_thread_id', 'arc_name', 'participants', 'relationship_type']
-        }
-    },
-    {
         name: 'define_world_system',
         description: 'Define any systematic supernatural/advanced element with rules and limitations',
         inputSchema: {
@@ -318,43 +264,6 @@ export const genreExtensionToolsSchema = [
                 }
             },
             required: ['reveal_id', 'evidence_type', 'evidence_description']
-        }
-    },
-    {
-        name: 'track_relationship_dynamics',
-        description: 'Track how relationship dynamics change over time',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                arc_id: {
-                    type: 'integer',
-                    description: 'Relationship arc ID'
-                },
-                chapter_id: {
-                    type: 'integer',
-                    description: 'Chapter where change occurs (optional)'
-                },
-                dynamic_change: {
-                    type: 'string',
-                    description: 'Description of how dynamic changed'
-                },
-                tension_change: {
-                    type: 'integer',
-                    minimum: -10,
-                    maximum: 10,
-                    description: 'Change in tension level (-10 to +10)'
-                },
-                change_type: {
-                    type: 'string',
-                    enum: ['emotional', 'power', 'trust', 'commitment', 'conflict'],
-                    description: 'Type of dynamic change'
-                },
-                trigger_event: {
-                    type: 'string',
-                    description: 'What triggered this change'
-                }
-            },
-            required: ['arc_id', 'dynamic_change', 'change_type']
         }
     },
     {

@@ -1,18 +1,19 @@
-# Plot & World Servers Guide
+# Plot, Relationship & World Servers Guide
 ## Universal Genre Framework + World Building
 
 ---
 
-## Part 1: Plot Server - Universal Genre Framework
+## Part 1: Plot Server - Information Reveals & World Systems
 
 ### Core Philosophy
 
 The Plot Server uses **universal tools that work across ALL genres** by focusing on what stories actually do, not genre conventions.
 
-Three universal patterns:
+Two universal patterns:
 1. **Information Reveals** - ANY information disclosed (clues, secrets, backstory, rules)
-2. **Relationship Dynamics** - ANY relationship development (romantic, family, political, antagonistic)
-3. **World Systems** - ANY rule-based system (magic, tech, political, supernatural)
+2. **World Systems** - ANY rule-based system (magic, tech, political, supernatural)
+
+**Note:** Relationship tracking has been moved to the dedicated Relationship Server (see Part 2).
 
 ---
 
@@ -49,26 +50,10 @@ create_plot_thread:
 
 ---
 
-### `get_available_options`
-**When to use:** Finding valid values for enum fields
-
-**Parameters:**
-- `option_type` (required) - what you need values for
-
-**Available option_types:**
-- "plot_thread_types" - valid thread types
-- "plot_thread_statuses" - valid status values
-- "relationship_types" - valid relationship types
-- "story_concerns" - Plot story concerns
-- "story_outcomes" - Plot outcomes
-- "story_judgments" - Plot judgments
-
-**Always call this first when creating threads/relationships to get valid values**
-
----
-
 ### `update_plot_thread` / `resolve_plot_thread` / `get_plot_threads`
 Standard CRUD operations for managing plot threads across the series.
+
+**Note:** For valid `thread_type` values, use the metadata-server's `get_available_options` tool with `option_type: "plot_thread_types"`.
 
 ---
 
@@ -177,10 +162,12 @@ add_reveal_evidence:
 
 ---
 
-## Universal Relationship Arcs
+## Part 2: Relationship Server - Character Relationships & Dynamics
 
 ### Core Concept
 **ANY relationship development = relationship arc**
+
+The Relationship Server has been separated from the Plot Server to provide dedicated tracking for all character relationships across all genres.
 
 Works for:
 - Romance: romantic relationships (any configuration)
@@ -190,7 +177,7 @@ Works for:
 **When to use:** Tracking ANY relationship development
 
 **Parameters:**
-- `plot_thread_id` (required)
+- `plot_thread_id` (required) - associated plot thread
 - `arc_name` (required) - descriptive name
 - `participants` (required) - array of objects with character_id and role_in_relationship
 - `relationship_type` (required) - "romantic", "family", "friendship", "professional", "antagonistic", "mentor", "alliance"
@@ -259,6 +246,7 @@ create_relationship_arc:
 - `dynamic_change` (required) - description of change
 - `change_type` (required) - "emotional", "power", "trust", "commitment", "conflict"
 - `chapter_id` (optional)
+- `scene_id` (optional)
 - `tension_change` (optional) - -10 to +10
 - `trigger_event` (optional) - what caused change
 
@@ -286,7 +274,20 @@ track_relationship_dynamics:
 
 ---
 
-## Universal World Systems
+### `get_relationship_arc` / `list_relationship_arcs`
+Query specific relationship arcs or list all arcs with optional filtering by plot thread or relationship type.
+
+### `get_relationship_timeline`
+**When to use:** Viewing complete history of relationship dynamics changes
+
+**Parameters:**
+- `arc_id` (required)
+
+**Returns:** Complete timeline of all dynamics changes with details
+
+---
+
+## Part 3: Plot Server - World Systems
 
 ### Core Concept
 **ANY rule-based system = world system**
@@ -410,7 +411,7 @@ track_system_progression:
 
 ---
 
-## Part 2: World Server
+## Part 4: World Server
 
 ### Purpose
 Manages locations, world elements (magic/tech systems), and organizations. Tracks physical and social structures of your world.
@@ -566,6 +567,15 @@ For each character in affects_characters:
     add_character_knowledge_with_chapter
 ```
 
+### Relationship Server → Character Server
+```
+create_relationship_arc (participants: [1, 2])
+    ↓
+track_relationship_dynamics (chapter-specific changes)
+    ↓
+Character presence and knowledge updated
+```
+
 ### Plot Server → World Server
 ```
 define_world_system (magic rules)
@@ -600,38 +610,43 @@ create_relationship_arc (organizational relationships)
 ## Common Workflows
 
 ### Mystery - Evidence Chain
-1. `create_plot_thread` - investigation
-2. `create_information_reveal` - each clue
-3. `add_reveal_evidence` - supporting evidence
-4. `add_character_knowledge` - who discovered it
+1. **Plot Server:** `create_plot_thread` - investigation
+2. **Plot Server:** `create_information_reveal` - each clue
+3. **Plot Server:** `add_reveal_evidence` - supporting evidence
+4. **Character Server:** `add_character_knowledge` - who discovered it
 5. Track progression toward solution
 
 ### Romance - Relationship Development
-1. `create_plot_thread` - romantic subplot
-2. `create_relationship_arc` - the relationship
-3. `track_relationship_dynamics` - each significant moment
-4. `create_information_reveal` - secrets disclosed
-5. Track tension progression
+1. **Plot Server:** `create_plot_thread` - romantic subplot
+2. **Relationship Server:** `create_relationship_arc` - the relationship
+3. **Relationship Server:** `track_relationship_dynamics` - each significant moment
+4. **Plot Server:** `create_information_reveal` - secrets disclosed
+5. **Relationship Server:** `get_relationship_timeline` - view progression
 
 ### Fantasy - World Building
-1. `define_world_system` - magic rules
-2. `create_location` - important places
-3. `create_organization` - power structures
-4. `track_system_progression` - character growth
-5. `track_element_usage` - where magic used
+1. **Plot Server:** `define_world_system` - magic rules
+2. **World Server:** `create_location` - important places
+3. **World Server:** `create_organization` - power structures
+4. **Plot Server:** `track_system_progression` - character growth
+5. **World Server:** `track_element_usage` - where magic used
 
 ---
 
 ## Remember
 
+**Three-Server Framework:**
+- **Plot Server:** Plot threads, information reveals, world systems
+- **Relationship Server:** All relationship types and dynamics tracking
+- **World Server:** Locations, world elements, organizations
+
 **Universal Framework means:**
 - Same tools work for mystery clues and romance secrets
 - Same tools track magic systems and political structures
-- Same tools manage character relationships across all types
+- Dedicated server manages ALL relationship types (romantic, family, political, etc.)
 
 **Focus on what's actually happening:**
-- Information being revealed (not "clue" vs "secret")
-- Relationships developing (not "romance" vs "alliance")
-- Systems with rules (not "magic" vs "technology")
+- Information being revealed (Plot Server)
+- Relationships developing (Relationship Server)
+- Systems with rules (Plot/World Servers)
 
-This universality makes the tools more powerful because they capture the underlying story mechanics, not surface genre conventions.
+This separation makes each server more focused and powerful while maintaining universal genre support.

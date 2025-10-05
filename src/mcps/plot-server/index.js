@@ -74,10 +74,8 @@ class PlotMCPServer extends BaseMCPServer {
 
             // Bind universal genre extension methods
             this.handleCreateInformationReveal = this.genreExtensions.handleCreateInformationReveal.bind(this.genreExtensions);
-            this.handleCreateRelationshipArc = this.genreExtensions.handleCreateRelationshipArc.bind(this.genreExtensions);
             this.handleDefineWorldSystem = this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions);
             this.handleAddRevealEvidence = this.genreExtensions.handleAddRevealEvidence.bind(this.genreExtensions);
-            this.handleTrackRelationshipDynamics = this.genreExtensions.handleTrackRelationshipDynamics.bind(this.genreExtensions);
             this.handleTrackSystemProgression = this.genreExtensions.handleTrackSystemProgression.bind(this.genreExtensions);
 
             console.error('[PLOT-SERVER] All handler methods bound successfully');
@@ -146,10 +144,8 @@ class PlotMCPServer extends BaseMCPServer {
 
             // Universal Genre Handlers (replaces old genre-specific ones)
             'create_information_reveal': this.handleCreateInformationReveal,
-            'create_relationship_arc': this.handleCreateRelationshipArc,
             'define_world_system': this.handleDefineWorldSystem,
             'add_reveal_evidence': this.handleAddRevealEvidence,
-            'track_relationship_dynamics': this.handleTrackRelationshipDynamics,
             'track_system_progression': this.handleTrackSystemProgression
         };
 
