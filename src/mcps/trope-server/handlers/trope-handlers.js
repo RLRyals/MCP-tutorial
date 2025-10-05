@@ -303,7 +303,7 @@ export class TropeHandlers {
             const tropeResult = await this.db.query(
                 `SELECT t.*, s.title as series_title
                  FROM tropes t
-                 JOIN series s ON t.series_id = s.series_id
+                 JOIN series s ON t.series_id = s.id
                  WHERE t.id = $1`,
                 [trope_id]
             );
@@ -399,7 +399,7 @@ export class TropeHandlers {
                  (SELECT COUNT(*) FROM trope_scene_types WHERE trope_id = t.id) as scene_type_count,
                  (SELECT COUNT(*) FROM trope_instances WHERE trope_id = t.id) as usage_count
                  FROM tropes t
-                 JOIN series s ON t.series_id = s.series_id
+                 JOIN series s ON t.series_id = s.id
                  ${whereClause}
                  ORDER BY t.trope_name`,
                 params
@@ -449,6 +449,16 @@ export class TropeHandlers {
             );
             
             if (validation.rows.length === 0) {
+                // Check which one is invalid
+                const tropeCheck = await this.db.query('SELECT id FROM tropes WHERE id = $1', [trope_id]);
+                const bookCheck = await this.db.query('SELECT id FROM books WHERE id = $1', [book_id]);
+
+                if (tropeCheck.rows.length === 0) {
+                    throw new Error(`Trope with ID ${trope_id} not found. Please create the trope first using create_trope tool.`);
+                }
+                if (bookCheck.rows.length === 0) {
+                    throw new Error(`Book with ID ${book_id} not found. Please create the book first using the book-server.`);
+                }
                 throw new Error('Invalid trope_id or book_id');
             }
             
@@ -768,7 +778,18 @@ export class TropeHandlers {
             );
             
             if (validationResult.rows.length === 0) {
-                throw new Error('Invalid instance_id or scene_type_id, or they do not match');
+                // Check what's wrong
+                const instanceCheck = await this.db.query('SELECT id, trope_id FROM trope_instances WHERE id = $1', [instance_id]);
+                const sceneTypeCheck = await this.db.query('SELECT id, trope_id FROM trope_scene_types WHERE id = $1', [scene_type_id]);
+
+                if (instanceCheck.rows.length === 0) {
+                    throw new Error(`Trope instance with ID ${instance_id} not found. Please create the trope instance first using create_trope_instance tool.`);
+                }
+                if (sceneTypeCheck.rows.length === 0) {
+                    throw new Error(`Scene type with ID ${scene_type_id} not found. Please check the trope's available scene types using get_trope tool.`);
+                }
+                // Both exist but don't match
+                throw new Error(`Scene type ${scene_type_id} does not belong to the trope associated with instance ${instance_id}. Instance is for trope ${instanceCheck.rows[0].trope_id} but scene type is for trope ${sceneTypeCheck.rows[0].trope_id}.`);
             }
             
             const sceneInfo = validationResult.rows[0];

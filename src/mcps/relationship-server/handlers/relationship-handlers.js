@@ -161,7 +161,7 @@ export class RelationshipHandlers {
             );
 
             if (threadCheck.rows.length === 0) {
-                throw new Error(`Plot thread with ID ${args.plot_thread_id} not found`);
+                throw new Error(`Plot thread with ID ${args.plot_thread_id} not found. Please create a plot thread first using the plot-server's create_plot_thread tool.`);
             }
 
             // Validate all characters exist
@@ -172,7 +172,9 @@ export class RelationshipHandlers {
             );
 
             if (charactersCheck.rows.length !== characterIds.length) {
-                throw new Error('One or more characters not found');
+                const foundIds = charactersCheck.rows.map(c => c.id);
+                const missingIds = characterIds.filter(id => !foundIds.includes(id));
+                throw new Error(`One or more characters not found. Missing character IDs: ${missingIds.join(', ')}. Please create these characters first using the character-server's create_character tool.`);
             }
 
             // Create the relationship arc
