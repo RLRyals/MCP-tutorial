@@ -59,9 +59,9 @@ create_plot_thread:
 - "plot_thread_types" - valid thread types
 - "plot_thread_statuses" - valid status values
 - "relationship_types" - valid relationship types
-- "story_concerns" - Dramatica story concerns
-- "story_outcomes" - Dramatica outcomes
-- "story_judgments" - Dramatica judgments
+- "story_concerns" - Plot story concerns
+- "story_outcomes" - Plot outcomes
+- "story_judgments" - Plot judgments
 
 **Always call this first when creating threads/relationships to get valid values**
 

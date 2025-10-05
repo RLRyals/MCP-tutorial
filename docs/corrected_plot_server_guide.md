@@ -211,7 +211,7 @@ CREATE TABLE plot_thread_statuses (
     is_active BOOLEAN DEFAULT true
 );
 
--- Story analysis with Dramatica elements (FULLY FUNCTIONAL)
+-- Story analysis with Plot elements (FULLY FUNCTIONAL)
 CREATE TABLE story_analysis (
     analysis_id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES books(id),
@@ -345,7 +345,7 @@ CREATE TABLE romance_arcs (
 
 ### Future Testing (Next Branches):
 ```
-"Analyze the story dynamics using Dramatica principles"
+"Analyze the story dynamics using Plot principles"
 "Track romantic tension between characters A and B"
 "Create a murder case with evidence tracking"
 ```

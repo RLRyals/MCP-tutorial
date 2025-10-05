@@ -110,12 +110,6 @@ export class PlotThreadHandlers {
 - Character throughline analysis
 - Thematic element management
 
-**Dramatica Elements to Track:**
-- **Story Concern:** What the overall story is about (obtaining, understanding, becoming, conceiving)
-- **Main Character Problem:** Personal issues driving the protagonist
-- **Influence Character Impact:** How other characters challenge the MC
-- **Story Outcome vs. Judgment:** Success/failure vs. good/bad
-- **Thematic Elements:** Values in conflict
 
 **Tools to Implement:**
 - `analyze_story_dynamics`
@@ -361,7 +355,6 @@ Test through Claude Desktop with these scenarios:
 
 ### For AI Writing Teams (Primary Users)
 - Can track organic story development automatically
-- Can analyze story dynamics using Dramatica principles
 - Can work with multiple genres dynamically
 - Can identify plot inconsistencies and suggest solutions
 - Can reference flexible story appreciations for writing decisions

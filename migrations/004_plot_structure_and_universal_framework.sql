@@ -142,7 +142,7 @@ CREATE TABLE story_analysis (
     id SERIAL PRIMARY KEY,
     book_id INTEGER NOT NULL REFERENCES books(id) ON DELETE CASCADE,
     
-    -- Dramatica elements (using lookup tables)
+    -- Plot elements (using lookup tables)
     story_concern_id INTEGER REFERENCES story_concerns(id),
     main_character_problem TEXT,
     influence_character_impact TEXT,
