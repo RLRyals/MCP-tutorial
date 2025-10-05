@@ -495,10 +495,12 @@ export const genreExtensionToolsSchema = [
 // =============================================
 // LOOKUP SYSTEM TOOL SCHEMAS
 // =============================================
+// NOTE: Lookup management (create/update/delete) has been moved to metadata-server
+// This server only retains read-only lookup access for convenience
 export const lookupSystemToolsSchema = [
     {
         name: 'get_available_options',
-        description: 'Get available options from lookup tables (genres, plot thread types, story elements, etc.)',
+        description: 'Get available options from lookup tables (genres, plot thread types, story elements, etc.) - READ ONLY. For management use metadata-server.',
         inputSchema: {
             type: 'object',
             properties: {
@@ -507,13 +509,13 @@ export const lookupSystemToolsSchema = [
                     enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
                     description: 'Type of options to retrieve'
                 },
-                genre_filter: { 
-                    type: 'string', 
-                    description: 'Filter by specific genre name (optional)' 
+                genre_filter: {
+                    type: 'string',
+                    description: 'Filter by specific genre name (optional)'
                 },
-                active_only: { 
-                    type: 'boolean', 
-                    default: true, 
+                active_only: {
+                    type: 'boolean',
+                    default: true,
                     description: 'Only return active/available options'
                 }
             },

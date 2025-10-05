@@ -154,7 +154,7 @@ class PlotMCPServer extends BaseMCPServer {
     // =============================================
     getToolHandler(toolName) {
         const handlers = {
-            // Lookup System Handlers
+            // Lookup System Handlers (read-only - management is in metadata-server)
             'get_available_options': this.handleGetAvailableOptions,
 
             // Plot Thread Handlers
