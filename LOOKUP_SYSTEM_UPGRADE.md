@@ -149,9 +149,9 @@ The following lookup tables now support CRUD operations:
 - `plot_thread_types` - Types of plot threads
 - `plot_thread_statuses` - Plot thread statuses
 - `relationship_types` - Relationship types between threads
-- `story_concerns` - Dramatica story concerns
-- `story_outcomes` - Story outcome types
-- `story_judgments` - Story judgment types
+- `story_concerns` - Story concerns (optional, via story-analysis-server)
+- `story_outcomes` - Story outcome types (optional, via story-analysis-server)
+- `story_judgments` - Story judgment types (optional, via story-analysis-server)
 
 ## Usage Examples
 

@@ -53,7 +53,7 @@ CREATE TABLE relationship_types (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Story concerns (Dramatica-inspired, expandable)
+-- Story concerns 
 CREATE TABLE story_concerns (
     id SERIAL PRIMARY KEY,
     concern_name VARCHAR(100) NOT NULL UNIQUE,
@@ -134,7 +134,7 @@ CREATE TABLE plot_thread_relationships (
 );
 
 -- =============================================
--- STORY ANALYSIS (Dramatica-inspired, LOOKUP-BASED)
+-- STORY ANALYSIS 
 -- =============================================
 
 -- Core story analysis table for  flexible analysis
@@ -158,45 +158,6 @@ CREATE TABLE story_analysis (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- -- =============================================
--- -- GENRE-SPECIFIC TABLES (CONDITIONALLY CREATED)
--- -- =============================================
--- -- These are created only when needed by genre extensions
-
--- -- Mystery genre support
--- CREATE TABLE IF NOT EXISTS detective_cases (
---     case_id SERIAL PRIMARY KEY,
---     plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
---     case_name VARCHAR(255),
---     victim_info TEXT,
---     suspects JSONB,
---     timeline_events JSONB,
---     case_status VARCHAR(50) DEFAULT 'open',
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
--- -- Romance genre support  
--- CREATE TABLE IF NOT EXISTS romance_arcs (
---     arc_id SERIAL PRIMARY KEY,
---     plot_thread_id INTEGER REFERENCES plot_threads(thread_id) ON DELETE CASCADE,
---     character_a_id INTEGER REFERENCES characters(character_id),
---     character_b_id INTEGER REFERENCES characters(character_id),
---     relationship_stage VARCHAR(100),
---     tension_level INTEGER CHECK (tension_level BETWEEN 1 AND 10),
---     obstacles TEXT[],
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
-
--- -- Fantasy genre support
--- CREATE TABLE IF NOT EXISTS magic_systems (
---     magic_system_id SERIAL PRIMARY KEY,
---     series_id INTEGER REFERENCES series(id) ON DELETE CASCADE,
---     magic_type VARCHAR(100),
---     power_source TEXT,
---     limitations TEXT[],
---     rules TEXT[],
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
 
 -- =============================================
 -- TRIGGERS FOR AUTOMATIC TIMESTAMP UPDATES
@@ -243,12 +204,6 @@ CREATE INDEX idx_plot_thread_relationships_type ON plot_thread_relationships(rel
 -- Analysis indices
 CREATE INDEX idx_story_analysis_book_id ON story_analysis(book_id);
 CREATE INDEX idx_story_analysis_concern ON story_analysis(story_concern_id);
-
--- Genre-specific indices
--- CREATE INDEX idx_detective_cases_plot_thread ON detective_cases(plot_thread_id);
--- CREATE INDEX idx_romance_arcs_plot_thread ON romance_arcs(plot_thread_id);
--- CREATE INDEX idx_romance_arcs_characters ON romance_arcs(character_a_id, character_b_id);
--- CREATE INDEX idx_magic_systems_series ON magic_systems(series_id);
 
 -- =============================================
 -- INITIAL LOOKUP DATA
@@ -298,7 +253,7 @@ INSERT INTO relationship_types (type_name, type_description) VALUES
 ('parallels', 'Threads run parallel with similar themes'),
 ('contrasts', 'Threads contrast to highlight differences');
 
--- Insert story concerns (Dramatica-inspired)
+-- Insert story concerns 
 INSERT INTO story_concerns (concern_name, concern_description) VALUES
 ('obtaining', 'Story about getting or acquiring something'),
 ('understanding', 'Story about learning or comprehending'),
