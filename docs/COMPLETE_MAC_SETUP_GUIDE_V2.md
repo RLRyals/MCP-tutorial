@@ -94,7 +94,7 @@ node tests/test-db.js
 
 ## 3. Tutorial Branch Progression
 
-Complete each MCP tutorial branch in order:
+In the VS Code terminal, change the branch to MCP_1:
 
 1. MCP_1_Series_Management (current)
 ```zsh
@@ -103,10 +103,13 @@ npm install
 node src/shared/run-migration.js 002_update_series_schema.sql
 ```
 ## Optional 
-for branches MCP_2 through MCP_5 you can go through them or simply continue to MCP_6
+You can go through these branches one at a time following the other guide
+for branches MCP_2 through MCP_5 you can go through them and look at the new code
+or simply continue to MCP_6
 
 ## Mandatory
 6. MCP_6_fixes_genre_expansion (latest completed)
+   in VS Code terminal, run these commands:
 
 ```zsh
 git checkout MCP_6_fixes_genre_expansion
@@ -118,7 +121,7 @@ node src/shared/run-migration.js 007_add_event_chapter_mapping.sql
 node src/shared/run-migration.js 008_add_world_schema.sql
 node src/shared/run-migration.js 009_writing_migration.sql
 ```
-
+run these in the terminal too, these are the new database migrations for MCP_6:
 ```zsh
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
@@ -139,7 +142,7 @@ mkdir -p ~/Library/Application\ Support/Claude
 node scripts/generate-configs.js --claude
 ```
 
-2. Copy the configuration file directly (RECOMMENDED METHOD):
+2. Copy the configuration file directly:
 ```zsh
 cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
