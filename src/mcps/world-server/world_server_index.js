@@ -135,15 +135,21 @@ class WorldMCPServer extends BaseMCPServer {
             'create_world_element': this.handleCreateWorldElement,
             'update_world_element': this.handleUpdateWorldElement,
             'get_world_elements': this.handleGetWorldElements,
-            
+            'track_element_usage': this.handleTrackElementUsage,
+
             // Organization Management Handlers
             'create_organization': this.handleCreateOrganization,
             'get_organizations': this.handleGetOrganizations,
-            
+            'track_organization_activity': this.handleTrackOrganizationActivity,
+            'update_organization': this.handleUpdateOrganization,
+
             // World Management Handlers
             'check_world_consistency': this.handleCheckWorldConsistency,
             'generate_world_guide': this.handleGenerateWorldGuide,
-            
+            'validate_world_relationships': this.handleValidateWorldRelationships,
+            'analyze_world_complexity': this.handleAnalyzeWorldComplexity,
+            'find_world_gaps': this.handleFindWorldGaps,
+
             // Cross-component Analysis Tools
             'get_world_overview': this.handleGetWorldOverview,
             'analyze_world_usage': this.handleAnalyzeWorldUsage
