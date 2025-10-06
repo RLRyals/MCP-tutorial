@@ -82,7 +82,7 @@ class SeriesMCPServer extends BaseMCPServer {
                         title: { type: 'string', description: 'Series title' },
                         author_id: { type: 'integer', description: 'ID of the series author' },
                         description: { type: 'string', description: 'Series description' },
-                        genre: { type: 'string', description: 'Primary genre' },
+                        genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Array of genre IDs for this series' },
                         start_year: { type: 'integer', description: 'Year the series began' },
                         status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Series status' }
                     },
@@ -98,7 +98,7 @@ class SeriesMCPServer extends BaseMCPServer {
                         series_id: { type: 'integer', description: 'The ID of the series to update' },
                         title: { type: 'string', description: 'Series title' },
                         description: { type: 'string', description: 'Series description' },
-                        genre: { type: 'string', description: 'Primary genre' },
+                        genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Array of genre IDs for this series (replaces all existing genres)' },
                         start_year: { type: 'integer', description: 'Year the series began' },
                         status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Series status' }
                     },
@@ -124,31 +124,38 @@ class SeriesMCPServer extends BaseMCPServer {
             if (!this.db) {
                 throw new Error('Database not initialized');
             }
-            
-            // Add timeout to prevent hanging
+
+            // Use the series_with_genres view that includes genres from junction table
             const queryPromise = this.db.query(`
-                SELECT s.*, a.name as author_name 
-                FROM series s 
-                JOIN authors a ON s.author_id = a.id 
-                ORDER BY s.title
+                SELECT * FROM series_with_genres
+                ORDER BY title
             `);
-            
-            const timeoutPromise = new Promise((_, reject) => 
+
+            const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
             );
-            
+
             const result = await Promise.race([queryPromise, timeoutPromise]);
-            
+
+            // Get author names
+            const seriesWithAuthors = await Promise.all(result.rows.map(async (series) => {
+                const authorResult = await this.db.query('SELECT name FROM authors WHERE id = $1', [series.author_id]);
+                return {
+                    ...series,
+                    author_name: authorResult.rows[0]?.name || 'Unknown'
+                };
+            }));
+
             return {
                 content: [
                     {
                         type: 'text',
-                        text: `Found ${result.rows.length} series:\n\n` +
-                              result.rows.map(series => 
+                        text: `Found ${seriesWithAuthors.length} series:\n\n` +
+                              seriesWithAuthors.map(series =>
                                   `ID: ${series.id}\n` +
                                   `Title: ${series.title}\n` +
                                   `Author: ${series.author_name}\n` +
-                                  `Genre: ${series.genre || 'Unknown'}\n` +
+                                  `Genres: ${series.genre_names?.length > 0 ? series.genre_names.join(', ') : 'None'}\n` +
                                   `Status: ${series.status || 'Unknown'}\n` +
                                   `Start Year: ${series.start_year || 'Unknown'}\n` +
                                   `Description: ${series.description || 'No description available'}\n`
@@ -165,21 +172,19 @@ class SeriesMCPServer extends BaseMCPServer {
     async handleGetSeries(args) {
         try {
             const { series_id } = args;
-            
-            // Add timeout to prevent hanging
+
+            // Use the series_with_genres view
             const queryPromise = this.db.query(`
-                SELECT s.*, a.name as author_name 
-                FROM series s 
-                JOIN authors a ON s.author_id = a.id 
-                WHERE s.id = $1
+                SELECT * FROM series_with_genres
+                WHERE id = $1
             `, [series_id]);
-            
-            const timeoutPromise = new Promise((_, reject) => 
+
+            const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
             );
-            
+
             const result = await Promise.race([queryPromise, timeoutPromise]);
-            
+
             if (result.rows.length === 0) {
                 return {
                     content: [
@@ -190,9 +195,13 @@ class SeriesMCPServer extends BaseMCPServer {
                     ]
                 };
             }
-            
+
             const series = result.rows[0];
-            
+
+            // Get author name
+            const authorResult = await this.db.query('SELECT name FROM authors WHERE id = $1', [series.author_id]);
+            const authorName = authorResult.rows[0]?.name || 'Unknown';
+
             return {
                 content: [
                     {
@@ -200,8 +209,8 @@ class SeriesMCPServer extends BaseMCPServer {
                         text: `Series Details:\n\n` +
                               `ID: ${series.id}\n` +
                               `Title: ${series.title}\n` +
-                              `Author: ${series.author_name}\n` +
-                              `Genre: ${series.genre || 'Unknown'}\n` +
+                              `Author: ${authorName}\n` +
+                              `Genres: ${series.genre_names?.length > 0 ? series.genre_names.join(', ') : 'None'}\n` +
                               `Status: ${series.status || 'Unknown'}\n` +
                               `Start Year: ${series.start_year || 'Unknown'}\n` +
                               `Description: ${series.description || 'No description available'}\n` +
@@ -217,27 +226,47 @@ class SeriesMCPServer extends BaseMCPServer {
 
     async handleCreateSeries(args) {
         try {
-            const { title, author_id, description, genre, start_year, status } = args;
-            
-            // Add timeout to prevent hanging
+            const { title, author_id, description, genre_ids, start_year, status } = args;
+
+            // Create the series
             const queryPromise = this.db.query(`
-                INSERT INTO series (title, author_id, description, genre, start_year, status) 
-                VALUES ($1, $2, $3, $4, $5, $6) 
+                INSERT INTO series (title, author_id, description, start_year, status)
+                VALUES ($1, $2, $3, $4, $5)
                 RETURNING *
-            `, [title, author_id, description, genre, start_year, status]);
-            
-            const timeoutPromise = new Promise((_, reject) => 
+            `, [title, author_id, description, start_year, status]);
+
+            const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Database query timed out after 10 seconds')), 10000)
             );
-            
+
             const result = await Promise.race([queryPromise, timeoutPromise]);
             const series = result.rows[0];
-            
-            // Get author name for display
+
+            // Insert genre associations if provided
+            if (genre_ids && genre_ids.length > 0) {
+                for (const genre_id of genre_ids) {
+                    await this.db.query(`
+                        INSERT INTO series_genres (series_id, genre_id)
+                        VALUES ($1, $2)
+                        ON CONFLICT (series_id, genre_id) DO NOTHING
+                    `, [series.id, genre_id]);
+                }
+            }
+
+            // Get author name and genres for display
             const authorQuery = 'SELECT name FROM authors WHERE id = $1';
             const authorResult = await this.db.query(authorQuery, [author_id]);
             const authorName = authorResult.rows[0]?.name || 'Unknown';
-            
+
+            let genreNames = [];
+            if (genre_ids && genre_ids.length > 0) {
+                const genreResult = await this.db.query(`
+                    SELECT genre_name FROM genres WHERE id = ANY($1)
+                    ORDER BY genre_name
+                `, [genre_ids]);
+                genreNames = genreResult.rows.map(row => row.genre_name);
+            }
+
             return {
                 content: [
                     {
@@ -246,7 +275,7 @@ class SeriesMCPServer extends BaseMCPServer {
                               `ID: ${series.id}\n` +
                               `Title: ${series.title}\n` +
                               `Author: ${authorName}\n` +
-                              `Genre: ${series.genre || 'Not specified'}\n` +
+                              `Genres: ${genreNames.length > 0 ? genreNames.join(', ') : 'None'}\n` +
                               `Status: ${series.status || 'Not specified'}\n` +
                               `Start Year: ${series.start_year || 'Not specified'}\n` +
                               `Description: ${series.description || 'No description provided'}`
@@ -255,7 +284,7 @@ class SeriesMCPServer extends BaseMCPServer {
             };
         } catch (error) {
             if (error.code === '23503') { // Foreign key violation
-                throw new Error('Invalid author_id: Author not found');
+                throw new Error('Invalid author_id or genre_id: Author or Genre not found');
             }
             throw new Error(`Failed to create series: ${error.message}`);
         }
@@ -263,13 +292,13 @@ class SeriesMCPServer extends BaseMCPServer {
 
     async handleUpdateSeries(args) {
         try {
-            const { series_id, title, description, genre, start_year, status } = args;
-            
-            // Build dynamic update query
+            const { series_id, title, description, genre_ids, start_year, status } = args;
+
+            // Build dynamic update query for series table
             const updates = [];
             const values = [];
             let paramCount = 1;
-            
+
             if (title !== undefined) {
                 updates.push(`title = $${paramCount++}`);
                 values.push(title);
@@ -277,10 +306,6 @@ class SeriesMCPServer extends BaseMCPServer {
             if (description !== undefined) {
                 updates.push(`description = $${paramCount++}`);
                 values.push(description);
-            }
-            if (genre !== undefined) {
-                updates.push(`genre = $${paramCount++}`);
-                values.push(genre);
             }
             if (start_year !== undefined) {
                 updates.push(`start_year = $${paramCount++}`);
@@ -290,41 +315,59 @@ class SeriesMCPServer extends BaseMCPServer {
                 updates.push(`status = $${paramCount++}`);
                 values.push(status);
             }
-            
-            if (updates.length === 0) {
-                throw new Error('No fields to update');
+
+            // Update series table if there are fields to update
+            if (updates.length > 0) {
+                updates.push(`updated_at = CURRENT_TIMESTAMP`);
+                values.push(series_id);
+
+                const query = `
+                    UPDATE series
+                    SET ${updates.join(', ')}
+                    WHERE id = $${paramCount}
+                    RETURNING *
+                `;
+
+                const result = await this.db.query(query, values);
+
+                if (result.rows.length === 0) {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: `No series found with ID: ${series_id}`
+                            }
+                        ]
+                    };
+                }
             }
-            
-            updates.push(`updated_at = CURRENT_TIMESTAMP`);
-            values.push(series_id);
-            
-            const query = `
-                UPDATE series 
-                SET ${updates.join(', ')} 
-                WHERE id = $${paramCount} 
-                RETURNING *
-            `;
-            
-            const result = await this.db.query(query, values);
-            
-            if (result.rows.length === 0) {
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: `No series found with ID: ${series_id}`
-                        }
-                    ]
-                };
+
+            // Handle genre updates if provided
+            if (genre_ids !== undefined) {
+                // Delete existing genre associations
+                await this.db.query('DELETE FROM series_genres WHERE series_id = $1', [series_id]);
+
+                // Insert new genre associations
+                if (genre_ids.length > 0) {
+                    for (const genre_id of genre_ids) {
+                        await this.db.query(`
+                            INSERT INTO series_genres (series_id, genre_id)
+                            VALUES ($1, $2)
+                            ON CONFLICT (series_id, genre_id) DO NOTHING
+                        `, [series_id, genre_id]);
+                    }
+                }
             }
-            
-            const series = result.rows[0];
-            
+
+            // Fetch updated series with genres
+            const seriesResult = await this.db.query('SELECT * FROM series_with_genres WHERE id = $1', [series_id]);
+            const series = seriesResult.rows[0];
+
             // Get author name for display
             const authorQuery = 'SELECT name FROM authors WHERE id = $1';
             const authorResult = await this.db.query(authorQuery, [series.author_id]);
             const authorName = authorResult.rows[0]?.name || 'Unknown';
-            
+
             return {
                 content: [
                     {
@@ -333,7 +376,7 @@ class SeriesMCPServer extends BaseMCPServer {
                               `ID: ${series.id}\n` +
                               `Title: ${series.title}\n` +
                               `Author: ${authorName}\n` +
-                              `Genre: ${series.genre || 'Not specified'}\n` +
+                              `Genres: ${series.genre_names?.length > 0 ? series.genre_names.join(', ') : 'None'}\n` +
                               `Status: ${series.status || 'Not specified'}\n` +
                               `Start Year: ${series.start_year || 'Not specified'}\n` +
                               `Description: ${series.description || 'No description available'}\n` +
@@ -342,6 +385,9 @@ class SeriesMCPServer extends BaseMCPServer {
                 ]
             };
         } catch (error) {
+            if (error.code === '23503') { // Foreign key violation
+                throw new Error('Invalid genre_id: Genre not found');
+            }
             throw new Error(`Failed to update series: ${error.message}`);
         }
     }
