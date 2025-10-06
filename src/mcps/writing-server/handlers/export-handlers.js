@@ -84,14 +84,16 @@ export class ExportHandlers {
         try {
             // Get book information
             const book_data = await this.db.query(`
-                SELECT 
+                SELECT
                     b.title, b.subtitle, b.actual_word_count, b.target_word_count,
-                    b.description, b.genre_tags, b.status,
+                    b.description, b.status,
                     s.title as series_title,
-                    a.name as author_name
+                    a.name as author_name,
+                    bwg.genre_names
                 FROM books b
                 LEFT JOIN series s ON b.series_id = s.id
                 LEFT JOIN authors a ON s.author_id = a.id
+                LEFT JOIN books_with_genres bwg ON b.id = bwg.id
                 WHERE b.id = $1
             `, [book_id]);
 
@@ -473,7 +475,7 @@ export class ExportHandlers {
 
         if (export_purpose === 'submission') {
             content += `Word Count: ${book.actual_word_count || 'TBD'}\n`;
-            content += `Category: ${book.genre_tags ? book.genre_tags.join(', ') : 'Fiction'}\n\n`;
+            content += `Category: ${book.genre_names ? book.genre_names.join(', ') : 'Fiction'}\n\n`;
         }
 
         content += '\n' + '='.repeat(60) + '\n\n';

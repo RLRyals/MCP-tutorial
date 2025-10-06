@@ -155,24 +155,6 @@ class CharacterMCPServer extends BaseMCPServer {
                     required: ['chapter_id']
                 }
             },
-            // {
-            //     name: 'get_character_interactions',
-            //     description: 'Get character interaction patterns across chapters',
-            //     inputSchema: {
-            //         type: 'object',
-            //         properties: {
-            //             character_a_id: { type: 'integer', description: 'First character ID' },
-            //             character_b_id: { type: 'integer', description: 'Second character ID (optional - shows all interactions if not provided)' },
-            //             book_id: { type: 'integer', description: 'Specific book (optional)' },
-            //             interaction_type: { 
-            //                 type: 'string', 
-            //                 enum: ['interacts_with', 'conflicts_with', 'allies_with'],
-            //                 description: 'Type of interaction to filter (optional)' 
-            //             }
-            //         },
-            //         required: ['character_a_id']
-            //     }
-            // },
             {
                 name: 'add_character_knowledge_with_chapter',
                 description: 'Add character knowledge with specific chapter reference',

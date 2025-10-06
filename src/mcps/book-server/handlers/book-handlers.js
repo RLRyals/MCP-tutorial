@@ -108,10 +108,10 @@ export class BookHandlers {
                             type: 'string',
                             description: 'URL to book cover image'
                         },
-                        genre_tags: {
+                        genre_names: {
                             type: 'array',
                             items: { type: 'string' },
-                            description: 'Genre tags for this specific book'
+                            description: 'Genre names for this specific book'
                         }
                     },
                     required: ['title', 'series_id', 'book_number']
@@ -168,10 +168,10 @@ export class BookHandlers {
                             type: 'string',
                             description: 'URL to book cover image'
                         },
-                        genre_tags: {
+                        genre_names: {
                             type: 'array',
                             items: { type: 'string' },
-                            description: 'Genre tags for this specific book'
+                            description: 'Genre names for this specific book'
                         }
                     },
                     required: ['book_id']
@@ -207,10 +207,12 @@ export class BookHandlers {
             const { series_id, status, include_stats = false } = args;
             
             let query = `
-                SELECT b.*, s.title as series_title, a.name as author_name 
-                FROM books b 
-                JOIN series s ON b.series_id = s.id 
+                SELECT b.*, s.title as series_title, a.name as author_name,
+                       bwg.genre_names
+                FROM books b
+                JOIN series s ON b.series_id = s.id
                 JOIN authors a ON s.author_id = a.id
+                LEFT JOIN books_with_genres bwg ON b.id = bwg.id
             `;
             
             const params = [];
@@ -272,8 +274,8 @@ export class BookHandlers {
                 booksText += `ISBN: ${book.isbn || 'Not specified'}\n`;
                 booksText += `Description: ${book.description || 'No description available'}\n`;
                 
-                if (book.genre_tags && book.genre_tags.length > 0) {
-                    booksText += `Genre Tags: ${book.genre_tags.join(', ')}\n`;
+                if (book.genre_names && book.genre_names.length > 0) {
+                    booksText += `Genre Tags: ${book.genre_names.join(', ')}\n`;
                 }
                 
                 booksText += '\n---\n\n';
@@ -293,12 +295,14 @@ export class BookHandlers {
     async handleGetBook(args) {
         try {
             const { book_id, include_chapters = false } = args;
-            
+
             const query = `
-                SELECT b.*, s.title as series_title, a.name as author_name 
-                FROM books b 
-                JOIN series s ON b.series_id = s.id 
-                JOIN authors a ON s.author_id = a.id 
+                SELECT b.*, s.title as series_title, a.name as author_name,
+                       bwg.genre_names
+                FROM books b
+                JOIN series s ON b.series_id = s.id
+                JOIN authors a ON s.author_id = a.id
+                LEFT JOIN books_with_genres bwg ON b.id = bwg.id
                 WHERE b.id = $1
             `;
             const result = await this.db.query(query, [book_id]);
@@ -329,9 +333,9 @@ export class BookHandlers {
             if (book.cover_image_url) {
                 bookText += `Cover Image: ${book.cover_image_url}\n`;
             }
-            
-            if (book.genre_tags && book.genre_tags.length > 0) {
-                bookText += `Genre Tags: ${book.genre_tags.join(', ')}\n`;
+
+            if (book.genre_names && book.genre_names.length > 0) {
+                bookText += `Genre Tags: ${book.genre_names.join(', ')}\n`;
             }
             
             bookText += `Description: ${book.description || 'No description available'}\n`;
@@ -371,47 +375,64 @@ export class BookHandlers {
 
     async handleCreateBook(args) {
         try {
-            const { title, series_id, book_number, status = 'planned', target_word_count, 
-                    actual_word_count = 0, publication_year, description, isbn, page_count, 
-                    cover_image_url, genre_tags } = args;
-            
+            const { title, series_id, book_number, status = 'planned', target_word_count,
+                    actual_word_count = 0, publication_year, description, isbn, page_count,
+                    cover_image_url, genre_names } = args;
+
             // Check if book number already exists in series
             const checkQuery = 'SELECT id FROM books WHERE series_id = $1 AND book_number = $2';
             const checkResult = await this.db.query(checkQuery, [series_id, book_number]);
-            
+
             if (checkResult.rows.length > 0) {
                 throw new Error(`Book #${book_number} already exists in this series`);
             }
-            
+
             const query = `
                 INSERT INTO books (
-                    title, series_id, book_number, status, target_word_count, 
-                    actual_word_count, publication_year, description, isbn, 
-                    page_count, cover_image_url, genre_tags
-                ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) 
+                    title, series_id, book_number, status, target_word_count,
+                    actual_word_count, publication_year, description, isbn,
+                    page_count, cover_image_url
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING *
             `;
-            
+
             const result = await this.db.query(query, [
                 title, series_id, book_number, status, target_word_count || null,
-                actual_word_count, publication_year || null, description || null, 
-                isbn || null, page_count || null, cover_image_url || null, 
-                genre_tags || []
+                actual_word_count, publication_year || null, description || null,
+                isbn || null, page_count || null, cover_image_url || null
             ]);
-            
+
             const book = result.rows[0];
-            
+
+            // Handle genre associations
+            if (genre_names && genre_names.length > 0) {
+                for (const genreName of genre_names) {
+                    // Find or create genre
+                    const genreQuery = 'SELECT id FROM genres WHERE LOWER(TRIM(genre_name)) = LOWER(TRIM($1))';
+                    const genreResult = await this.db.query(genreQuery, [genreName]);
+
+                    if (genreResult.rows.length > 0) {
+                        const genreId = genreResult.rows[0].id;
+                        // Create junction table entry
+                        await this.db.query(
+                            'INSERT INTO book_genres (book_id, genre_id) VALUES ($1, $2) ON CONFLICT (book_id, genre_id) DO NOTHING',
+                            [book.id, genreId]
+                        );
+                    }
+                }
+            }
+
             // Get series and author info for display
             const infoQuery = `
-                SELECT s.title as series_title, a.name as author_name 
-                FROM series s 
-                JOIN authors a ON s.author_id = a.id 
+                SELECT s.title as series_title, a.name as author_name
+                FROM series s
+                JOIN authors a ON s.author_id = a.id
                 WHERE s.id = $1
             `;
             const infoResult = await this.db.query(infoQuery, [series_id]);
             const info = infoResult.rows[0] || {};
-            
+
             return {
                 content: [{
                     type: 'text',
@@ -423,7 +444,7 @@ export class BookHandlers {
                           `Status: ${book.status}\n` +
                           `Target Word Count: ${book.target_word_count || 'Not specified'}\n` +
                           `Current Word Count: ${book.actual_word_count}\n` +
-                          `Genre Tags: ${book.genre_tags && book.genre_tags.length > 0 ? book.genre_tags.join(', ') : 'None'}\n` +
+                          `Genre Tags: ${genre_names && genre_names.length > 0 ? genre_names.join(', ') : 'None'}\n` +
                           `Description: ${book.description || 'No description provided'}`
                 }]
             };
@@ -437,31 +458,31 @@ export class BookHandlers {
 
     async handleUpdateBook(args) {
         try {
-            const { book_id, ...updates } = args;
-            
+            const { book_id, genre_names, ...updates } = args;
+
             // If updating book_number, check for conflicts
             if (updates.book_number !== undefined) {
                 const checkQuery = 'SELECT series_id FROM books WHERE id = $1';
                 const seriesResult = await this.db.query(checkQuery, [book_id]);
-                
+
                 if (seriesResult.rows.length === 0) {
                     throw new Error('Book not found');
                 }
-                
+
                 const series_id = seriesResult.rows[0].series_id;
                 const conflictQuery = 'SELECT id FROM books WHERE series_id = $1 AND book_number = $2 AND id != $3';
                 const conflictResult = await this.db.query(conflictQuery, [series_id, updates.book_number, book_id]);
-                
+
                 if (conflictResult.rows.length > 0) {
                     throw new Error(`Book #${updates.book_number} already exists in this series`);
                 }
             }
-            
+
             // Build dynamic update query
             const updateFields = [];
             const params = [book_id];
             let paramCount = 1;
-            
+
             for (const [key, value] of Object.entries(updates)) {
                 if (value !== undefined) {
                     paramCount++;
@@ -469,55 +490,80 @@ export class BookHandlers {
                     params.push(value);
                 }
             }
-            
-            if (updateFields.length === 0) {
+
+            if (updateFields.length === 0 && !genre_names) {
                 throw new Error('No fields to update');
             }
-            
-            updateFields.push('updated_at = CURRENT_TIMESTAMP');
-            
-            const query = `
-                UPDATE books 
-                SET ${updateFields.join(', ')}
-                WHERE id = $1
-                RETURNING *
-            `;
-            
-            const result = await this.db.query(query, params);
-            
-            if (result.rows.length === 0) {
-                return {
-                    content: [{
-                        type: 'text',
-                        text: `No book found with ID: ${book_id}`
-                    }]
-                };
+
+            if (updateFields.length > 0) {
+                updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+                const query = `
+                    UPDATE books
+                    SET ${updateFields.join(', ')}
+                    WHERE id = $1
+                    RETURNING *
+                `;
+
+                const result = await this.db.query(query, params);
+
+                if (result.rows.length === 0) {
+                    return {
+                        content: [{
+                            type: 'text',
+                            text: `No book found with ID: ${book_id}`
+                        }]
+                    };
+                }
             }
-            
-            const book = result.rows[0];
-            
-            // Get series and author info for display
-            const infoQuery = `
-                SELECT s.title as series_title, a.name as author_name 
-                FROM series s 
-                JOIN authors a ON s.author_id = a.id 
-                WHERE s.id = $1
+
+            // Handle genre updates
+            if (genre_names !== undefined) {
+                // First, remove all existing genre associations
+                await this.db.query('DELETE FROM book_genres WHERE book_id = $1', [book_id]);
+
+                // Then add new ones
+                if (genre_names.length > 0) {
+                    for (const genreName of genre_names) {
+                        const genreQuery = 'SELECT id FROM genres WHERE LOWER(TRIM(genre_name)) = LOWER(TRIM($1))';
+                        const genreResult = await this.db.query(genreQuery, [genreName]);
+
+                        if (genreResult.rows.length > 0) {
+                            const genreId = genreResult.rows[0].id;
+                            await this.db.query(
+                                'INSERT INTO book_genres (book_id, genre_id) VALUES ($1, $2) ON CONFLICT (book_id, genre_id) DO NOTHING',
+                                [book_id, genreId]
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Get updated book info with genres
+            const bookQuery = `
+                SELECT b.*, s.title as series_title, a.name as author_name,
+                       bwg.genre_names
+                FROM books b
+                JOIN series s ON b.series_id = s.id
+                JOIN authors a ON s.author_id = a.id
+                LEFT JOIN books_with_genres bwg ON b.id = bwg.id
+                WHERE b.id = $1
             `;
-            const infoResult = await this.db.query(infoQuery, [book.series_id]);
-            const info = infoResult.rows[0] || {};
-            
+            const bookResult = await this.db.query(bookQuery, [book_id]);
+            const book = bookResult.rows[0];
+
             return {
                 content: [{
                     type: 'text',
                     text: `Updated book successfully!\n\n` +
                           `ID: ${book.id}\n` +
                           `Title: ${book.title}\n` +
-                          `Series: ${info.series_title || 'Unknown'} (#${book.book_number})\n` +
-                          `Author: ${info.author_name || 'Unknown'}\n` +
+                          `Series: ${book.series_title || 'Unknown'} (#${book.book_number})\n` +
+                          `Author: ${book.author_name || 'Unknown'}\n` +
                           `Status: ${book.status}\n` +
                           `Target Word Count: ${book.target_word_count || 'Not specified'}\n` +
                           `Current Word Count: ${book.actual_word_count || 0}\n` +
-                          `Genre Tags: ${book.genre_tags && book.genre_tags.length > 0 ? book.genre_tags.join(', ') : 'None'}\n` +
+                          `Genre Tags: ${book.genre_names && book.genre_names.length > 0 ? book.genre_names.join(', ') : 'None'}\n` +
                           `Updated: ${book.updated_at}`
                 }]
             };
@@ -580,10 +626,12 @@ export class BookHandlers {
     async getBookById(book_id) {
         try {
             const query = `
-                SELECT b.*, s.title as series_title, a.name as author_name 
-                FROM books b 
-                JOIN series s ON b.series_id = s.id 
-                JOIN authors a ON s.author_id = a.id 
+                SELECT b.*, s.title as series_title, a.name as author_name,
+                       bwg.genre_names
+                FROM books b
+                JOIN series s ON b.series_id = s.id
+                JOIN authors a ON s.author_id = a.id
+                LEFT JOIN books_with_genres bwg ON b.id = bwg.id
                 WHERE b.id = $1
             `;
             const result = await this.db.query(query, [book_id]);

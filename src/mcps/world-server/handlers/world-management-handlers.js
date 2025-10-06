@@ -191,7 +191,7 @@ export class WorldManagementHandlers {
                 const powerImbalance = await this.db.query(`
                     SELECT COUNT(*) as high_power_count 
                     FROM organizations 
-                    WHERE series_id = $1 AND power_level >= 8
+                    WHERE series_id = $1 AND influence_level >= 8
                 `, [series_id]);
                 
                 if (powerImbalance.rows[0].high_power_count > 5) {
@@ -266,7 +266,7 @@ export class WorldManagementHandlers {
             guideText += `Guide Type: ${guide_type}\n\n`;
             
             // Get series info
-            const seriesQuery = 'SELECT title, description FROM series WHERE series_id = $1';
+            const seriesQuery = 'SELECT title, description FROM series WHERE id = $1';
             const seriesResult = await this.db.query(seriesQuery, [series_id]);
             if (seriesResult.rows.length > 0) {
                 const series = seriesResult.rows[0];
@@ -378,7 +378,7 @@ export class WorldManagementHandlers {
                     FROM organizations o 
                     LEFT JOIN locations l ON o.headquarters_location_id = l.id
                     WHERE o.series_id = $1 
-                    ORDER BY o.power_level DESC, o.organization_type, o.name
+                    ORDER BY o.influence_level DESC, o.organization_type, o.name
                 `;
                 
                 const orgs = await this.db.query(orgsQuery, [series_id]);
@@ -397,7 +397,7 @@ export class WorldManagementHandlers {
                     Object.keys(orgsByType).forEach(type => {
                         guideText += `${type.toUpperCase()}:\n`;
                         orgsByType[type].forEach(org => {
-                            guideText += `  • ${org.name} (Power: ${org.power_level}/10, ${org.status})`;
+                            guideText += `  • ${org.name} (Influence: ${org.influence_level}/10, ${org.status})`;
                             if (include_usage_stats && org.activity_count > 0) {
                                 guideText += ` - ${org.activity_count} activities`;
                             }
@@ -470,7 +470,7 @@ export class WorldManagementHandlers {
                         (SELECT COUNT(*) FROM locations WHERE series_id = $1) as location_count,
                         (SELECT COUNT(*) FROM world_elements WHERE series_id = $1) as element_count,
                         (SELECT COUNT(*) FROM organizations WHERE series_id = $1) as org_count,
-                        (SELECT AVG(power_level) FROM organizations WHERE series_id = $1) as avg_org_power,
+                        (SELECT AVG(influence_level) FROM organizations WHERE series_id = $1) as avg_org_power,
                         (SELECT COUNT(*) FROM locations WHERE series_id = $1 AND parent_location_id IS NOT NULL) as nested_locations,
                         (SELECT COUNT(DISTINCT element_type) FROM world_elements WHERE series_id = $1) as element_diversity,
                         (SELECT COUNT(DISTINCT organization_type) FROM organizations WHERE series_id = $1) as org_diversity
@@ -533,8 +533,8 @@ export class WorldManagementHandlers {
                     SELECT 
                         organization_type,
                         COUNT(*) as count,
-                        AVG(power_level) as avg_power,
-                        MAX(power_level) as max_power,
+                        AVG(influence_level) as avg_power,
+                        MAX(influence_level) as max_power,
                         COUNT(CASE WHEN status = 'active' THEN 1 END) as active_count
                     FROM organizations 
                     WHERE series_id = $1 
@@ -630,14 +630,14 @@ export class WorldManagementHandlers {
             // Find weak organizations (low power, no activity)
             if (gap_type === 'all' || gap_type === 'weak_organizations') {
                 const weakOrgsQuery = `
-                    SELECT o.id, o.name, o.organization_type, o.power_level
+                    SELECT o.id, o.name, o.organization_type, o.influence_level
                     FROM organizations o
-                    WHERE o.series_id = $1 AND o.power_level <= 3
+                    WHERE o.series_id = $1 AND o.influence_level <= 3
                     AND NOT EXISTS (
                         SELECT 1 FROM world_element_usage weu 
                         WHERE weu.element_type = 'organization' AND weu.element_id = o.id
                     )
-                    ORDER BY o.power_level, o.name
+                    ORDER BY o.influence_level, o.name
                 `;
                 
                 const weakOrgs = await this.db.query(weakOrgsQuery, [series_id]);
@@ -646,7 +646,7 @@ export class WorldManagementHandlers {
                     gaps.push({
                         type: 'Underutilized Organizations',
                         count: weakOrgs.rows.length,
-                        items: weakOrgs.rows.map(org => `${org.name} (${org.organization_type}, power ${org.power_level})`),
+                        items: weakOrgs.rows.map(org => `${org.name} (${org.organization_type}, influence ${org.influence_level})`),
                         suggestion: 'Consider strengthening these organizations or giving them story roles.'
                     });
                 }
@@ -680,12 +680,12 @@ export class WorldManagementHandlers {
             // Find missing connections
             if (gap_type === 'all' || gap_type === 'missing_connections') {
                 const isolatedOrgsQuery = `
-                    SELECT o.id, o.name, o.organization_type, o.power_level
+                    SELECT o.id, o.name, o.organization_type, o.influence_level
                     FROM organizations o
-                    WHERE o.series_id = $1 AND o.power_level >= 7
+                    WHERE o.series_id = $1 AND o.influence_level >= 7
                     AND (o.allies IS NULL OR array_length(o.allies, 1) IS NULL)
                     AND (o.enemies IS NULL OR array_length(o.enemies, 1) IS NULL)
-                    ORDER BY o.power_level DESC
+                    ORDER BY o.influence_level DESC
                 `;
                 
                 const isolated = await this.db.query(isolatedOrgsQuery, [series_id]);
@@ -694,7 +694,7 @@ export class WorldManagementHandlers {
                     gaps.push({
                         type: 'Isolated High-Power Organizations',
                         count: isolated.rows.length,
-                        items: isolated.rows.map(org => `${org.name} (${org.organization_type}, power ${org.power_level})`),
+                        items: isolated.rows.map(org => `${org.name} (${org.organization_type}, influence ${org.influence_level})`),
                         suggestion: 'High-power organizations should have relationships with others for realistic world dynamics.'
                     });
                 }
@@ -799,7 +799,7 @@ export class WorldManagementHandlers {
                 const missingHQQuery = `
                     SELECT o.name, o.organization_type 
                     FROM organizations o
-                    WHERE o.series_id = $1 AND o.power_level >= 6 AND o.headquarters_location_id IS NULL
+                    WHERE o.series_id = $1 AND o.influence_level >= 6 AND o.headquarters_location_id IS NULL
                 `;
                 
                 const missingHQ = await this.db.query(missingHQQuery, [series_id]);
