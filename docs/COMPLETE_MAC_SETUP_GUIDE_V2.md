@@ -2,23 +2,26 @@
 
 This comprehensive guide will help Mac users set up their environment to run the MCP Tutorial successfully with both Claude Desktop and Typing Mind.
 
-## 1. Install Prerequisites
+## Prerequisites
 
-[Working on these. Please see https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/mcp-installation-guide.html ]
+Before starting, install these required tools using Homebrew:
 
-Everyone has been using HomeBrew to install some of these
-1. Claude Desktop
-2. Visual Studio Code
-3. GitHub Account
-4. Docker Desktop
-5. Docker account
-6. Node.js
-7. Git (Some Macs already have this)
+[Detailed installation instructions: https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/mcp-installation-guide.html]
 
-## 2. Repository Setup and Database Configuration
+Required installations:
+1. **Claude Desktop** - AI assistant application
+2. **Visual Studio Code** - Code editor
+3. **GitHub Account** - Version control (create at github.com)
+4. **Docker Desktop** - Container platform
+5. **Docker Account** - Required for Docker Desktop
+6. **Node.js** - JavaScript runtime
+7. **Git** - Version control (may already be installed on Mac)
 
-### 2.1 Clone and Initialize the Repository
-These commands go in your terminal in VS code one line at a a time and then enter before pasting the next one.
+---
+
+## Step 1: Clone Repository and Install Dependencies
+
+Open VS Code's terminal and run these commands **one at a time**, pressing Enter after each:
 
 ```zsh
 # Create GitHub directory if it doesn't exist
@@ -36,83 +39,94 @@ git checkout MCP_1_Series_Management
 npm install
 ```
 
-### 2.2 Environment Configuration (CRITICAL STEP)
+---
 
-1. First, copy the template environment file:
+## Step 2: Configure Environment File (CRITICAL)
+
+**2.1** Copy the template environment file:
 ```zsh
 cp template.env .env
 ```
 
-2. Open the .env file in a text editor:
+**2.2** Open the .env file in VS Code:
 ```zsh
-# Using VS Code (recommended)
 code .env
-
 ```
 
-3. Review and update these critical settings:
+**2.3** Verify these settings exist in your .env file. Add the `POSTGRES_CONTAINER_NAME` line if missing:
 ```env
+# Database Configuration
+POSTGRES_CONTAINER_NAME=mcp-series-db
+POSTGRES_DB=mcp_series
+POSTGRES_USER=writer
+POSTGRES_PASSWORD=your_secure_password
+
+# Connection URL (must match settings above)
 DATABASE_URL=postgresql://writer:your_secure_password@localhost:5432/mcp_series
-#use this string to connect to your db
-#postgresql://writer:@localhost:5432/mcp_series
+
 NODE_ENV=development
 ```
-## Add this new line to the .env file
-```env
-POSTGRES_CONTAINER_NAME=mcp-series-db
-```
 
-4. IMPORTANT: Save your changes!
-   - For VS Code: Press Cmd + S
+**2.4** Save the file:
+   - Press **Cmd + S** in VS Code
 
-5. Verify your .env file was saved correctly:
+**2.5** Verify your .env file was saved correctly:
 ```zsh
 cat .env
 ```
 
-### 2.3 Run Initial Database Migrations
+---
 
-1. Start the PostgreSQL database:
+## Step 3: Start Database and Run Initial Migration
+
+**3.1** Start the PostgreSQL database:
 ```zsh
 docker compose up -d
 ```
 
-2. Verify the database is running:
+**3.2** Verify the database is running:
 ```zsh
 docker ps | grep postgres
 ```
 
-3. Run the initial migrations:
+**3.3** Run the initial core schema migration:
 ```zsh
 node src/shared/run-migration.js 001_create_core_schema.sql
 ```
 
-4. Verify the database connection:
+**3.4** Verify the database connection works:
 ```zsh
 node tests/test-db.js
 ```
 
-## 3. Tutorial Branch Progression
+---
 
-In the VS Code terminal, change the branch to MCP_1:
+## Step 4: Complete MCP_1 Branch Migration
 
-1. MCP_1_Series_Management (current)
+**4.1** Ensure you're on the MCP_1 branch and run the second migration:
 ```zsh
 git checkout MCP_1_Series_Management
 npm install
 node src/shared/run-migration.js 002_update_series_schema.sql
 ```
-## Optional 
-You can go through these branches one at a time following the other guide
-for branches MCP_2 through MCP_5 you can go through them and look at the new code
-or simply continue to MCP_6
 
-## Mandatory
-6. MCP_6_fixes_genre_expansion (latest completed)
-   in VS Code terminal, run these commands:
+### ✓ CHECKPOINT
+- Did you get any errors?
+- Did the migration run successfully?
+- **If YES:** Continue to Step 5
+- **If NO:** Scroll up to find the error message. If you see an authentication error, skip to [Troubleshooting](#troubleshooting) section below.
 
+---
+
+## Step 5: Complete MCP_6 Branch Migrations (MANDATORY)
+
+**5.1** Switch to the MCP_6 branch:
 ```zsh
 git checkout MCP_6_fixes_genre_expansion
+```
+
+**5.2** Run migrations 003-009:
+```zsh
 node src/shared/run-migration.js 003_add_character_schema.sql
 node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql
 node src/shared/run-migration.js 005_update_author_email_constraint.sql
@@ -121,19 +135,22 @@ node src/shared/run-migration.js 007_add_event_chapter_mapping.sql
 node src/shared/run-migration.js 008_add_world_schema.sql
 node src/shared/run-migration.js 009_writing_migration.sql
 ```
-run these in the terminal too, these are the new database migrations for MCP_6:
+
+**5.3** Run the final MCP_6 migrations:
 ```zsh
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 ```
 
-## 4. Claude Desktop Configuration (After completing MCP_6)
+---
 
-IMPORTANT: Only proceed with this step after completing through MCP_6_fixes_genre_expansion!
+## Step 6: Configure Claude Desktop
+
+⚠️ **IMPORTANT:** Only proceed after completing Step 5 (MCP_6 migrations)!
 
 ### Option A: Direct File Copy (Recommended)
 
-1. First, find your Claude Desktop configuration directory:
+**6.1** Create Claude Desktop config directory and generate configuration:
 ```zsh
 # Create directory if it doesn't exist
 mkdir -p ~/Library/Application\ Support/Claude
@@ -142,23 +159,21 @@ mkdir -p ~/Library/Application\ Support/Claude
 node scripts/generate-configs.js --claude
 ```
 
-2. Copy the configuration file directly:
+**6.2** Copy the configuration file:
 ```zsh
 cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
-3. Restart Claude Desktop to load the new configuration.
+**6.3** Restart Claude Desktop to load the new configuration.
 
-### Option B: Manual Configuration (Alternative)
+### Option B: Manual Configuration (if Option A fails)
 
-If the direct copy doesn't work:
-
-1. Generate the configuration:
+**6.1** Generate the configuration:
 ```zsh
 node scripts/generate-configs.js
 ```
 
-2. Open both files:
+**6.2** Open both files:
 ```zsh
 # Open the generated config
 open config/claude-desktop.json
@@ -167,52 +182,62 @@ open config/claude-desktop.json
 open ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
-3. Copy the contents from the generated file to Claude Desktop's config file.
+**6.3** Copy the contents from `config/claude-desktop.json` into `claude_desktop_config.json`
 
-4. Save and restart Claude Desktop.
+**6.4** Save and restart Claude Desktop.
 
-## 5. Verify Configuration
+---
+
+## Step 7: Verify Configuration
 
 ```zsh
-# Check if config file exists in Claude Desktop directory
+# Check if config file exists
 ls -l ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 # View the config contents
 cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
+---
 
 ## TROUBLESHOOTING
-To reset your password and make sure it is what it is supposed to be:
-Make certain your terminal is in the MCP-tutorial dirctory and run these commands in the terminal.
 
+### Database Authentication Errors
+
+If you encounter authentication errors when running migrations, follow these steps:
+
+**T.1** Ensure Docker is running and start the database:
+```zsh
+cd ~/Documents/GitHub/MCP-tutorial
 docker compose up -d
+```
 
-#assuming these are your values in the .env  (not the template.env file):
-# Database Configuration
+**T.2** Verify your .env file has these settings:
+```env
 POSTGRES_CONTAINER_NAME=mcp-series-db
 POSTGRES_DB=mcp_series
 POSTGRES_USER=writer
 POSTGRES_PASSWORD=your_secure_password
-
-#Connection URL for the application (must match the database settings above)
 DATABASE_URL=postgresql://writer:your_secure_password@localhost:5432/mcp_series
-#use this string to connect to your db
-#postgresql://writer:@localhost:5432/mcp_series
+```
 
-### in the terminal in VS Code
+**T.3** Connect to the PostgreSQL database:
+```zsh
 docker exec -it mcp-series-db psql -U writer -d mcp_series
+```
 
-### when that works. you should see something like 
-### mcp_series=#
+You should see the prompt: `mcp_series=#`
 
-### then reset that password 
+**T.4** Reset the password:
+```sql
 ALTER USER "writer" WITH PASSWORD 'your_secure_password';
-
-### then exit with..
 \q
+```
 
-### If you see an error message that User Writer doesn't exist then create it with
-
-CREATE USER writer WITH SUPERUSER PASSWORD 'your_secure_password__goes_here_in_these_single_quotes';
+**T.5** If you get an error that user "writer" doesn't exist, create it:
+```sql
+CREATE USER writer WITH SUPERUSER PASSWORD 'your_secure_password';
 \q
+```
+
+After fixing the password, return to the step where you encountered the error and continue from there.
