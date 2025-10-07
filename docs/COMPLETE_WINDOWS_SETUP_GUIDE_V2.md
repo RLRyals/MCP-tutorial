@@ -1,32 +1,32 @@
-# Complete Mac Setup Guide for MCP Tutorial
+# Complete Windows Setup Guide for MCP Tutorial
 
-This comprehensive guide will help Mac users set up their environment to run the MCP Tutorial successfully with both Claude Desktop and Typing Mind.
+This comprehensive guide will help Windows users set up their environment to run the MCP Tutorial successfully with both Claude Desktop and Typing Mind.
 
 ## Prerequisites
 
-Before starting, install these required tools using Homebrew:
+Before starting, install these required tools:
 
 [Detailed installation instructions: https://htmlpreview.github.io/?https://github.com/RLRyals/MCP-tutorial/blob/main/docs/mcp-installation-guide.html]
 
 Required installations:
-1. **Claude Desktop** - AI assistant application
-2. **Visual Studio Code** - Code editor
+1. **Claude Desktop** - AI assistant application (download from claude.ai)
+2. **Visual Studio Code** - Code editor (download from code.visualstudio.com)
 3. **GitHub Account** - Version control (create at github.com)
-4. **Docker Desktop** - Container platform
+4. **Docker Desktop** - Container platform (download from docker.com)
 5. **Docker Account** - Required for Docker Desktop
-6. **Node.js** - JavaScript runtime
-7. **Git** - Version control (may already be installed on Mac)
+6. **Node.js** - JavaScript runtime (download from nodejs.org - LTS version recommended)
+7. **Git** - Version control (download from git-scm.com)
 
 ---
 
 ## Step 1: Clone Repository and Install Dependencies
 
-Open VS Code's terminal and run these commands **one at a time**, pressing Enter after each:
+Open VS Code's terminal (Terminal → New Terminal) and run these commands **one at a time**, pressing Enter after each:
 
-```zsh
+```powershell
 # Create GitHub directory if it doesn't exist
-mkdir -p ~/Documents/GitHub
-cd ~/Documents/GitHub
+New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\Documents\GitHub"
+cd "$env:USERPROFILE\Documents\GitHub"
 
 # Clone the repository
 git clone https://github.com/RLRyals/MCP-tutorial.git
@@ -44,12 +44,12 @@ npm install
 ## Step 2: Configure Environment File (CRITICAL)
 
 **2.1** Copy the template environment file:
-```zsh
-cp template.env .env
+```powershell
+Copy-Item template.env .env
 ```
 
 **2.2** Open the .env file in VS Code:
-```zsh
+```powershell
 code .env
 ```
 
@@ -82,11 +82,11 @@ DATABASE_URL=postgresql://john_doe:MySecurePass123@localhost:5432/mcp_series
 ```
 
 **2.4** Save the file:
-   - Press **Cmd + S** in VS Code
+   - Press **Ctrl + S** in VS Code
 
 **2.5** Verify your .env file was saved correctly:
-```zsh
-cat .env
+```powershell
+Get-Content .env
 ```
 
 ---
@@ -94,22 +94,24 @@ cat .env
 ## Step 3: Start Database and Run Initial Migration
 
 **3.1** Start the PostgreSQL database:
-```zsh
+```powershell
 docker compose up -d
 ```
 
 **3.2** Verify the database is running:
-```zsh
-docker ps | grep postgres
+```powershell
+docker ps
 ```
 
+Look for a container named `mcp-series-db` with status "Up".
+
 **3.3** Run the initial core schema migration:
-```zsh
+```powershell
 node src/shared/run-migration.js 001_create_core_schema.sql
 ```
 
 **3.4** Verify the database connection works:
-```zsh
+```powershell
 node tests/test-db.js
 ```
 
@@ -118,7 +120,7 @@ node tests/test-db.js
 ## Step 4: Complete MCP_1 Branch Migration
 
 **4.1** Ensure you're on the MCP_1 branch and run the second migration:
-```zsh
+```powershell
 git checkout MCP_1_Series_Management
 npm install
 node src/shared/run-migration.js 002_update_series_schema.sql
@@ -135,12 +137,12 @@ node src/shared/run-migration.js 002_update_series_schema.sql
 ## Step 5: Complete MCP_6 Branch Migrations (MANDATORY)
 
 **5.1** Switch to the MCP_6 branch:
-```zsh
+```powershell
 git checkout MCP_6_fixes_genre_expansion
 ```
 
 **5.2** Run migrations 003-009:
-```zsh
+```powershell
 node src/shared/run-migration.js 003_add_character_schema.sql
 node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql
 node src/shared/run-migration.js 005_update_author_email_constraint.sql
@@ -151,7 +153,7 @@ node src/shared/run-migration.js 009_writing_migration.sql
 ```
 
 **5.3** Run the final MCP_6 migrations:
-```zsh
+```powershell
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 ```
@@ -165,17 +167,17 @@ node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 ### Option A: Direct File Copy (Recommended)
 
 **6.1** Create Claude Desktop config directory and generate configuration:
-```zsh
+```powershell
 # Create directory if it doesn't exist
-mkdir -p ~/Library/Application\ Support/Claude
+New-Item -ItemType Directory -Force -Path "$env:APPDATA\Claude"
 
 # Generate the configuration
 node scripts/generate-configs.js --claude
 ```
 
 **6.2** Copy the configuration file:
-```zsh
-cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
+```powershell
+Copy-Item config/claude-desktop.json "$env:APPDATA\Claude\claude_desktop_config.json"
 ```
 
 **6.3** Restart Claude Desktop to load the new configuration.
@@ -183,20 +185,20 @@ cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_deskt
 ### Option B: Manual Configuration (if Option A fails)
 
 **6.1** Generate the configuration:
-```zsh
+```powershell
 node scripts/generate-configs.js
 ```
 
 **6.2** Open both files:
-```zsh
+```powershell
 # Open the generated config
-open config/claude-desktop.json
+code config/claude-desktop.json
 
-# Open Claude Desktop's config
-open ~/Library/Application\ Support/Claude/claude_desktop_config.json
+# Open Claude Desktop's config location in File Explorer
+explorer "$env:APPDATA\Claude"
 ```
 
-**6.3** Copy the contents from `config/claude-desktop.json` into `claude_desktop_config.json`
+**6.3** Manually open `claude_desktop_config.json` in the Claude folder (create it if it doesn't exist), then copy the contents from `config/claude-desktop.json` into it.
 
 **6.4** Save and restart Claude Desktop.
 
@@ -204,12 +206,12 @@ open ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ## Step 7: Verify Configuration
 
-```zsh
+```powershell
 # Check if config file exists
-ls -l ~/Library/Application\ Support/Claude/claude_desktop_config.json
+Test-Path "$env:APPDATA\Claude\claude_desktop_config.json"
 
 # View the config contents
-cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
+Get-Content "$env:APPDATA\Claude\claude_desktop_config.json"
 ```
 
 ---
@@ -220,9 +222,9 @@ cat ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 If you encounter authentication errors when running migrations, follow these steps:
 
-**T.1** Ensure Docker is running and start the database:
-```zsh
-cd ~/Documents/GitHub/MCP-tutorial
+**T.1** Ensure Docker Desktop is running and start the database:
+```powershell
+cd "$env:USERPROFILE\Documents\GitHub\MCP-tutorial"
 docker compose up -d
 ```
 
@@ -236,7 +238,7 @@ DATABASE_URL=postgresql://writer:your_secure_password@localhost:5432/mcp_series
 ```
 
 **T.3** Connect to the PostgreSQL database:
-```zsh
+```powershell
 docker exec -it mcp-series-db psql -U writer -d mcp_series
 ```
 
@@ -255,3 +257,24 @@ CREATE USER writer WITH SUPERUSER PASSWORD 'your_secure_password';
 ```
 
 After fixing the password, return to the step where you encountered the error and continue from there.
+
+---
+
+## Windows-Specific Notes
+
+### PowerShell vs Command Prompt
+- This guide uses PowerShell commands (recommended)
+- If using Command Prompt (cmd), adjust commands accordingly:
+  - Use `%USERPROFILE%` instead of `$env:USERPROFILE`
+  - Use `%APPDATA%` instead of `$env:APPDATA`
+  - Use `copy` instead of `Copy-Item`
+  - Use `type` instead of `Get-Content`
+
+### Path Differences
+- Windows config location: `%APPDATA%\Claude\claude_desktop_config.json`
+- Mac config location: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+### Docker Desktop Requirements
+- Ensure WSL 2 (Windows Subsystem for Linux) is installed and enabled
+- Docker Desktop must be running before executing `docker compose` commands
+- Check Docker Desktop settings → Resources to ensure adequate memory allocation (4GB+ recommended)
