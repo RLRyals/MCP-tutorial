@@ -2,8 +2,16 @@
 
 This project demonstrates how to build Model Context Protocol (MCP) servers that connect Claude Desktop AI with a PostgreSQL database to help authors manage book series, characters, plots, timelines, and continuity across writing projects.
 
-## 📖 Interactive Tutorial Guide
+## 📖 Quick Start Guides
 
+### For Students (Using Pre-Built Distribution)
+**🐳 Docker MCP Toolkit** - [Complete Setup Guide](docs/DOCKER_MCP_SETUP.md)
+1. Install Docker Desktop 4.42+
+2. Run `.\student-install.ps1`
+3. Connect Claude Desktop
+4. Start writing!
+
+### For Developers (Building From Source)
 **[VS Code MCP Writing Tools Setup Guide](docs/vs_code_mcp_tutorial.html)** - Our comprehensive, interactive guide with step-by-step instructions, visual aids, code blocks, and troubleshooting tips.
 
 > **Start Here**: We recommend following the interactive guide above for the best learning experience. The README below provides only a high-level overview and reference.
@@ -21,11 +29,21 @@ This tutorial teaches you how to create specialized AI writing tools that allow 
 
 Each component is implemented as an MCP server that extends Claude Desktop's capabilities with database-backed tools.
 
-## Prerequisites
-- Node.js (Latest LTS version recommended)
-- Docker Desktop
-- Git
-- A code editor (VS Code recommended)
+## Installation Options
+
+### 🚀 Option 1: Docker MCP Toolkit (Recommended for Students)
+**Easiest installation - No Node.js required!**
+- Just Docker Desktop 4.42+ and Claude Desktop
+- One-click setup with pre-built images
+- Works identically on Windows, Mac, and Linux
+- [See Docker MCP Setup Guide](docs/DOCKER_MCP_SETUP.md)
+
+### 💻 Option 2: Traditional Development Setup
+**Best for learning how to build MCP servers**
+- Prerequisites: Node.js, Docker Desktop, Git, VS Code
+- Full source code access
+- Step-by-step tutorial experience
+- Continue with Quick Start below
 
 ## Platform-Specific Setup Guides
 - [Complete Mac Setup Guide](docs/COMPLETE_MAC_SETUP_GUIDE.md) - Comprehensive instructions for Mac users
@@ -250,6 +268,42 @@ echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/list"}' | node src/mcps/serie
 - **Timeline Management** - Series timeline tracking
 - **Metadata Management** - Flexible metadata storage
 
+## For Instructors: Building Student Distribution
+
+If you're an instructor wanting to distribute this to students:
+
+### Build Distribution Package
+```powershell
+# Switch to Docker MCP branch
+git checkout MCP_8_Docker
+
+# Build and package everything
+.\scripts\build-for-distribution.ps1
+```
+
+This creates a `distribution` folder containing:
+- Docker image (tar file, ~250MB)
+- Student installation script
+- Complete setup documentation
+- docker-compose configuration
+
+### Distribute to Students
+1. Upload `distribution` folder to your LMS/Google Drive
+2. Share with students
+3. Students run `student-install.ps1`
+4. Done! ✅
+
+**Benefits:**
+- No Node.js installation needed
+- No PATH configuration issues
+- Works identically on all platforms
+- Easy updates (just share new tar file)
+- Reduced support burden
+
+See [Docker MCP Setup Guide](docs/DOCKER_MCP_SETUP.md) for complete details.
+
+---
+
 ## Tutorial Steps
 
 The tutorial is organized into branches, each representing a different stage of development:
@@ -261,6 +315,7 @@ The tutorial is organized into branches, each representing a different stage of 
 5. `Step_4_MCP_research` - Research and continuity tracking
 6. `Step_5_MCP_writing` - Writing production management
 7. `Step_6_MCP_persona_voice` - AI personas and voice integration
+8. `MCP_8_Docker` - Docker MCP Toolkit distribution
 
 Each branch builds upon the previous one, gradually introducing new concepts and functionality.
 

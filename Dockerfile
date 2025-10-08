@@ -7,29 +7,34 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm install --production
 
-# Copy shared code
-COPY src/shared ./src/shared
+# Copy all source code
+COPY src/ ./src/
 
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+# Add labels for Docker MCP Toolkit discoverability
+LABEL com.docker.mcp.server="true"
+LABEL com.docker.mcp.version="1.0.0"
+LABEL com.docker.mcp.description="MCP Tutorial - AI Writing Tools for Authors"
+LABEL com.docker.mcp.transport="stdio"
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S mcp -u 1001 -G nodejs
 
 # Change ownership of the app directory
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+RUN chown -R mcp:nodejs /app
 
-# Expose port (will be set by environment variable)
-EXPOSE 3001
-EXPOSE 3002
-EXPOSE 3003
-EXPOSE 3004
-EXPOSE 3005
+# Switch to non-root user
+USER mcp
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${MCP_PORT}/health || exit 1
+# Environment variable to specify which MCP server to run
+# Options: author, series, book, character, timeline, metadata, trope, plot, relationship, story-analysis, world, writing
+ENV MCP_SERVER=author
 
-# Start the application
-CMD ["npm", "start"]
+# Set MCP stdio mode
+ENV MCP_STDIO_MODE=true
+
+# Default command - runs the specified MCP server in stdio mode
+# Docker MCP Toolkit will override this with the specific server
+CMD node src/mcps/${MCP_SERVER}-server/index.js
