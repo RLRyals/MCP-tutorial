@@ -63,55 +63,50 @@ Ask: "Can you list all authors?"
 
 ## Typing Mind
 
+> **Note:** Typing Mind setup requires Node.js and an auth token. See [TYPING_MIND_CORRECT_SETUP.md](docs/TYPING_MIND_CORRECT_SETUP.md) for full details.
+
+### Prerequisites
+
+1. Install Node.js from https://nodejs.org
+2. Get your Typing Mind auth token:
+   - Typing Mind → Settings → MCP Servers → Auth Token
+
 ### Mac
 
 ```bash
 cd path/to/distribution
 chmod +x setup-typing-mind.sh
-./setup-typing-mind.sh
+./setup-typing-mind.sh YOUR_AUTH_TOKEN
 ```
-
-The script will:
-- ✅ Start all MCP servers
-- ✅ Show you the 12 URLs
-- ✅ Copy URLs to clipboard
-
-Then in Typing Mind:
-1. Settings → MCP Servers
-2. Paste the 12 URLs
 
 ### Windows
 
 ```powershell
 cd path\to\distribution
-.\setup-typing-mind.ps1
+.\setup-typing-mind.ps1 -AuthToken YOUR_AUTH_TOKEN
 ```
 
-The script will:
-- ✅ Start all MCP servers
-- ✅ Show you the 12 URLs
-- ✅ Copy URLs to clipboard
+### What the script does:
 
-Then in Typing Mind:
-1. Settings → MCP Servers
-2. Paste the 12 URLs
+- ✅ Installs TypingMind MCP Connector
+- ✅ Starts all MCP servers
+- ✅ Shows connector command to run
+- ✅ Copies connector command to clipboard
 
-### URLs Reference
+### Next steps:
 
-```
-http://localhost:3501  (Author Manager)
-http://localhost:3502  (Series Manager)
-http://localhost:3503  (Book Manager)
-http://localhost:3504  (Character Manager)
-http://localhost:3505  (Timeline Manager)
-http://localhost:3506  (Metadata Manager)
-http://localhost:3507  (Trope Manager)
-http://localhost:3508  (Plot Manager)
-http://localhost:3509  (Relationship Manager)
-http://localhost:3510  (Story Analysis)
-http://localhost:3511  (World Builder)
-http://localhost:3512  (Writing Manager)
-```
+1. **Start connector** (in new terminal):
+   ```bash
+   npx @typingmind/mcp YOUR_TOKEN --config mcp-config.json
+   ```
+   (Keep this terminal running!)
+
+2. **Configure Typing Mind:**
+   - Settings → MCP Servers
+   - Add URL: `http://localhost:3000`
+
+3. **Test:**
+   Ask: "Can you list all authors?"
 
 ---
 
@@ -127,7 +122,8 @@ http://localhost:3512  (Writing Manager)
 → Completely quit and restart Claude Desktop
 
 ### "Can't connect in Typing Mind"
-→ Check: `docker compose -f docker-compose.typing-mind.yml ps`
+→ Make sure connector is running: `npx @typingmind/mcp YOUR_TOKEN --config mcp-config.json`
+→ Check Docker: `docker compose -f docker-compose.mcp.yml ps`
 
 ---
 
@@ -142,15 +138,25 @@ docker compose -f docker-compose.mcp.yml up -d
 
 **Typing Mind:**
 ```bash
-docker compose -f docker-compose.typing-mind.yml up -d
+# Start Docker containers
+docker compose -f docker-compose.mcp.yml up -d
+
+# Start connector (in separate terminal, keep running)
+npx @typingmind/mcp YOUR_TOKEN --config mcp-config.json
 ```
 
 ### Stop Services
 
+**Claude Desktop:**
 ```bash
 docker compose -f docker-compose.mcp.yml down
-# or
-docker compose -f docker-compose.typing-mind.yml down
+```
+
+**Typing Mind:**
+```bash
+# Stop connector (Ctrl+C in its terminal)
+# Then stop Docker
+docker compose -f docker-compose.mcp.yml down
 ```
 
 ---

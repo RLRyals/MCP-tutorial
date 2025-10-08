@@ -63,10 +63,13 @@ docker compose -f docker-compose.mcp.yml up -d
 
 > **Note:** Use the **stdio** compose file (docker-compose.mcp.yml), NOT the HTTP one!
 
-### 4. Create MCP Connector Config
+### 4. Use MCP Connector Config
 
-Create `mcp-config.json`:
+The distribution includes `mcp-config.json` which tells the connector how to connect to your Docker containers.
 
+**Config file location:** `mcp-config.json` (in the distribution folder)
+
+**Sample content:**
 ```json
 {
   "mcpServers": {

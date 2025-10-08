@@ -1,0 +1,124 @@
+{
+  "mcpServers": {
+    "author-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-author",
+        "node",
+        "src/mcps/author-server/index.js"
+      ]
+    },
+    "series-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-series",
+        "node",
+        "src/mcps/series-server/index.js"
+      ]
+    },
+    "book-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-book",
+        "node",
+        "src/mcps/book-server/index.js"
+      ]
+    },
+    "character-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-character",
+        "node",
+        "src/mcps/character-server/index.js"
+      ]
+    },
+    "timeline-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-timeline",
+        "node",
+        "src/mcps/timeline-server/index.js"
+      ]
+    },
+    "metadata-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-metadata",
+        "node",
+        "src/mcps/metadata-server/index.js"
+      ]
+    },
+    "trope-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-trope",
+        "node",
+        "src/mcps/trope-server/index.js"
+      ]
+    },
+    "plot-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-plot",
+        "node",
+        "src/mcps/plot-server/index.js"
+      ]
+    },
+    "relationship-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-relationship",
+        "node",
+        "src/mcps/relationship-server/index.js"
+      ]
+    },
+    "story-analysis": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-story-analysis",
+        "node",
+        "src/mcps/story-analysis-server/index.js"
+      ]
+    },
+    "world-builder": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-world",
+        "node",
+        "src/mcps/world-server/index.js"
+      ]
+    },
+    "writing-manager": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "mcp-tutorial-writing",
+        "node",
+        "src/mcps/writing-server/index.js"
+      ]
+    }
+  }
+}

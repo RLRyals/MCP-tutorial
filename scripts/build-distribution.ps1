@@ -74,6 +74,11 @@ Write-Host "`nCopying docker-compose file..." -ForegroundColor Yellow
 Copy-Item "docker-compose.mcp.yml" (Join-Path $OutputDir "docker-compose.mcp.yml") -Force
 Write-Host "Copied docker-compose.mcp.yml" -ForegroundColor Green
 
+# Copy mcp-config.json (for Typing Mind users)
+Write-Host "`nCopying mcp-config.json..." -ForegroundColor Yellow
+Copy-Item "mcp-config.json" (Join-Path $OutputDir "mcp-config.json") -Force
+Write-Host "Copied mcp-config.json (for Typing Mind)" -ForegroundColor Green
+
 # Create .env.example
 Write-Host "`nCreating .env.example..." -ForegroundColor Yellow
 $envContent = @"
@@ -106,6 +111,7 @@ $readmeContent = @"
 
 - mcp-tutorial-image.tar - Docker image with all MCP servers (~250MB)
 - docker-compose.mcp.yml - Service configuration
+- mcp-config.json - MCP Connector config (for Typing Mind users)
 - .env.example - Environment template
 - student-install.ps1 - Windows installer
 - student-install.sh - Mac/Linux installer

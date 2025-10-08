@@ -1,7 +1,10 @@
 # setup-typing-mind.ps1
-# Simplified Typing Mind setup for MCP Tutorial
+# Typing Mind setup with MCP Connector for MCP Tutorial
 
 param(
+    [Parameter(Mandatory=$true)]
+    [string]$AuthToken,
+
     [switch]$Help
 )
 
@@ -9,25 +12,49 @@ if ($Help) {
     Write-Host @"
 Typing Mind Setup for MCP Tutorial
 
-This script starts the MCP servers in HTTP mode and shows you
-the URLs to add in Typing Mind.
+This script sets up Typing Mind with the MCP Connector.
+
+PREREQUISITES:
+    - Node.js installed (https://nodejs.org)
+    - Typing Mind auth token (get from Typing Mind settings)
 
 USAGE:
-    .\setup-typing-mind.ps1
+    .\setup-typing-mind.ps1 -AuthToken YOUR_TOKEN
 
 WHAT THIS DOES:
-    1. Checks Docker is running
-    2. Starts MCP servers in HTTP mode (ports 3501-3512)
-    3. Shows you the URLs to copy into Typing Mind
-    4. Opens Typing Mind settings (if possible)
+    1. Installs @typingmind/mcp connector globally
+    2. Starts Docker containers in stdio mode
+    3. Starts the MCP Connector with your auth token
+    4. Shows you how to configure Typing Mind
+
+MORE INFO:
+    See docs/TYPING_MIND_CORRECT_SETUP.md
 "@
     exit 0
+}
+
+if (-not $AuthToken) {
+    Write-Host "ERROR: Auth token required" -ForegroundColor Red
+    Write-Host "Get your token from: Typing Mind → Settings → MCP Servers → Auth Token" -ForegroundColor Yellow
+    Write-Host "Usage: .\setup-typing-mind.ps1 -AuthToken YOUR_TOKEN" -ForegroundColor Yellow
+    exit 1
 }
 
 $ErrorActionPreference = "Stop"
 
 Write-Host "`n=== Typing Mind Setup ===" -ForegroundColor Cyan
 Write-Host ""
+
+# Check Node.js
+Write-Host "Checking Node.js..." -ForegroundColor Yellow
+try {
+    $nodeVersion = node --version 2>$null
+    Write-Host "Node.js $nodeVersion installed" -ForegroundColor Green
+} catch {
+    Write-Host "ERROR: Node.js not found" -ForegroundColor Red
+    Write-Host "Install from: https://nodejs.org" -ForegroundColor Yellow
+    exit 1
+}
 
 # Check Docker
 Write-Host "Checking Docker..." -ForegroundColor Yellow
@@ -40,6 +67,15 @@ try {
     exit 1
 }
 
+# Install TypingMind MCP Connector
+Write-Host "`nInstalling TypingMind MCP Connector..." -ForegroundColor Yellow
+npm install -g @typingmind/mcp
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Failed to install connector" -ForegroundColor Red
+    exit 1
+}
+Write-Host "Connector installed" -ForegroundColor Green
+
 # Check for image
 Write-Host "`nChecking for MCP Tutorial image..." -ForegroundColor Yellow
 $imageExists = docker images mcp-tutorial:latest --format "{{.Repository}}" 2>$null
@@ -50,9 +86,9 @@ if (-not $imageExists) {
 }
 Write-Host "Image found" -ForegroundColor Green
 
-# Start HTTP servers
-Write-Host "`nStarting MCP servers in HTTP mode..." -ForegroundColor Yellow
-docker compose -f docker-compose.typing-mind.yml up -d
+# Start Docker containers (stdio mode)
+Write-Host "`nStarting MCP servers..." -ForegroundColor Yellow
+docker compose -f docker-compose.mcp.yml up -d
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to start services" -ForegroundColor Red
     exit 1
@@ -60,89 +96,51 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "Waiting for services to start..." -ForegroundColor Gray
 Start-Sleep -Seconds 10
-
 Write-Host "Services started!" -ForegroundColor Green
 
-# Test one endpoint
-Write-Host "`nTesting connection..." -ForegroundColor Yellow
-try {
-    $response = Invoke-WebRequest -Uri "http://localhost:3501/health" -UseBasicParsing -TimeoutSec 5 2>$null
-    Write-Host "Services are responding" -ForegroundColor Green
-} catch {
-    Write-Host "WARNING: Services may still be starting up" -ForegroundColor Yellow
-}
-
-# Show configuration
+# Show instructions
 Write-Host "`n" -NoNewline
-Write-Host "=======================" -ForegroundColor Cyan
-Write-Host "  Typing Mind Setup  " -ForegroundColor Cyan
-Write-Host "=======================" -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host "  Next Steps - Keep This Open  " -ForegroundColor Cyan
+Write-Host "================================" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "STEP 1: Open Typing Mind" -ForegroundColor Yellow
-Write-Host "  Go to: https://www.typingmind.com/" -ForegroundColor White
+Write-Host "STEP 1: Start the MCP Connector (in a NEW terminal):" -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  npx @typingmind/mcp $AuthToken --config mcp-config.json" -ForegroundColor White
+Write-Host ""
+Write-Host "  (Keep that terminal running!)" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host "STEP 2: Go to Settings → MCP Servers" -ForegroundColor Yellow
+Write-Host "STEP 2: Configure Typing Mind:" -ForegroundColor Yellow
+Write-Host "  1. Open Typing Mind settings" -ForegroundColor White
+Write-Host "  2. Go to: MCP Servers" -ForegroundColor White
+Write-Host "  3. Add this URL: " -NoNewline -ForegroundColor White
+Write-Host "http://localhost:3000" -ForegroundColor Cyan
 Write-Host ""
 
-Write-Host "STEP 3: Add these servers (copy-paste the URLs):" -ForegroundColor Yellow
-Write-Host ""
-
-# Create a nice table
-$servers = @(
-    @{Name="Author Manager"; Port=3501}
-    @{Name="Series Manager"; Port=3502}
-    @{Name="Book Manager"; Port=3503}
-    @{Name="Character Manager"; Port=3504}
-    @{Name="Timeline Manager"; Port=3505}
-    @{Name="Metadata Manager"; Port=3506}
-    @{Name="Trope Manager"; Port=3507}
-    @{Name="Plot Manager"; Port=3508}
-    @{Name="Relationship Manager"; Port=3509}
-    @{Name="Story Analysis"; Port=3510}
-    @{Name="World Builder"; Port=3511}
-    @{Name="Writing Manager"; Port=3512}
-)
-
-foreach ($server in $servers) {
-    $name = $server.Name.PadRight(22)
-    $url = "http://localhost:$($server.Port)"
-    Write-Host "  $name" -NoNewline -ForegroundColor Cyan
-    Write-Host " $url" -ForegroundColor White
-}
-
-Write-Host ""
-Write-Host "STEP 4: Test it!" -ForegroundColor Yellow
+Write-Host "STEP 3: Test it!" -ForegroundColor Yellow
 Write-Host "  Ask in Typing Mind: 'Can you list all authors?'" -ForegroundColor White
 Write-Host ""
 
-# Offer to copy URLs to clipboard
+Write-Host "================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Copy connector command to clipboard
+$connectorCommand = "npx @typingmind/mcp $AuthToken --config mcp-config.json"
+$connectorCommand | Set-Clipboard
+Write-Host "✓ Connector command copied to clipboard!" -ForegroundColor Green
+Write-Host ""
+
 Write-Host "Helpful Commands:" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Copy ALL URLs at once:" -ForegroundColor Yellow
-Write-Host @'
-  $urls = 3501..3512 | ForEach-Object { "http://localhost:$_" }
-  $urls -join "`n" | Set-Clipboard
-  Write-Host "URLs copied to clipboard!"
-'@ -ForegroundColor Gray
-
+Write-Host "View MCP server logs:" -ForegroundColor Yellow
+Write-Host "  docker compose -f docker-compose.mcp.yml logs -f" -ForegroundColor Gray
 Write-Host ""
-Write-Host "View server logs:" -ForegroundColor Yellow
-Write-Host "  docker compose -f docker-compose.typing-mind.yml logs -f" -ForegroundColor Gray
-
-Write-Host ""
-Write-Host "Stop servers when done:" -ForegroundColor Yellow
-Write-Host "  docker compose -f docker-compose.typing-mind.yml down" -ForegroundColor Gray
-
-Write-Host ""
-Write-Host "Done! 🎉" -ForegroundColor Green
+Write-Host "Stop everything:" -ForegroundColor Yellow
+Write-Host "  1. Stop connector (Ctrl+C in its terminal)" -ForegroundColor Gray
+Write-Host "  2. docker compose -f docker-compose.mcp.yml down" -ForegroundColor Gray
 Write-Host ""
 
-# Ask if they want URLs copied
-$response = Read-Host "Copy all URLs to clipboard now? (y/n)"
-if ($response -eq "y" -or $response -eq "Y") {
-    $urls = 3501..3512 | ForEach-Object { "http://localhost:$_" }
-    $urls -join "`n" | Set-Clipboard
-    Write-Host "`nURLs copied! Paste into Typing Mind." -ForegroundColor Green
-}
+Write-Host "Done! Now run the connector command in a new terminal. 🎉" -ForegroundColor Green
+Write-Host ""

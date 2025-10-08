@@ -1,6 +1,6 @@
 #!/bin/bash
 # setup-typing-mind.sh
-# Simplified Typing Mind setup for MCP Tutorial
+# Typing Mind setup with MCP Connector for MCP Tutorial
 
 set -e
 
@@ -17,16 +17,23 @@ show_help() {
     cat << EOF
 Typing Mind Setup for MCP Tutorial
 
-This script starts the MCP servers in HTTP mode and shows you
-the URLs to add in Typing Mind.
+This script sets up Typing Mind with the MCP Connector.
+
+PREREQUISITES:
+    - Node.js installed (https://nodejs.org)
+    - Typing Mind auth token (get from Typing Mind settings)
 
 USAGE:
-    ./setup-typing-mind.sh
+    ./setup-typing-mind.sh YOUR_AUTH_TOKEN
 
 WHAT THIS DOES:
-    1. Checks Docker is running
-    2. Starts MCP servers in HTTP mode (ports 3501-3512)
-    3. Shows you the URLs to copy into Typing Mind
+    1. Installs @typingmind/mcp connector globally
+    2. Starts Docker containers in stdio mode
+    3. Shows you how to start the MCP Connector
+    4. Shows you how to configure Typing Mind
+
+MORE INFO:
+    See docs/TYPING_MIND_CORRECT_SETUP.md
 EOF
     exit 0
 }
@@ -35,7 +42,26 @@ if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     show_help
 fi
 
+if [[ -z "$1" ]]; then
+    echo -e "${RED}ERROR: Auth token required${NC}"
+    echo -e "${YELLOW}Get your token from: Typing Mind → Settings → MCP Servers → Auth Token${NC}"
+    echo -e "${YELLOW}Usage: ./setup-typing-mind.sh YOUR_AUTH_TOKEN${NC}"
+    exit 1
+fi
+
+AUTH_TOKEN="$1"
+
 echo -e "${CYAN}\n=== Typing Mind Setup ===${NC}\n"
+
+# Check Node.js
+echo -e "${YELLOW}Checking Node.js...${NC}"
+if ! command -v node &>/dev/null; then
+    echo -e "${RED}ERROR: Node.js not found${NC}"
+    echo -e "${YELLOW}Install from: https://nodejs.org${NC}"
+    exit 1
+fi
+NODE_VERSION=$(node --version)
+echo -e "${GREEN}Node.js $NODE_VERSION installed${NC}"
 
 # Check Docker
 echo -e "${YELLOW}Checking Docker...${NC}"
@@ -46,6 +72,14 @@ if ! docker info &>/dev/null; then
 fi
 echo -e "${GREEN}Docker is running${NC}"
 
+# Install TypingMind MCP Connector
+echo -e "\n${YELLOW}Installing TypingMind MCP Connector...${NC}"
+if ! npm install -g @typingmind/mcp; then
+    echo -e "${RED}ERROR: Failed to install connector${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Connector installed${NC}"
+
 # Check for image
 echo -e "\n${YELLOW}Checking for MCP Tutorial image...${NC}"
 if ! docker images mcp-tutorial:latest --format "{{.Repository}}" 2>/dev/null | grep -q mcp-tutorial; then
@@ -55,75 +89,53 @@ if ! docker images mcp-tutorial:latest --format "{{.Repository}}" 2>/dev/null | 
 fi
 echo -e "${GREEN}Image found${NC}"
 
-# Start HTTP servers
-echo -e "\n${YELLOW}Starting MCP servers in HTTP mode...${NC}"
-if ! docker compose -f docker-compose.typing-mind.yml up -d; then
+# Start Docker containers (stdio mode)
+echo -e "\n${YELLOW}Starting MCP servers...${NC}"
+if ! docker compose -f docker-compose.mcp.yml up -d; then
     echo -e "${RED}ERROR: Failed to start services${NC}"
     exit 1
 fi
 
 echo -e "${GRAY}Waiting for services to start...${NC}"
 sleep 10
-
 echo -e "${GREEN}Services started!${NC}"
 
-# Test one endpoint
-echo -e "\n${YELLOW}Testing connection...${NC}"
-if curl -s -f http://localhost:3501/health &>/dev/null; then
-    echo -e "${GREEN}Services are responding${NC}"
-else
-    echo -e "${YELLOW}WARNING: Services may still be starting up${NC}"
-fi
+# Show instructions
+echo -e "\n${CYAN}================================${NC}"
+echo -e "${CYAN}  Next Steps - Keep This Open  ${NC}"
+echo -e "${CYAN}================================${NC}\n"
 
-# Show configuration
-echo -e "\n${CYAN}=======================${NC}"
-echo -e "${CYAN}  Typing Mind Setup  ${NC}"
-echo -e "${CYAN}=======================${NC}\n"
+echo -e "${YELLOW}STEP 1: Start the MCP Connector (in a NEW terminal):${NC}\n"
+echo -e "${WHITE}  npx @typingmind/mcp $AUTH_TOKEN --config mcp-config.json${NC}\n"
+echo -e "${GRAY}  (Keep that terminal running!)${NC}\n"
 
-echo -e "${YELLOW}STEP 1: Open Typing Mind${NC}"
-echo -e "${WHITE}  Go to: https://www.typingmind.com/${NC}\n"
+echo -e "${YELLOW}STEP 2: Configure Typing Mind:${NC}"
+echo -e "${WHITE}  1. Open Typing Mind settings${NC}"
+echo -e "${WHITE}  2. Go to: MCP Servers${NC}"
+echo -e "${WHITE}  3. Add this URL: ${NC}${CYAN}http://localhost:3000${NC}\n"
 
-echo -e "${YELLOW}STEP 2: Go to Settings → MCP Servers${NC}\n"
-
-echo -e "${YELLOW}STEP 3: Add these servers (copy-paste the URLs):${NC}\n"
-
-# Show servers
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Author Manager" "http://localhost:3501"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Series Manager" "http://localhost:3502"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Book Manager" "http://localhost:3503"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Character Manager" "http://localhost:3504"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Timeline Manager" "http://localhost:3505"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Metadata Manager" "http://localhost:3506"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Trope Manager" "http://localhost:3507"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Plot Manager" "http://localhost:3508"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Relationship Manager" "http://localhost:3509"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Story Analysis" "http://localhost:3510"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "World Builder" "http://localhost:3511"
-printf "${CYAN}  %-22s${NC} ${WHITE}%s${NC}\n" "Writing Manager" "http://localhost:3512"
-
-echo -e "\n${YELLOW}STEP 4: Test it!${NC}"
+echo -e "${YELLOW}STEP 3: Test it!${NC}"
 echo -e "${WHITE}  Ask in Typing Mind: 'Can you list all authors?'${NC}\n"
+
+echo -e "${CYAN}================================${NC}\n"
+
+# Copy connector command to clipboard (Mac only)
+CONNECTOR_CMD="npx @typingmind/mcp $AUTH_TOKEN --config mcp-config.json"
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "$CONNECTOR_CMD" | pbcopy
+    echo -e "${GREEN}✓ Connector command copied to clipboard!${NC}\n"
+elif command -v xclip &>/dev/null; then
+    echo "$CONNECTOR_CMD" | xclip -selection clipboard
+    echo -e "${GREEN}✓ Connector command copied to clipboard!${NC}\n"
+fi
 
 echo -e "${CYAN}Helpful Commands:${NC}\n"
 
-echo -e "${YELLOW}Copy ALL URLs at once (Mac):${NC}"
-echo -e "${GRAY}  for port in {3501..3512}; do echo \"http://localhost:\$port\"; done | pbcopy${NC}"
-echo -e "${GRAY}  echo \"URLs copied to clipboard!\"${NC}\n"
+echo -e "${YELLOW}View MCP server logs:${NC}"
+echo -e "${GRAY}  docker compose -f docker-compose.mcp.yml logs -f${NC}\n"
 
-echo -e "${YELLOW}View server logs:${NC}"
-echo -e "${GRAY}  docker compose -f docker-compose.typing-mind.yml logs -f${NC}\n"
+echo -e "${YELLOW}Stop everything:${NC}"
+echo -e "${GRAY}  1. Stop connector (Ctrl+C in its terminal)${NC}"
+echo -e "${GRAY}  2. docker compose -f docker-compose.mcp.yml down${NC}\n"
 
-echo -e "${YELLOW}Stop servers when done:${NC}"
-echo -e "${GRAY}  docker compose -f docker-compose.typing-mind.yml down${NC}\n"
-
-echo -e "${GREEN}Done! 🎉${NC}\n"
-
-# Ask if they want URLs copied (Mac only)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    read -p "Copy all URLs to clipboard now? (y/n) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        for port in {3501..3512}; do echo "http://localhost:$port"; done | pbcopy
-        echo -e "\n${GREEN}URLs copied! Paste into Typing Mind.${NC}\n"
-    fi
-fi
+echo -e "${GREEN}Done! Now run the connector command in a new terminal. 🎉${NC}\n"
