@@ -1,5 +1,5 @@
-# student-install-simple.ps1
-# Simplified installation script for MCP Tutorial students
+# student-install.ps1
+# Automated installation script for MCP Tutorial students
 
 param(
     [switch]$SkipDocker,
@@ -8,117 +8,162 @@ param(
 
 if ($Help) {
     Write-Host @"
-MCP Tutorial - Student Installation
+MCP Tutorial - Student Installation Script
+
+This script automates the setup of the MCP Tutorial environment.
 
 USAGE:
-    .\student-install.ps1 [-SkipDocker]
+    .\scripts\student-install.ps1 [OPTIONS]
 
 OPTIONS:
     -SkipDocker    Skip Docker checks and image loading
-    -Help          Show this help
+    -Help          Show this help message
 
-WHAT THIS DOES:
+EXAMPLES:
+    # Full automated installation
+    .\student-install.ps1
+
+    # Skip Docker setup (if already loaded)
+    .\student-install.ps1 -SkipDocker
+
+WHAT THIS SCRIPT DOES:
     1. Checks Docker Desktop is running
     2. Loads the MCP Tutorial Docker image
-    3. Creates .env file
+    3. Creates .env file from template
     4. Starts all services
-    5. Helps configure Claude Desktop
+    5. Runs database migrations
+    6. Offers to configure Claude Desktop
+
 "@
     exit 0
 }
 
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n=== MCP Tutorial - Student Installation ===" -ForegroundColor Cyan
-Write-Host ""
+# Colors for output
+function Write-Success { Write-Host $args -ForegroundColor Green }
+function Write-Info { Write-Host $args -ForegroundColor Cyan }
+function Write-Warning { Write-Host $args -ForegroundColor Yellow }
+function Write-Error { Write-Host $args -ForegroundColor Red }
+function Write-Step {
+    param([string]$Step, [string]$Message)
+    Write-Host "`n[$Step] " -ForegroundColor Yellow -NoNewline
+    Write-Host $Message -ForegroundColor White
+}
 
-# Step 1: Check Docker
-if (-not $SkipDocker) {
-    Write-Host "[1/6] Checking Docker Desktop..." -ForegroundColor Yellow
+Write-Info @"
+
+╔════════════════════════════════════════╗
+║  MCP Tutorial - Student Installation  ║
+╔════════════════════════════════════════╝
+
+"@
+
+# Step 1: Check Docker Desktop
+if (!$SkipDocker) {
+    Write-Step "1/6" "Checking Docker Desktop..."
 
     try {
-        docker info | Out-Null
-        Write-Host "Docker Desktop is running" -ForegroundColor Green
+        $dockerInfo = docker info 2>&1
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "✗ Docker Desktop is not running"
+            Write-Warning "`nPlease:"
+            Write-Warning "1. Start Docker Desktop"
+            Write-Warning "2. Wait for it to fully start (icon should be green)"
+            Write-Warning "3. Run this script again"
+            exit 1
+        }
+        Write-Success "✓ Docker Desktop is running"
+
+        # Check Docker version
+        $version = docker version --format '{{.Server.Version}}' 2>&1
+        Write-Info "  Docker version: $version"
+
     } catch {
-        Write-Host "ERROR: Docker Desktop is not running" -ForegroundColor Red
-        Write-Host "`nPlease:" -ForegroundColor Yellow
-        Write-Host "1. Start Docker Desktop" -ForegroundColor White
-        Write-Host "2. Wait for it to fully start (green icon)" -ForegroundColor White
-        Write-Host "3. Run this script again" -ForegroundColor White
+        Write-Error "✗ Error checking Docker: $_"
         exit 1
     }
-
-    $version = docker version --format '{{.Server.Version}}' 2>$null
-    Write-Host "Docker version: $version" -ForegroundColor Gray
 
     # Step 2: Load Docker image
-    Write-Host "`n[2/6] Loading MCP Tutorial Docker image..." -ForegroundColor Yellow
+    Write-Step "2/6" "Loading MCP Tutorial Docker image..."
 
     $imagePath = "mcp-tutorial-image.tar"
-    if (-not (Test-Path $imagePath)) {
-        Write-Host "ERROR: Image file not found: $imagePath" -ForegroundColor Red
-        Write-Host "Make sure you're running this from the distribution folder" -ForegroundColor Yellow
+    if (!(Test-Path $imagePath)) {
+        Write-Error "✗ Image file not found: $imagePath"
+        Write-Warning "`nMake sure you're running this script from the distribution folder"
+        Write-Warning "The folder should contain: mcp-tutorial-image.tar"
         exit 1
     }
 
-    Write-Host "Loading image (this may take 1-2 minutes)..." -ForegroundColor Gray
-    docker load -i $imagePath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Failed to load Docker image" -ForegroundColor Red
+    Write-Info "  Loading image (this may take 1-2 minutes)..."
+    try {
+        docker load -i $imagePath
+        if ($LASTEXITCODE -ne 0) {
+            Write-Error "✗ Failed to load Docker image"
+            exit 1
+        }
+        Write-Success "✓ Docker image loaded successfully"
+    } catch {
+        Write-Error "✗ Error loading image: $_"
         exit 1
     }
-    Write-Host "Docker image loaded successfully" -ForegroundColor Green
 
-    # Verify
-    $imageCheck = docker images mcp-tutorial --format "{{.Repository}}:{{.Tag}}" 2>$null | Select-Object -First 1
-    if ($imageCheck) {
-        Write-Host "Image verified: $imageCheck" -ForegroundColor Green
+    # Verify image
+    $imageCheck = docker images mcp-tutorial --format "{{.Repository}}:{{.Tag}}" 2>&1
+    if ($imageCheck -match "mcp-tutorial") {
+        Write-Success "✓ Image verified: $imageCheck"
+    } else {
+        Write-Warning "⚠ Could not verify image, but continuing..."
     }
 } else {
-    Write-Host "Skipping Docker checks (as requested)" -ForegroundColor Yellow
+    Write-Warning "Skipping Docker checks (as requested)"
 }
 
 # Step 3: Create .env file
-Write-Host "`n[3/6] Setting up environment..." -ForegroundColor Yellow
+Write-Step "3/6" "Setting up environment configuration..."
 
-if (-not (Test-Path ".env")) {
+if (!(Test-Path ".env")) {
     if (Test-Path ".env.example") {
         Copy-Item ".env.example" ".env"
-        Write-Host "Created .env from template" -ForegroundColor Green
+        Write-Success "✓ Created .env from template"
     } else {
-        $envContent = @"
+        # Create a basic .env if example doesn't exist
+        @"
 POSTGRES_DB=book_series_db
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 NODE_ENV=production
-"@
-        $envContent | Out-File ".env" -Encoding UTF8
-        Write-Host "Created default .env file" -ForegroundColor Green
+"@ | Out-File ".env" -Encoding UTF8
+        Write-Success "✓ Created default .env file"
     }
 } else {
-    Write-Host ".env file already exists (keeping existing)" -ForegroundColor Gray
+    Write-Info "  .env file already exists (keeping existing configuration)"
 }
 
 # Step 4: Start services
-Write-Host "`n[4/6] Starting MCP Tutorial services..." -ForegroundColor Yellow
+Write-Step "4/6" "Starting MCP Tutorial services..."
 
-Write-Host "Starting database and MCP servers..." -ForegroundColor Gray
-docker compose -f docker-compose.mcp.yml up -d
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to start services" -ForegroundColor Red
+Write-Info "  Starting database and MCP servers..."
+try {
+    docker-compose -f docker-compose.mcp.yml up -d
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "✗ Failed to start services"
+        exit 1
+    }
+    Write-Success "✓ Services started"
+} catch {
+    Write-Error "✗ Error starting services: $_"
     exit 1
 }
-Write-Host "Services started" -ForegroundColor Green
 
-# Wait for database
-Write-Host "`nWaiting for database to be ready..." -ForegroundColor Gray
+# Wait for database to be ready
+Write-Info "  Waiting for database to be ready..."
 $maxWait = 30
 $waited = 0
-
 while ($waited -lt $maxWait) {
-    $dbReady = docker exec mcp-tutorial-db pg_isready -U postgres 2>$null
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "Database is ready" -ForegroundColor Green
+    $dbStatus = docker-compose -f docker-compose.mcp.yml ps postgres --format json 2>&1 | ConvertFrom-Json
+    if ($dbStatus.Health -eq "healthy") {
+        Write-Success "✓ Database is ready"
         break
     }
     Start-Sleep -Seconds 2
@@ -127,20 +172,24 @@ while ($waited -lt $maxWait) {
 }
 
 if ($waited -ge $maxWait) {
-    Write-Host "`nWARNING: Database may not be fully ready" -ForegroundColor Yellow
-    Write-Host "Check logs: docker compose -f docker-compose.mcp.yml logs postgres" -ForegroundColor Gray
+    Write-Warning "`n⚠ Database may not be fully ready yet. Check with: docker-compose -f docker-compose.mcp.yml logs postgres"
 }
 
 # Step 5: Show running services
-Write-Host "`n[5/6] Verifying services..." -ForegroundColor Yellow
+Write-Step "5/6" "Verifying services..."
 
-docker compose -f docker-compose.mcp.yml ps
-Write-Host "`nAll services are running" -ForegroundColor Green
+try {
+    $services = docker-compose -f docker-compose.mcp.yml ps --format "table {{.Name}}\t{{.Status}}"
+    Write-Info "`n$services`n"
+    Write-Success "✓ All services are running"
+} catch {
+    Write-Warning "⚠ Could not verify services status"
+}
 
 # Step 6: Configure Claude Desktop
-Write-Host "`n[6/6] Claude Desktop configuration..." -ForegroundColor Yellow
+Write-Step "6/6" "Claude Desktop configuration..."
 
-Write-Host @"
+Write-Info @"
 
 You have two options to connect Claude Desktop:
 
@@ -153,17 +202,18 @@ OPTION A - Docker Desktop UI (Recommended):
 
 OPTION B - Manual Configuration:
   Edit your Claude Desktop config file and add the MCP servers.
-  Location:
-    Windows: %APPDATA%\Claude\claude_desktop_config.json
-    macOS: ~/Library/Application Support/Claude/claude_desktop_config.json
 
-"@ -ForegroundColor Cyan
+"@
 
-$response = Read-Host "`nWould you like help with manual configuration? (y/n)"
+$response = Read-Host "Would you like help with manual configuration? (y/n)"
 
 if ($response -eq "y" -or $response -eq "Y") {
-    Write-Host "`nSample configuration to add to your claude_desktop_config.json:" -ForegroundColor Cyan
-    Write-Host @'
+    Write-Info "`nClaude Desktop config file locations:"
+    Write-Info "  Windows: %APPDATA%\Claude\claude_desktop_config.json"
+    Write-Info "  macOS: ~/Library/Application Support/Claude/claude_desktop_config.json"
+
+    Write-Info "`nSample configuration (copy this into your config file):"
+    Write-Host @"
 
 {
   "mcpServers": {
@@ -186,25 +236,30 @@ if ($response -eq "y" -or $response -eq "Y") {
   }
 }
 
-'@ -ForegroundColor Gray
+"@ -ForegroundColor Gray
 
-    Write-Host "`nAdd more servers as needed following the same pattern." -ForegroundColor Gray
+    Write-Info "`nAdd more servers as needed following the same pattern."
 }
 
 # Final summary
-Write-Host "`n=== Installation Complete ===" -ForegroundColor Green
-Write-Host ""
+Write-Success @"
 
-Write-Host "Next Steps:" -ForegroundColor Cyan
-Write-Host "1. Configure Claude Desktop (see options above)" -ForegroundColor White
-Write-Host "2. Restart Claude Desktop completely" -ForegroundColor White
-Write-Host "3. Look for the hammer icon in Claude Desktop" -ForegroundColor White
-Write-Host "4. Try: 'Can you list all authors?'" -ForegroundColor White
+╔═══════════════════════════════════════╗
+║     Installation Complete! 🎉         ║
+╚═══════════════════════════════════════╝
 
-Write-Host "`nUseful Commands:" -ForegroundColor Cyan
-Write-Host "  View logs:     docker compose -f docker-compose.mcp.yml logs -f" -ForegroundColor Gray
-Write-Host "  Stop services: docker compose -f docker-compose.mcp.yml down" -ForegroundColor Gray
-Write-Host "  Restart:       docker compose -f docker-compose.mcp.yml restart" -ForegroundColor Gray
+"@
 
-Write-Host "`nHappy writing!" -ForegroundColor Green
-Write-Host ""
+Write-Info "Next Steps:"
+Write-Info "1. Configure Claude Desktop (see options above)"
+Write-Info "2. Restart Claude Desktop completely"
+Write-Info "3. Look for the 🔨 tool icon in Claude Desktop"
+Write-Info "4. Try: 'Can you list all authors?'"
+
+Write-Info "`nUseful Commands:"
+Write-Info "  View logs:     docker-compose -f docker-compose.mcp.yml logs -f"
+Write-Info "  Stop services: docker-compose -f docker-compose.mcp.yml down"
+Write-Info "  Restart:       docker-compose -f docker-compose.mcp.yml restart"
+
+Write-Info "`nFor troubleshooting, see: student-setup-instructions.md"
+Write-Success "`nHappy writing! 📚✨`n"

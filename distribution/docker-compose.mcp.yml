@@ -58,7 +58,7 @@ services:
     environment:
       MCP_SERVER: author
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -76,7 +76,7 @@ services:
     environment:
       MCP_SERVER: series
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -94,7 +94,7 @@ services:
     environment:
       MCP_SERVER: book
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -112,7 +112,7 @@ services:
     environment:
       MCP_SERVER: character
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -130,7 +130,7 @@ services:
     environment:
       MCP_SERVER: timeline
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -148,7 +148,7 @@ services:
     environment:
       MCP_SERVER: metadata
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -166,7 +166,7 @@ services:
     environment:
       MCP_SERVER: trope
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -184,7 +184,7 @@ services:
     environment:
       MCP_SERVER: plot
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -202,7 +202,7 @@ services:
     environment:
       MCP_SERVER: relationship
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -220,7 +220,7 @@ services:
     environment:
       MCP_SERVER: story-analysis
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -238,7 +238,7 @@ services:
     environment:
       MCP_SERVER: world
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
@@ -256,7 +256,7 @@ services:
     environment:
       MCP_SERVER: writing
       MCP_STDIO_MODE: "true"
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}?sslmode=disable
       NODE_ENV: ${NODE_ENV:-production}
     networks:
       - mcp-tutorial-network
