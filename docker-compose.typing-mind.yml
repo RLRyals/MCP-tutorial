@@ -1,0 +1,331 @@
+# Docker Compose configuration for MCP Tutorial with Typing Mind
+# This file configures MCP servers to run in HTTP mode for Typing Mind integration
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: mcp-tutorial-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-book_series_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c max_connections=100"
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=16MB"
+    volumes:
+      - mcp_tutorial_db:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"  # Bind to localhost only for security
+    networks:
+      - mcp-tutorial-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-book_series_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Author MCP Server - HTTP Mode
+  mcp-author-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-author-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3501:3501"  # Bind to localhost only
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/author-server/index.js", "--http", "--port", "3501"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3501/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Series MCP Server - HTTP Mode
+  mcp-series-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-series-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3502:3502"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/series-server/index.js", "--http", "--port", "3502"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3502/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Book MCP Server - HTTP Mode
+  mcp-book-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-book-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3503:3503"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/book-server/index.js", "--http", "--port", "3503"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3503/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Character MCP Server - HTTP Mode
+  mcp-character-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-character-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3504:3504"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/character-server/index.js", "--http", "--port", "3504"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3504/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Timeline MCP Server - HTTP Mode
+  mcp-timeline-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-timeline-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3505:3505"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/timeline-server/index.js", "--http", "--port", "3505"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3505/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Metadata MCP Server - HTTP Mode
+  mcp-metadata-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-metadata-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3506:3506"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/metadata-server/index.js", "--http", "--port", "3506"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3506/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Trope MCP Server - HTTP Mode
+  mcp-trope-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-trope-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3507:3507"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/trope-server/index.js", "--http", "--port", "3507"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3507/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Plot MCP Server - HTTP Mode
+  mcp-plot-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-plot-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3508:3508"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/plot-server/index.js", "--http", "--port", "3508"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3508/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Relationship MCP Server - HTTP Mode
+  mcp-relationship-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-relationship-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3509:3509"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/relationship-server/index.js", "--http", "--port", "3509"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3509/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Story Analysis MCP Server - HTTP Mode
+  mcp-story-analysis-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-story-analysis-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3510:3510"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/story-analysis-server/index.js", "--http", "--port", "3510"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3510/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # World MCP Server - HTTP Mode
+  mcp-world-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-world-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3511:3511"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/world-server/index.js", "--http", "--port", "3511"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3511/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  # Writing MCP Server - HTTP Mode
+  mcp-writing-http:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-writing-http
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+      MCP_HTTP_MODE: "true"
+    ports:
+      - "127.0.0.1:3512:3512"
+    networks:
+      - mcp-tutorial-network
+    command: ["node", "src/mcps/writing-server/index.js", "--http", "--port", "3512"]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3512/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+networks:
+  mcp-tutorial-network:
+    name: mcp-tutorial-network
+    driver: bridge
+
+volumes:
+  mcp_tutorial_db:
+    name: mcp-tutorial-db-data
