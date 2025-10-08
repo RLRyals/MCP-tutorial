@@ -8,6 +8,39 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Performance tuning: Optimize PostgreSQL settings
+      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c max_connections=100"
+    command:
+      # Additional performance settings for all systems
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"           # Better memory usage
+      - "-c"
+      - "effective_cache_size=1GB"       # Query planner optimization
+      - "-c"
+      - "maintenance_work_mem=128MB"     # Faster VACUUM and CREATE INDEX
+      - "-c"
+      - "checkpoint_completion_target=0.9" # Spread out checkpoint I/O
+      - "-c"
+      - "wal_buffers=16MB"               # Better write performance
+      - "-c"
+      - "default_statistics_target=100"  # Better query plans
+      - "-c"
+      - "random_page_cost=1.1"           # Optimized for SSD (most modern systems)
+      - "-c"
+      - "effective_io_concurrency=200"   # Better parallel I/O for SSD
+      - "-c"
+      - "work_mem=16MB"                  # Memory for sorting/hashing
+      - "-c"
+      - "min_wal_size=1GB"               # Reduce checkpoint frequency
+      - "-c"
+      - "max_wal_size=4GB"               # Allow larger WAL for batch operations
+      - "-c"
+      - "max_worker_processes=4"         # Parallel query workers
+      - "-c"
+      - "max_parallel_workers_per_gather=2" # Parallel query execution
+      - "-c"
+      - "max_parallel_workers=4"         # Total parallel workers
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql

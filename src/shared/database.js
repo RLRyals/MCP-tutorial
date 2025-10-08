@@ -36,7 +36,7 @@ export class DatabaseManager {
             // Only log errors and critical info during MCP stdio mode
             if (process.env.MCP_STDIO_MODE !== 'true') {
                 console.error('[DATABASE] Constructor starting...');
-                
+
                 // Debug environment variables when MCP server starts
                 console.error('=== DATABASE DEBUG ===');
                 console.error('NODE_ENV:', process.env.NODE_ENV);
@@ -46,21 +46,26 @@ export class DatabaseManager {
                 console.error('Working directory:', process.cwd());
                 console.error('====================');
             }
-            
+
             if (!process.env.DATABASE_URL) {
                 throw new Error('DATABASE_URL environment variable is not set');
             }
-            
+
             if (process.env.MCP_STDIO_MODE !== 'true') {
                 console.error('[DATABASE] Creating connection pool...');
             }
-            
+
             this.pool = new Pool({
                 connectionString: process.env.DATABASE_URL,
                 ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-                max: 20,
-                idleTimeoutMillis: 30000,
-                connectionTimeoutMillis: 2000,
+                // Connection pool optimization
+                max: 20,                        // Maximum pool size
+                min: 2,                         // Keep 2 connections always ready
+                idleTimeoutMillis: 30000,       // Close idle connections after 30s
+                connectionTimeoutMillis: 5000,  // Increased from 2s to 5s for slower systems
+                // Performance optimizations
+                allowExitOnIdle: true,          // Allow process to exit when idle
+                maxUses: 7500,                  // Recycle connections after 7500 uses
             });
 
             this.pool.on('error', (err) => {
