@@ -300,7 +300,21 @@ This creates a `distribution` folder containing:
 - Easy updates (just share new tar file)
 - Reduced support burden
 
-See [Docker MCP Setup Guide](docs/DOCKER_MCP_SETUP.md) for complete details.
+### Updating Student Installations
+When you release new features or fixes:
+1. Build new distribution package (new version)
+2. Share update package with students
+3. Students run update script - **their data is preserved automatically!**
+
+See [Updating Docker Distribution Guide](docs/UPDATING_DOCKER_DISTRIBUTION.md) for:
+- How to create updates that preserve student data
+- Database migration strategies
+- Versioning best practices
+- Rollback procedures
+
+**Quick Reference:**
+- [Docker MCP Setup Guide](docs/DOCKER_MCP_SETUP.md) - Initial installation
+- [Updating Guide](docs/UPDATING_DOCKER_DISTRIBUTION.md) - Updates without data loss
 
 ---
 
