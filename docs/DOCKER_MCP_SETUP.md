@@ -46,8 +46,16 @@ This guide explains how to use the Docker-based distribution of MCP Tutorial, wh
 1. **Extract the distribution package** you received from your instructor
 
 2. **Run the installation script**:
+
+   **Windows (PowerShell):**
    ```powershell
    .\student-install.ps1
+   ```
+
+   **Mac/Linux (Bash):**
+   ```bash
+   chmod +x student-install.sh
+   ./student-install.sh
    ```
 
 3. **Follow the prompts** - the script will:
@@ -94,8 +102,15 @@ docker-compose -f docker-compose.mcp.yml up -d
 
 **Option B: Manual Config**
 1. Generate config file:
+
+   **Windows (PowerShell):**
    ```powershell
    .\scripts\generate-docker-mcp-config.ps1 -AllServers
+   ```
+
+   **Mac/Linux (Bash):**
+   ```bash
+   ./scripts/generate-docker-mcp-config.sh --all
    ```
 
 2. Copy to Claude Desktop:
@@ -133,8 +148,16 @@ docker-compose -f docker-compose.mcp.yml logs -f
    ```
 
 2. **Run the build script**:
+
+   **Windows (PowerShell):**
    ```powershell
    .\scripts\build-for-distribution.ps1
+   ```
+
+   **Mac/Linux (Bash):**
+   ```bash
+   chmod +x scripts/build-for-distribution.sh
+   ./scripts/build-for-distribution.sh
    ```
 
 3. **Wait for completion** (2-5 minutes):

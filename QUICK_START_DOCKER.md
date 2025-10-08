@@ -20,12 +20,24 @@
 ```
 
 ### 2️⃣ Run Setup Script
+
+**Windows (PowerShell):**
 ```powershell
 # Navigate to the distribution folder
 cd path\to\mcp-tutorial-distribution
 
 # Run the automated installer
 .\student-install.ps1
+```
+
+**Mac/Linux (Bash):**
+```bash
+# Navigate to the distribution folder
+cd path/to/mcp-tutorial-distribution
+
+# Make executable and run
+chmod +x student-install.sh
+./student-install.sh
 ```
 
 The script will:
@@ -44,9 +56,17 @@ The script will:
 5. Restart Claude Desktop
 
 **Option B: Generate Config File**
+
+**Windows:**
 ```powershell
 .\scripts\generate-docker-mcp-config.ps1 -AllServers
 ```
+
+**Mac/Linux:**
+```bash
+./scripts/generate-docker-mcp-config.sh --all
+```
+
 Then copy to your Claude config location.
 
 ### ✅ Test It!
