@@ -101,6 +101,22 @@ if (Test-Path "scripts\student-install.sh") {
     Copy-Item "scripts\student-install.sh" (Join-Path $OutputDir "student-install.sh") -Force
     Write-Host "Copied student-install.sh" -ForegroundColor Green
 }
+if (Test-Path "scripts\setup-typing-mind.ps1") {
+    Copy-Item "scripts\setup-typing-mind.ps1" (Join-Path $OutputDir "setup-typing-mind.ps1") -Force
+    Write-Host "Copied setup-typing-mind.ps1" -ForegroundColor Green
+}
+if (Test-Path "scripts\setup-typing-mind.sh") {
+    Copy-Item "scripts\setup-typing-mind.sh" (Join-Path $OutputDir "setup-typing-mind.sh") -Force
+    Write-Host "Copied setup-typing-mind.sh" -ForegroundColor Green
+}
+if (Test-Path "scripts\auto-configure-claude.ps1") {
+    Copy-Item "scripts\auto-configure-claude.ps1" (Join-Path $OutputDir "auto-configure-claude.ps1") -Force
+    Write-Host "Copied auto-configure-claude.ps1" -ForegroundColor Green
+}
+if (Test-Path "scripts\auto-configure-claude.sh") {
+    Copy-Item "scripts\auto-configure-claude.sh" (Join-Path $OutputDir "auto-configure-claude.sh") -Force
+    Write-Host "Copied auto-configure-claude.sh" -ForegroundColor Green
+}
 
 # Create README
 Write-Host "`nCreating README..." -ForegroundColor Yellow
@@ -115,6 +131,10 @@ $readmeContent = @"
 - .env.example - Environment template
 - student-install.ps1 - Windows installer
 - student-install.sh - Mac/Linux installer
+- auto-configure-claude.ps1 - Windows Claude Desktop config
+- auto-configure-claude.sh - Mac/Linux Claude Desktop config
+- setup-typing-mind.ps1 - Windows Typing Mind setup
+- setup-typing-mind.sh - Mac/Linux Typing Mind setup
 
 ## Quick Start
 
