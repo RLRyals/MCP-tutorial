@@ -37,4 +37,4 @@ ENV MCP_STDIO_MODE=true
 
 # Default command - runs the specified MCP server in stdio mode
 # Docker MCP Toolkit will override this with the specific server
-CMD node src/mcps/${MCP_SERVER}-server/index.js
+CMD ["sh", "-c", "node src/mcps/${MCP_SERVER}-server/index.js"]

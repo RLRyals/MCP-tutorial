@@ -1,0 +1,273 @@
+# Docker Compose configuration for MCP Tutorial with Docker MCP Toolkit
+# This file sets up all MCP servers and the PostgreSQL database
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: mcp-tutorial-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-book_series_db}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=16MB"
+    volumes:
+      - mcp_tutorial_db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - mcp-tutorial-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-book_series_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Author Management MCP Server
+  mcp-author:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-author
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: author
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Series Management MCP Server
+  mcp-series:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-series
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: series
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Book Management MCP Server
+  mcp-book:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-book
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: book
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Character Management MCP Server
+  mcp-character:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-character
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: character
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Timeline Management MCP Server
+  mcp-timeline:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-timeline
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: timeline
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Metadata Management MCP Server
+  mcp-metadata:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-metadata
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: metadata
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Trope Management MCP Server
+  mcp-trope:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-trope
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: trope
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Plot Management MCP Server
+  mcp-plot:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-plot
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: plot
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Relationship Management MCP Server
+  mcp-relationship:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-relationship
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: relationship
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Story Analysis MCP Server
+  mcp-story-analysis:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-story-analysis
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: story-analysis
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # World Building MCP Server
+  mcp-world:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-world
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: world
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+  # Writing Management MCP Server
+  mcp-writing:
+    image: mcp-tutorial:latest
+    container_name: mcp-tutorial-writing
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      MCP_SERVER: writing
+      MCP_STDIO_MODE: "true"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
+      NODE_ENV: ${NODE_ENV:-production}
+    networks:
+      - mcp-tutorial-network
+    stdin_open: true
+    tty: true
+
+networks:
+  mcp-tutorial-network:
+    name: mcp-tutorial-network
+    driver: bridge
+
+volumes:
+  mcp_tutorial_db:
+    name: mcp-tutorial-db-data

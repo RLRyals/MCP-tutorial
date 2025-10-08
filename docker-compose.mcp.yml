@@ -1,8 +1,6 @@
 # Docker Compose configuration for MCP Tutorial with Docker MCP Toolkit
 # This file sets up all MCP servers and the PostgreSQL database
 
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -13,7 +11,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-book_series_db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_INITDB_ARGS: "-c shared_buffers=256MB -c max_connections=100"
     command:
       - "postgres"
       - "-c"
