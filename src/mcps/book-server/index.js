@@ -364,7 +364,7 @@ if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[BOOK-SERVER] is direct execution:', isDirectExecution);
 }
 
-if (process.env.MCP_STDIO_MODE) {
+if (process.env.MCP_STDIO_MODE === 'true') {
     // When running in MCP stdio mode, always start the server
     console.error('[BOOK-SERVER] Running in MCP stdio mode - starting server...');
     

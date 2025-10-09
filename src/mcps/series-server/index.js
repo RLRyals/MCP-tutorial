@@ -447,7 +447,7 @@ if (process.env.MCP_STDIO_MODE !== 'true') {
     console.error('[SERIES-SERVER] is direct execution:', isDirectExecution);
 }
 
-if (process.env.MCP_STDIO_MODE) {
+if (process.env.MCP_STDIO_MODE === 'true') {
     // When running in MCP stdio mode, always start the server
     console.error('[SERIES-SERVER] Running in MCP stdio mode - starting server...');
     try {

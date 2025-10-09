@@ -4,6 +4,7 @@
 
 - mcp-tutorial-image.tar - Docker image with all MCP servers (~250MB)
 - docker-compose.mcp.yml - Service configuration
+- mcp-config.json - MCP Connector config (for Typing Mind users)
 - .env.example - Environment template
 - student-install.ps1 - Windows installer
 - student-install.sh - Mac/Linux installer

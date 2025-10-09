@@ -304,7 +304,7 @@ console.error('[AUTHOR-SERVER] normalized current module url:', normalizedCurren
 console.error('[AUTHOR-SERVER] normalized script path:', normalizedScriptPath);
 console.error('[AUTHOR-SERVER] is direct execution:', isDirectExecution);
 
-if (process.env.MCP_STDIO_MODE) {
+if (process.env.MCP_STDIO_MODE === 'true') {
     // When running in MCP stdio mode, always start the server
     console.error('[AUTHOR-SERVER] Running in MCP stdio mode - starting server...');
     try {

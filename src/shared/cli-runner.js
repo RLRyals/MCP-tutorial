@@ -2,6 +2,7 @@
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import express from 'express';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
 export async function runMCPServer(mcpServer, argv = process.argv) {
     const useStdio = argv.includes('--stdio') || !argv.includes('--http');
@@ -53,12 +54,24 @@ export async function runMCPServer(mcpServer, argv = process.argv) {
             });
         });
         
-        // MCP SSE endpoint
+        // MCP SSE endpoint (legacy)
         app.get('/message', async (req, res) => {
             try {
                 const transport = new SSEServerTransport('/message', res);
                 await mcpServer.server.connect(transport);
                 console.error(`${mcpServer.server.name} connected via SSE`);
+            } catch (error) {
+                console.error(`Error connecting ${mcpServer.server.name}:`, error);
+                res.status(500).json({ error: 'Failed to connect MCP server' });
+            }
+        });
+
+        // MCP Streamable HTTP endpoint (new standard)
+        app.post('/message', express.json(), async (req, res) => {
+            try {
+                const transport = new StreamableHTTPServerTransport('/message', res, req.body);
+                await mcpServer.server.connect(transport);
+                console.error(`${mcpServer.server.name} connected via Streamable HTTP`);
             } catch (error) {
                 console.error(`Error connecting ${mcpServer.server.name}:`, error);
                 res.status(500).json({ error: 'Failed to connect MCP server' });

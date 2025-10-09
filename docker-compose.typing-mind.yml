@@ -56,7 +56,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3501:3501"  # Bind to localhost only
     networks:
@@ -79,7 +79,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3502:3502"
     networks:
@@ -102,7 +102,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3503:3503"
     networks:
@@ -125,7 +125,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3504:3504"
     networks:
@@ -148,7 +148,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3505:3505"
     networks:
@@ -171,7 +171,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3506:3506"
     networks:
@@ -194,7 +194,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3507:3507"
     networks:
@@ -217,7 +217,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3508:3508"
     networks:
@@ -240,7 +240,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3509:3509"
     networks:
@@ -263,7 +263,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3510:3510"
     networks:
@@ -286,7 +286,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3511:3511"
     networks:
@@ -309,7 +309,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-book_series_db}
       NODE_ENV: ${NODE_ENV:-production}
-      MCP_HTTP_MODE: "true"
+      MCP_STDIO_MODE: "false"
     ports:
       - "127.0.0.1:3512:3512"
     networks:

@@ -129,7 +129,7 @@ Write-Host ""
 # Copy connector command to clipboard
 $connectorCommand = "npx @typingmind/mcp $AuthToken --config mcp-config.json"
 $connectorCommand | Set-Clipboard
-Write-Host "✓ Connector command copied to clipboard!" -ForegroundColor Green
+Write-Host "Connector command copied to clipboard!" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "Helpful Commands:" -ForegroundColor Cyan
@@ -142,5 +142,5 @@ Write-Host "  1. Stop connector (Ctrl+C in its terminal)" -ForegroundColor Gray
 Write-Host "  2. docker compose -f docker-compose.mcp.yml down" -ForegroundColor Gray
 Write-Host ""
 
-Write-Host "Done! Now run the connector command in a new terminal. 🎉" -ForegroundColor Green
+Write-Host "Done! Now run the connector command in a new terminal." -ForegroundColor Green
 Write-Host ""
