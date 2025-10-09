@@ -152,7 +152,7 @@ node src/shared/run-migration.js 008_add_world_schema.sql
 node src/shared/run-migration.js 009_writing_migration.sql
 ```
 
-**5.3** Run the final MCP_6 migrations:
+**5.3** Run the MCP_6 migrations:
 ```powershell
 node src/shared/run-migration.js 010_update_table_schema.sql
 node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
@@ -160,7 +160,22 @@ node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql
 
 ---
 
-## Step 6: Configure Claude Desktop
+## Step 6: Complete the MCP_7 Branch
+**6.1** Switch to the MCP_7 branch:
+```zsh
+git checkout MCP_7_BadEvan_Requests
+```
+
+**6.2** run the MCP_7_BadEvan_Requests migrations
+```zsh
+node src/shared/run-migration.js 013_alter_scene_tracking_schema.sql
+node src/shared/run-migration.js 014_Scene_Schema_updates.sql
+node src/shared/run-migration.js 015_normalize_genre_relationships.sql
+node src/shared/run-migration.js 016_fix_world_elements_schema.sql
+node src/shared/run-migration.js 017_add_missing_feature_columns.sql
+```
+
+## Step 7: Configure Claude Desktop
 
 ⚠️ **IMPORTANT:** Only proceed after completing Step 5 (MCP_6 migrations)!
 
