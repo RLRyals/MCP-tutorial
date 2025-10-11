@@ -179,21 +179,24 @@ node src/shared/run-migration.js 017_add_missing_feature_columns.sql
 
 ### Option A: Direct File Copy (Recommended)
 
-**6.1** Create Claude Desktop config directory and generate configuration:
+**7.1** Create Claude Desktop config directory and generate configuration:
 ```zsh
 # Create directory if it doesn't exist
 mkdir -p ~/Library/Application\ Support/Claude
+```
 
+````zsh
 # Generate the configuration
 node scripts/generate-configs.js --claude
 ```
 
-**6.2** Copy the configuration file:
+**7.2** Copy the configuration file:
 ```zsh
 cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
-**6.3** Restart Claude Desktop to load the new configuration.
+
+**7.3** Restart Claude Desktop to load the new configuration.
 
 ### Option B: Manual Configuration (if Option A fails)
 
@@ -217,7 +220,7 @@ open ~/Library/Application\ Support/Claude/claude_desktop_config.json
 
 ---
 
-## Step 7: Verify Configuration
+## Step 8: Verify Configuration
 
 ```zsh
 # Check if config file exists
