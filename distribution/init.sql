@@ -1,3 +1,44 @@
+-- Idempotent Database Initialization Script
+-- This script safely initializes the database and can be run multiple times
+
+-- Create migrations tracking table
+CREATE TABLE IF NOT EXISTS migrations (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR(255) NOT NULL UNIQUE,
+    applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Check if we need to run migrations
+DO $$
+BEGIN
+    -- Only run full migration if migrations table is empty
+    IF NOT EXISTS (SELECT 1 FROM migrations LIMIT 1) THEN
+        RAISE NOTICE 'Running initial database setup...';
+        
+        -- Insert migration markers
+        INSERT INTO migrations (filename) VALUES 
+            ('001_create_core_schema.sql'),
+            ('002_update_series_schema.sql'),
+            ('003_add_character_schema.sql'),
+            ('004_plot_structure_and_universal_framework.sql'),
+            ('005_update_author_email_constraint.sql'),
+            ('006_add_book_metadata_plot_thread_and_tropes_tables.sql'),
+            ('007_add_event_chapter_mapping.sql'),
+            ('008_add_world_schema.sql'),
+            ('009_writing_migration.sql'),
+            ('010_update_table_schema.sql'),
+            ('011_Universal_Schema_Migrations.sql'),
+            ('013_alter_scene_tracking_schema.sql'),
+            ('014_Scene_Schema_updates.sql'),
+            ('015_normalize_genre_relationships.sql'),
+            ('016_fix_world_elements_schema.sql'),
+            ('017_add_missing_feature_columns.sql')
+        ON CONFLICT (filename) DO NOTHING;
+    ELSE
+        RAISE NOTICE 'Database already initialized, skipping migrations';
+    END IF;
+END $$;
+
 -- Migration: 001_create_core_schema
 -- Description: Creates the core database schema based on core-series-schema.md
 -- Date: 2025-09-03
