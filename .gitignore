@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 
 # Claude-desktop.json
 config/claude-desktop.json
+config/claude-desktop.json
+.gitignore

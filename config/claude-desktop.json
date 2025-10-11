@@ -3,7 +3,7 @@
     "author-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/author-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/author-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -13,7 +13,7 @@
     "book-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/book-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/book-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -23,7 +23,7 @@
     "character-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/character-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/character-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -33,7 +33,7 @@
     "metadata-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/metadata-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/metadata-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -43,7 +43,17 @@
     "plot-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/plot-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/plot-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "relationship-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/relationship-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -53,7 +63,7 @@
     "series-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/series-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/series-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -63,7 +73,17 @@
     "timeline-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/timeline-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/timeline-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "trope-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/trope-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -73,7 +93,7 @@
     "world-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/world-server/world_server_index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/world-server/world_server_index.js"
       ],
       "env": {
         "NODE_ENV": "development",
@@ -83,7 +103,7 @@
     "writing-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-tutorial/src/mcps/writing-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/mcps/writing-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",
