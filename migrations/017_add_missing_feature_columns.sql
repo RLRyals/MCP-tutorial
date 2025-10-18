@@ -7,7 +7,7 @@
 DO $$ 
 BEGIN     
     -- Check if migration was already applied     
-    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '008_add_world_schema.sql') THEN         
+    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '017_add_missing_feature_columns.sql') THEN         
         RAISE NOTICE 'Migration 017_add_missing_feature_columns.sql already applied, skipping.';         
         RETURN;     
     END IF;  
