@@ -117,21 +117,21 @@ CREATE TABLE plot_threads (
 );
 
 -- Plot thread relationships (using lookup table)
-CREATE TABLE plot_thread_relationships (
-    id SERIAL PRIMARY KEY,
-    thread_a_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
-    thread_b_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
+-- CREATE TABLE plot_thread_relationships (
+--     id SERIAL PRIMARY KEY,
+--     thread_a_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
+--     thread_b_id INTEGER NOT NULL REFERENCES plot_threads(id) ON DELETE CASCADE,
     
-    relationship_type_id INTEGER NOT NULL REFERENCES relationship_types(id),
-    relationship_description TEXT,
-    strength INTEGER DEFAULT 5 CHECK (strength >= 1 AND strength <= 10),
+--     relationship_type_id INTEGER NOT NULL REFERENCES relationship_types(id),
+--     relationship_description TEXT,
+--     strength INTEGER DEFAULT 5 CHECK (strength >= 1 AND strength <= 10),
     
-    established_book INTEGER,
+--     established_book INTEGER,
     
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+--     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
-    CHECK (thread_a_id != thread_b_id)
-);
+--     CHECK (thread_a_id != thread_b_id)
+-- );
 
 -- =============================================
 -- STORY ANALYSIS 
