@@ -152,8 +152,40 @@ async function generateCheatSheet(client, seriesTitle, dataLoadPath) {
 
     if (systemsResult.rows.length > 0) {
         cheatSheetLines.push(`## World Systems`);
+        cheatSheetLines.push('*Frameworks & Rulesets (Use define_world_system in Plot Server)*');
         systemsResult.rows.forEach(sys => {
             cheatSheetLines.push(`- **${sys.system_name}** (ID: ${sys.id}) - ${sys.system_type || 'System'}`);
+        });
+        cheatSheetLines.push('');
+    }
+
+    // Get world elements
+    const elementsResult = await client.query(
+        `SELECT we.id, we.name, we.element_type, we.rarity, we.system_id, ws.system_name
+         FROM world_elements we
+         LEFT JOIN world_systems ws ON we.system_id = ws.id
+         WHERE we.series_id = (SELECT id FROM series WHERE title = $1)
+         ORDER BY we.system_id NULLS LAST, we.element_type, we.name`,
+        [seriesTitle]
+    );
+
+    if (elementsResult.rows.length > 0) {
+        cheatSheetLines.push(`## World Elements`);
+        cheatSheetLines.push('*Specific Instances (Use create_world_element in World Server)*');
+
+        // Group by system
+        let currentSystemId = null;
+        elementsResult.rows.forEach(elem => {
+            if (elem.system_id !== currentSystemId) {
+                currentSystemId = elem.system_id;
+                if (elem.system_id) {
+                    cheatSheetLines.push(`### Elements in "${elem.system_name}" (System ID: ${elem.system_id})`);
+                } else {
+                    cheatSheetLines.push(`### Standalone Elements`);
+                }
+            }
+            const rarityTag = elem.rarity ? ` [${elem.rarity}]` : '';
+            cheatSheetLines.push(`- **${elem.name}** (ID: ${elem.id}) - ${elem.element_type}${rarityTag}`);
         });
         cheatSheetLines.push('');
     }

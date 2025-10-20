@@ -290,15 +290,34 @@ Query specific relationship arcs or list all arcs with optional filtering by plo
 ## Part 3: Plot Server - World Systems
 
 ### Core Concept
-**ANY rule-based system = world system**
+**ANY rule-based FRAMEWORK = world system**
+
+**CRITICAL DISTINCTION: World Systems vs World Elements**
+
+Use **`define_world_system`** (Plot Server) for:
+- **FRAMEWORKS & RULESETS** - The abstract system that governs how things work
+- **CHARACTER PROGRESSION** - Systems that characters advance through
+- **Universal mechanics** - Rules that apply to multiple users/instances
+- Examples: "Elemental Magic System", "Psionic Network", "Divine Favor System"
+
+Use **`create_world_element`** (World Server) for:
+- **SPECIFIC INSTANCES** - Individual manifestations of power/technology
+- **STORY TRACKING** - Tracking WHERE elements appear in narrative
+- **Concrete objects/abilities** - Tangible things with fixed properties
+- Examples: "Fire Blast Spell", "Ancient Sword", "Healing Potion", "FTL Drive"
+
+**Relationship Between Them:**
+- World Elements can optionally belong to a World System (using `system_id` parameter)
+- Example: "Fire Blast Spell" (world_element) belongs to "Elemental Magic System" (world_system)
+- Example: "Plasma Rifle" (world_element) belongs to "Energy Weapons System" (world_system)
 
 Works for:
-- Fantasy: magic systems
-- Sci-Fi: technology, physics
+- Fantasy: magic systems (frameworks) and specific spells/items (elements)
+- Sci-Fi: technology systems (frameworks) and specific devices (elements)
 - All genres: political structures, social hierarchies, supernatural rules
 
 ### `define_world_system`
-**When to use:** Establishing ANY rule-based system in your world
+**When to use:** Establishing the FRAMEWORK for how a type of power/ability works
 
 **Parameters:**
 - `series_id` (required)
@@ -475,33 +494,145 @@ create_location:
 ## World Element Tools
 
 ### `create_world_element`
-**When to use:** Defining magic/tech systems (similar to define_world_system in Plot Server)
+**When to use:** Creating SPECIFIC INSTANCES of world components (spells, items, artifacts, abilities)
+
+**IMPORTANT: This is for INSTANCES, not FRAMEWORKS**
+- Use this for: "Fire Blast Spell", "Ancient Sword", "Healing Potion"
+- NOT for: "Elemental Magic System" - use `define_world_system` instead
+- Link instances to their parent system using the `system_id` parameter
 
 **Parameters:**
 - `series_id` (required)
-- `name` (required)
+- `name` (required) - name of the specific instance
 - `element_type` (required) - "magic_system", "technology", "natural_law", "supernatural", "divine", "psionic"
-- `description` (required)
+- `description` (required) - what this specific instance does
+- `system_id` (optional) - **NEW!** Link to parent world_system (e.g., link "Fire Blast" to "Elemental Magic" system)
 - `power_source` (optional)
-- `limitations` (optional) - array
-- `rules` (optional) - array
-- `access_method` (optional)
+- `limitations` (optional) - array of constraints for THIS instance
+- `rules` (optional) - array of rules for THIS instance
+- `access_method` (optional) - how THIS instance is used
 - `rarity` (optional) - "common", "uncommon", "rare", "legendary"
 - `cultural_impact` (optional)
 
-**Note:** Similar to `define_world_system` in Plot Server but focused on world catalog rather than character progression tracking.
+**Decision Guide:**
+
+| Question | Answer → Tool |
+|----------|---------------|
+| "Am I defining HOW magic/tech works universally?" | YES → `define_world_system` (Plot Server) |
+| "Am I defining a specific spell/item/ability?" | YES → `create_world_element` (World Server) |
+| "Will characters progress through levels of this?" | YES → `define_world_system` (Plot Server) |
+| "Do I need to track WHERE this appears in the story?" | YES → `create_world_element` (World Server) |
+
+**Examples with system_id:**
+
+**Creating a spell that belongs to a magic system:**
+```
+# First, define the system (if not already created)
+define_world_system:
+  series_id: 1
+  system_name: "Elemental Magic System"
+  system_type: "magic"
+  ...
+# Returns: system_id: 5
+
+# Then create specific spells linked to that system
+create_world_element:
+  series_id: 1
+  name: "Fire Blast"
+  element_type: "magic_system"
+  description: "Projects concentrated fire in a directed blast"
+  system_id: 5  # Links to Elemental Magic System
+  rarity: "common"
+  power_source: "Channeled mana through fire element binding"
+  limitations: ["Requires line of sight", "Drains mana quickly"]
+
+create_world_element:
+  series_id: 1
+  name: "Water Shield"
+  element_type: "magic_system"
+  description: "Creates protective barrier of flowing water"
+  system_id: 5  # Same parent system
+  rarity: "uncommon"
+```
+
+**Creating technology that belongs to a tech system:**
+```
+# Define the system
+define_world_system:
+  series_id: 2
+  system_name: "Quantum Drive Technology"
+  system_type: "technology"
+  ...
+# Returns: system_id: 8
+
+# Create specific devices
+create_world_element:
+  series_id: 2
+  name: "Mark VII Quantum Engine"
+  element_type: "technology"
+  description: "Ship propulsion system using quantum entanglement"
+  system_id: 8  # Links to Quantum Drive Technology
+  rarity: "rare"
+  limitations: ["Requires exotic matter fuel", "3-hour cooldown between jumps"]
+```
+
+**Standalone element (no parent system):**
+```
+create_world_element:
+  series_id: 1
+  name: "Ancient Prophecy Scroll"
+  element_type: "supernatural"
+  description: "Scroll containing predictions about the Chosen One"
+  rarity: "legendary"
+  # No system_id - this is a unique artifact
+```
 
 ---
 
 ### `track_element_usage`
-**When to use:** Recording where world element appears/is used
+**When to use:** Recording WHERE a specific world element appears/is used in the story
+
+**Parameters:**
+- `element_id` (required) - the world_element being used
+- `book_id` (required)
+- `chapter_id` (optional)
+- `usage_notes` (optional) - describe how it was used
+- `power_level` (optional) - 1-10 for power demonstrated
+
+**Example:**
+```
+track_element_usage:
+  element_id: 42  # Fire Blast spell
+  book_id: 2
+  chapter_id: 15
+  usage_notes: "Protagonist uses Fire Blast to destroy the corrupted tree"
+  power_level: 7
+```
+
+### `get_world_elements`
+**When to use:** Querying world elements with filtering
+
+**Parameters:**
+- `series_id` (optional) - filter by series
+- `element_type` (optional) - filter by type
+- `rarity` (optional) - filter by rarity
+- `search_term` (optional) - search in name/description
+- `system_id` (optional) - **NEW!** Get all elements belonging to a specific world_system
+
+**Example - Get all spells in a magic system:**
+```
+get_world_elements:
+  series_id: 1
+  system_id: 5  # Get all elements linked to "Elemental Magic System"
+```
+
+### `update_world_element`
+**When to use:** Modifying an existing world element
 
 **Parameters:**
 - `element_id` (required)
-- `book_id` (required)
-- `chapter_id` (optional)
-- `usage_notes` (optional)
-- `power_level` (optional) - 1-10 for power demonstrated
+- `system_id` (optional) - **NEW!** Link/unlink from parent world_system
+- All other fields from `create_world_element` are optional for updating
 
 ---
 
@@ -578,11 +709,22 @@ Character presence and knowledge updated
 
 ### Plot Server → World Server
 ```
-define_world_system (magic rules)
+define_world_system (magic/tech framework)
     ↓
-track_system_progression (character learns/uses)
+create_world_element (specific spells/items, with system_id link)
     ↓
-track_element_usage (where used in story)
+track_system_progression (character learns/uses the system)
+    ↓
+track_element_usage (specific element used in story)
+```
+
+**Example Flow - Magic System:**
+```
+1. define_world_system: "Elemental Magic" → system_id: 5
+2. create_world_element: "Fire Blast" with system_id: 5
+3. create_world_element: "Water Shield" with system_id: 5
+4. track_system_progression: Character advances to level 6 in system 5
+5. track_element_usage: Character uses "Fire Blast" in chapter 12
 ```
 
 ### World Server → Character Server
@@ -624,20 +766,21 @@ create_relationship_arc (organizational relationships)
 5. **Relationship Server:** `get_relationship_timeline` - view progression
 
 ### Fantasy - World Building
-1. **Plot Server:** `define_world_system` - magic rules
-2. **World Server:** `create_location` - important places
-3. **World Server:** `create_organization` - power structures
-4. **Plot Server:** `track_system_progression` - character growth
-5. **World Server:** `track_element_usage` - where magic used
+1. **Plot Server:** `define_world_system` - magic framework (e.g., "Elemental Magic System")
+2. **World Server:** `create_world_element` - specific spells (e.g., "Fire Blast", system_id links to step 1)
+3. **World Server:** `create_location` - important places
+4. **World Server:** `create_organization` - power structures
+5. **Plot Server:** `track_system_progression` - character advancement in the magic system
+6. **World Server:** `track_element_usage` - where specific spells/items were used
 
 ---
 
 ## Remember
 
 **Three-Server Framework:**
-- **Plot Server:** Plot threads, information reveals, world systems
+- **Plot Server:** Plot threads, information reveals, world systems (FRAMEWORKS)
 - **Relationship Server:** All relationship types and dynamics tracking
-- **World Server:** Locations, world elements, organizations
+- **World Server:** Locations, world elements (INSTANCES), organizations
 
 **Universal Framework means:**
 - Same tools work for mystery clues and romance secrets
@@ -648,5 +791,15 @@ create_relationship_arc (organizational relationships)
 - Information being revealed (Plot Server)
 - Relationships developing (Relationship Server)
 - Systems with rules (Plot/World Servers)
+
+**KEY DISTINCTION - World Systems vs World Elements:**
+- **`define_world_system`** (Plot Server) = The FRAMEWORK/RULESET (e.g., "Elemental Magic System")
+  - Use for: Character progression, universal mechanics, abstract systems
+  - Tracks: System rules, power scaling, who can use it
+
+- **`create_world_element`** (World Server) = The SPECIFIC INSTANCE (e.g., "Fire Blast Spell")
+  - Use for: Individual spells/items/abilities, story tracking, tangible objects
+  - Tracks: WHERE element appears, usage frequency, rarity
+  - Can link to parent system via `system_id` parameter
 
 This separation makes each server more focused and powerful while maintaining universal genre support.

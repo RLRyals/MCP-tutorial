@@ -171,6 +171,10 @@ node src/shared/run-migration.js 014_Scene_Schema_updates.sql
 node src/shared/run-migration.js 015_normalize_genre_relationships.sql
 node src/shared/run-migration.js 016_fix_world_elements_schema.sql
 node src/shared/run-migration.js 017_add_missing_feature_columns.sql
+
+
+node src/shared/run-migration.js 018_update_cascade_constraints.sql  
+node src/shared/run-migration.js  019_add_world_element_system_relationship.sql 
 ```
 
 ## Step 7: Configure Claude Desktop
@@ -200,12 +204,12 @@ cp config/claude-desktop.json ~/Library/Application\ Support/Claude/claude_deskt
 
 ### Option B: Manual Configuration (if Option A fails)
 
-**6.1** Generate the configuration:
+**7.1** Generate the configuration:
 ```zsh
 node scripts/generate-configs.js
 ```
 
-**6.2** Open both files:
+**7.2** Open both files:
 ```zsh
 # Open the generated config
 open config/claude-desktop.json
@@ -214,9 +218,9 @@ open config/claude-desktop.json
 open ~/Library/Application\ Support/Claude/claude_desktop_config.json
 ```
 
-**6.3** Copy the contents from `config/claude-desktop.json` into `claude_desktop_config.json`
+**7.3** Copy the contents from `config/claude-desktop.json` into `claude_desktop_config.json`
 
-**6.4** Save and restart Claude Desktop.
+**7.4** Save and restart Claude Desktop.
 
 ---
 

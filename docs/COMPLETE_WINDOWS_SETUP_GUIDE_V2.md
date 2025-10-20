@@ -173,6 +173,9 @@ node src/shared/run-migration.js 014_Scene_Schema_updates.sql
 node src/shared/run-migration.js 015_normalize_genre_relationships.sql
 node src/shared/run-migration.js 016_fix_world_elements_schema.sql
 node src/shared/run-migration.js 017_add_missing_feature_columns.sql
+
+node src/shared/run-migration.js 018_update_cascade_constraints.sql  
+node src/shared/run-migration.js  019_add_world_element_system_relationship.sql 
 ```
 
 ## Step 7: Configure Claude Desktop
@@ -181,7 +184,7 @@ node src/shared/run-migration.js 017_add_missing_feature_columns.sql
 
 ### Option A: Direct File Copy (Recommended)
 
-**6.1** Create Claude Desktop config directory and generate configuration:
+**7.1** Create Claude Desktop config directory and generate configuration:
 ```powershell
 # Create directory if it doesn't exist
 New-Item -ItemType Directory -Force -Path "$env:APPDATA\Claude"
@@ -190,21 +193,21 @@ New-Item -ItemType Directory -Force -Path "$env:APPDATA\Claude"
 node scripts/generate-configs.js --claude
 ```
 
-**6.2** Copy the configuration file:
+**7.2** Copy the configuration file:
 ```powershell
 Copy-Item config/claude-desktop.json "$env:APPDATA\Claude\claude_desktop_config.json"
 ```
 
-**6.3** Restart Claude Desktop to load the new configuration.
+**7.3** Restart Claude Desktop to load the new configuration.
 
 ### Option B: Manual Configuration (if Option A fails)
 
-**6.1** Generate the configuration:
+**7.1** Generate the configuration:
 ```powershell
 node scripts/generate-configs.js
 ```
 
-**6.2** Open both files:
+**7.2** Open both files:
 ```powershell
 # Open the generated config
 code config/claude-desktop.json
@@ -213,13 +216,13 @@ code config/claude-desktop.json
 explorer "$env:APPDATA\Claude"
 ```
 
-**6.3** Manually open `claude_desktop_config.json` in the Claude folder (create it if it doesn't exist), then copy the contents from `config/claude-desktop.json` into it.
+**7.3** Manually open `claude_desktop_config.json` in the Claude folder (create it if it doesn't exist), then copy the contents from `config/claude-desktop.json` into it.
 
-**6.4** Save and restart Claude Desktop.
+**7.4** Save and restart Claude Desktop.
 
 ---
 
-## Step 7: Verify Configuration
+## Step 8: Verify Configuration
 
 ```powershell
 # Check if config file exists

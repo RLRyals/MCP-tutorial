@@ -56,17 +56,37 @@ export class PlotThreadHandlers {
             }
             
             // Get thread type ID from lookup table
-            const threadTypeResult = await this.db.query(
+            let threadTypeResult = await this.db.query(
                 'SELECT id FROM plot_thread_types WHERE type_name = $1 AND is_active = true',
                 [args.thread_type]
             );
-            
+
+            // If thread type doesn't exist, offer to create it
             if (threadTypeResult.rows.length === 0) {
-                throw new Error(`Invalid thread_type: ${args.thread_type}. Use get_available_options with option_type='plot_thread_types' to see valid values.`);
+                // Check if it exists but is inactive
+                const inactiveCheck = await this.db.query(
+                    'SELECT id FROM plot_thread_types WHERE type_name = $1 AND is_active = false',
+                    [args.thread_type]
+                );
+
+                if (inactiveCheck.rows.length > 0) {
+                    throw new Error(`The thread_type "${args.thread_type}" exists but is inactive. Please use the metadata-server's update_lookup_option tool to reactivate it, or choose a different thread type.`);
+                }
+
+                // Thread type doesn't exist - create it automatically with a helpful message
+                const autoCreateResult = await this.db.query(
+                    'INSERT INTO plot_thread_types (type_name, type_description, is_active) VALUES ($1, $2, true) RETURNING id',
+                    [args.thread_type, `Auto-created: ${args.thread_type}`]
+                );
+
+                threadTypeResult = autoCreateResult;
+
+                // Note: We'll include info about the auto-creation in the success message
             }
-            
+
             const threadTypeId = threadTypeResult.rows[0].id;
-            
+            const wasAutoCreated = threadTypeResult.command === 'INSERT';
+
             // Insert the plot thread (using lookup table IDs)
             const insertQuery = `
                 INSERT INTO plot_threads (
@@ -74,10 +94,10 @@ export class PlotThreadHandlers {
                     importance_level, complexity_level, start_book, end_book,
                     parent_thread_id, related_characters
                 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-                RETURNING id, title, description, importance_level, 
+                RETURNING id, title, description, importance_level,
                          complexity_level, created_at
             `;
-            
+
             const result = await this.db.query(insertQuery, [
                 args.series_id,
                 args.title,
@@ -90,22 +110,30 @@ export class PlotThreadHandlers {
                 args.parent_thread_id || null,
                 args.related_characters || []
             ]);
-            
+
             const newThread = result.rows[0];
-            
+
+            let successMessage = `Successfully created plot thread!\n\n` +
+                  `**Thread ID:** ${newThread.id}\n` +
+                  `**Title:** ${newThread.title}\n` +
+                  `**Type:** ${args.thread_type}${wasAutoCreated ? ' (newly created type)' : ''}\n` +
+                  `**Status:** active (default)\n` +
+                  `**Importance:** ${newThread.importance_level}/10\n` +
+                  `**Complexity:** ${newThread.complexity_level}/10\n` +
+                  `**Description:** ${newThread.description}\n` +
+                  `**Created:** ${new Date(newThread.created_at).toLocaleString()}`;
+
+            if (wasAutoCreated) {
+                successMessage += `\n\n**Note:** The thread type "${args.thread_type}" was automatically created. ` +
+                    `You can update its description using the metadata-server's update_lookup_option tool ` +
+                    `with option_type='plot_thread_types' and option_id=${threadTypeId}.`;
+            }
+
             return {
                 content: [
                     {
                         type: 'text',
-                        text: `Successfully created plot thread!\n\n` +
-                              `**Thread ID:** ${newThread.id}\n` +
-                              `**Title:** ${newThread.title}\n` +
-                              `**Type:** ${args.thread_type}\n` +
-                              `**Status:** active (default)\n` +
-                              `**Importance:** ${newThread.importance_level}/10\n` +
-                              `**Complexity:** ${newThread.complexity_level}/10\n` +
-                              `**Description:** ${newThread.description}\n` +
-                              `**Created:** ${new Date(newThread.created_at).toLocaleString()}`
+                        text: successMessage
                     }
                 ]
             };

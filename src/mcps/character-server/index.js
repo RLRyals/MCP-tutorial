@@ -336,12 +336,57 @@ class CharacterMCPServer extends BaseMCPServer {
                     type: 'object',
                     properties: {
                         character_id: { type: 'integer', description: 'Character ID' },
-                        category: { 
-                            type: 'string', 
-                            description: 'Filter by detail category (optional)' 
+                        category: {
+                            type: 'string',
+                            description: 'Filter by detail category (optional)'
                         }
                     },
                     required: ['character_id']
+                }
+            },
+            {
+                name: 'update_character_detail',
+                description: 'Update an existing character detail',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        character_id: { type: 'integer', description: 'Character ID' },
+                        category: {
+                            type: 'string',
+                            description: 'Detail category (e.g., \'physical\', \'personality\', \'background\', \'skills\')'
+                        },
+                        attribute: {
+                            type: 'string',
+                            description: 'Specific attribute to update (e.g., \'eye_color\', \'height\', \'temperament\')'
+                        },
+                        value: { type: 'string', description: 'The new detail value' },
+                        source_book_id: { type: 'integer', description: 'Book where this detail was updated (optional)' },
+                        confidence_level: {
+                            type: 'string',
+                            enum: ['established', 'mentioned', 'implied'],
+                            description: 'How definitively this detail was stated'
+                        }
+                    },
+                    required: ['character_id', 'category', 'attribute', 'value']
+                }
+            },
+            {
+                name: 'delete_character_detail',
+                description: 'Delete a specific character detail',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        character_id: { type: 'integer', description: 'Character ID' },
+                        category: {
+                            type: 'string',
+                            description: 'Detail category (e.g., \'physical\', \'personality\', \'background\', \'skills\')'
+                        },
+                        attribute: {
+                            type: 'string',
+                            description: 'Specific attribute to delete (e.g., \'eye_color\', \'height\', \'temperament\')'
+                        }
+                    },
+                    required: ['character_id', 'category', 'attribute']
                 }
             },
             {
@@ -423,6 +468,8 @@ class CharacterMCPServer extends BaseMCPServer {
             'update_character': this.handleUpdateCharacter,
             'add_character_detail': this.handleAddCharacterDetail,
             'get_character_details': this.handleGetCharacterDetails,
+            'update_character_detail': this.handleUpdateCharacterDetail,
+            'delete_character_detail': this.handleDeleteCharacterDetail,
             'add_character_knowledge': this.handleAddCharacterKnowledge,
             'check_character_knowledge': this.handleCheckCharacterKnowledge,
             'get_characters_who_know': this.handleGetCharactersWhoKnow,
@@ -717,6 +764,132 @@ class CharacterMCPServer extends BaseMCPServer {
             };
         } catch (error) {
             throw new Error(`Failed to get character details: ${error.message}`);
+        }
+    }
+
+    async handleUpdateCharacterDetail(args) {
+        try {
+            const { character_id, category, attribute, value, source_book_id, confidence_level } = args;
+
+            // Check if the detail exists first
+            const checkResult = await this.db.query(
+                `SELECT * FROM character_details
+                 WHERE character_id = $1 AND category = $2 AND attribute = $3`,
+                [character_id, category, attribute]
+            );
+
+            if (checkResult.rows.length === 0) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `No character detail found with:\n` +
+                                  `Character ID: ${character_id}\n` +
+                                  `Category: ${category}\n` +
+                                  `Attribute: ${attribute}\n\n` +
+                                  `Use add_character_detail to create a new detail.`
+                        }
+                    ]
+                };
+            }
+
+            // Build dynamic update query
+            const updateFields = [];
+            const params = [character_id, category, attribute];
+            let paramCount = 3;
+
+            updateFields.push(`value = $${++paramCount}`);
+            params.push(value);
+
+            if (source_book_id !== undefined) {
+                updateFields.push(`source_book_id = $${++paramCount}`);
+                params.push(source_book_id);
+            }
+
+            if (confidence_level !== undefined) {
+                updateFields.push(`confidence_level = $${++paramCount}`);
+                params.push(confidence_level);
+            }
+
+            updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+            const query = `
+                UPDATE character_details
+                SET ${updateFields.join(', ')}
+                WHERE character_id = $1 AND category = $2 AND attribute = $3
+                RETURNING *
+            `;
+
+            const result = await this.db.query(query, params);
+            const detail = result.rows[0];
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `Character detail updated successfully!\n\n` +
+                              `Character ID: ${character_id}\n` +
+                              `${category}/${attribute}: ${detail.value}\n` +
+                              `Confidence: ${detail.confidence_level}\n` +
+                              `Source Book ID: ${detail.source_book_id || 'Not specified'}\n` +
+                              `Updated: ${detail.updated_at}`
+                    }
+                ]
+            };
+        } catch (error) {
+            throw new Error(`Failed to update character detail: ${error.message}`);
+        }
+    }
+
+    async handleDeleteCharacterDetail(args) {
+        try {
+            const { character_id, category, attribute } = args;
+
+            // Check if the detail exists and get info before deleting
+            const checkResult = await this.db.query(
+                `SELECT cd.*, c.name as character_name
+                 FROM character_details cd
+                 JOIN characters c ON cd.character_id = c.id
+                 WHERE cd.character_id = $1 AND cd.category = $2 AND cd.attribute = $3`,
+                [character_id, category, attribute]
+            );
+
+            if (checkResult.rows.length === 0) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `No character detail found to delete with:\n` +
+                                  `Character ID: ${character_id}\n` +
+                                  `Category: ${category}\n` +
+                                  `Attribute: ${attribute}`
+                        }
+                    ]
+                };
+            }
+
+            const deletedDetail = checkResult.rows[0];
+
+            // Delete the detail
+            await this.db.query(
+                `DELETE FROM character_details
+                 WHERE character_id = $1 AND category = $2 AND attribute = $3`,
+                [character_id, category, attribute]
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `Character detail deleted successfully!\n\n` +
+                              `Character: ${deletedDetail.character_name}\n` +
+                              `Deleted: ${category}/${attribute}\n` +
+                              `Previous Value: ${deletedDetail.value}`
+                    }
+                ]
+            };
+        } catch (error) {
+            throw new Error(`Failed to delete character detail: ${error.message}`);
         }
     }
 

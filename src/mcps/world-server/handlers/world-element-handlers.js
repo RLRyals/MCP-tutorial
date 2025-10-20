@@ -59,6 +59,10 @@ export class WorldElementHandlers {
                         cultural_impact: {
                             type: 'string',
                             description: 'How this element affects society and culture'
+                        },
+                        system_id: {
+                            type: 'integer',
+                            description: 'Optional: ID of the parent world_system this element belongs to (e.g., link "Fire Blast Spell" to "Elemental Magic System")'
                         }
                     },
                     required: ['series_id', 'name', 'element_type', 'description']
@@ -111,6 +115,10 @@ export class WorldElementHandlers {
                         cultural_impact: {
                             type: 'string',
                             description: 'Impact on society'
+                        },
+                        system_id: {
+                            type: 'integer',
+                            description: 'Optional: ID of the parent world_system this element belongs to'
                         }
                     },
                     required: ['element_id']
@@ -137,6 +145,10 @@ export class WorldElementHandlers {
                         search_term: {
                             type: 'string',
                             description: 'Search in name or description'
+                        },
+                        system_id: {
+                            type: 'integer',
+                            description: 'Filter by parent world_system ID'
                         }
                     },
                     required: []
@@ -180,28 +192,38 @@ export class WorldElementHandlers {
 
     async handleCreateWorldElement(args) {
         try {
-            const { 
-                series_id, name, element_type, description, power_source, 
-                limitations, rules, access_method, rarity, cultural_impact 
+            const {
+                series_id, name, element_type, description, power_source,
+                limitations, rules, access_method, rarity, cultural_impact, system_id
             } = args;
-            
+
             const query = `
                 INSERT INTO world_elements (
                     series_id, name, element_type, description, power_source,
-                    limitations, rules, access_method, rarity, cultural_impact
-                ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+                    limitations, rules, access_method, rarity, cultural_impact, system_id
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING *
             `;
-            
+
             const result = await this.db.query(query, [
                 series_id, name, element_type, description, power_source || null,
-                limitations || [], rules || [], access_method || null, 
-                rarity || 'common', cultural_impact || null
+                limitations || [], rules || [], access_method || null,
+                rarity || 'common', cultural_impact || null, system_id || null
             ]);
             
             const element = result.rows[0];
-            
+
+            // If system_id was provided, fetch the system name for display
+            let systemInfo = '';
+            if (element.system_id) {
+                const systemQuery = 'SELECT system_name FROM world_systems WHERE id = $1';
+                const systemResult = await this.db.query(systemQuery, [element.system_id]);
+                if (systemResult.rows.length > 0) {
+                    systemInfo = `Parent System: ${systemResult.rows[0].system_name} (ID: ${element.system_id})\n`;
+                }
+            }
+
             return {
                 content: [{
                     type: 'text',
@@ -209,20 +231,21 @@ export class WorldElementHandlers {
                           `🌟 ${element.name}\n` +
                           `ID: ${element.id}\n` +
                           `Type: ${element.element_type}\n` +
+                          `${systemInfo}` +
                           `${element.power_source ? `Power Source: ${element.power_source}\n` : ''}` +
                           `${element.access_method ? `Access Method: ${element.access_method}\n` : ''}` +
                           `Rarity: ${element.rarity}\n` +
                           `${element.cultural_impact ? `Cultural Impact: ${element.cultural_impact}\n` : ''}` +
-                          `${element.limitations && element.limitations.length > 0 ? 
+                          `${element.limitations && element.limitations.length > 0 ?
                             `\nLimitations:\n${element.limitations.map(l => `  • ${l}`).join('\n')}\n` : ''}` +
-                          `${element.rules && element.rules.length > 0 ? 
+                          `${element.rules && element.rules.length > 0 ?
                             `\nRules:\n${element.rules.map(r => `  • ${r}`).join('\n')}\n` : ''}` +
                           `\nDescription: ${element.description}`
                 }]
             };
         } catch (error) {
             if (error.code === '23503') { // Foreign key violation
-                throw new Error('Invalid series_id: Series not found');
+                throw new Error('Invalid series_id or system_id: Series or World System not found');
             }
             throw new Error(`Failed to create world element: ${error.message}`);
         }
@@ -291,15 +314,17 @@ export class WorldElementHandlers {
 
     async handleGetWorldElements(args) {
         try {
-            const { series_id, element_type, rarity, search_term } = args;
-            
+            const { series_id, element_type, rarity, search_term, system_id } = args;
+
             let query = `
-                SELECT we.id as element_id, we.*, 
-                       (SELECT COUNT(*) FROM world_element_usage 
+                SELECT we.id as element_id, we.*,
+                       ws.system_name,
+                       (SELECT COUNT(*) FROM world_element_usage
                         WHERE element_type = 'world_element' AND element_id = we.id) as usage_count
                 FROM world_elements we
+                LEFT JOIN world_systems ws ON we.system_id = ws.id
             `;
-            
+
             const params = [];
             const conditions = [];
             let paramCount = 0;
@@ -328,12 +353,22 @@ export class WorldElementHandlers {
                 params.push(`%${search_term}%`);
             }
 
+            if (system_id !== undefined) {
+                paramCount++;
+                if (system_id === null) {
+                    conditions.push(`we.system_id IS NULL`);
+                } else {
+                    conditions.push(`we.system_id = $${paramCount}`);
+                    params.push(system_id);
+                }
+            }
+
             if (conditions.length > 0) {
                 query += ` WHERE ${conditions.join(' AND ')}`;
             }
-            
+
             query += ' ORDER BY we.element_type, we.rarity, we.name';
-            
+
             const result = await this.db.query(query, params);
             
             if (result.rows.length === 0) {
@@ -352,23 +387,27 @@ export class WorldElementHandlers {
                 elementsText += `   ID: ${element.element_id}\n`;
                 elementsText += `   Type: ${element.element_type}\n`;
                 elementsText += `   Rarity: ${element.rarity}\n`;
-                
+
+                if (element.system_name) {
+                    elementsText += `   Parent System: ${element.system_name} (ID: ${element.system_id})\n`;
+                }
+
                 if (element.power_source) {
                     elementsText += `   Power Source: ${element.power_source}\n`;
                 }
-                
+
                 if (element.access_method) {
                     elementsText += `   Access: ${element.access_method}\n`;
                 }
-                
+
                 if (element.cultural_impact) {
                     elementsText += `   Cultural Impact: ${element.cultural_impact}\n`;
                 }
-                
+
                 if (element.limitations && element.limitations.length > 0) {
                     elementsText += `   Limitations: ${element.limitations.join(', ')}\n`;
                 }
-                
+
                 elementsText += `   Story Usage: ${element.usage_count} times\n`;
                 elementsText += `   Description: ${element.description}\n\n`;
             }
