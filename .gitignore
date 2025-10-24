@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # Claude-desktop.json
 config/claude-desktop.json
+.claude/settings.local.json
