@@ -1,0 +1,54 @@
+{
+  "mcpServers": {
+    "book-planning-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/book-planning-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "chapter-planning-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/chapter-planning-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "revision-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/revision-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "scene-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/scene-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "series-planning-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/series-planning-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    }
+  }
+}

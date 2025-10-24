@@ -538,17 +538,17 @@ import { fileURLToPath } from 'url';
 // Normalize paths for cross-platform compatibility (Windows and Mac)
 const currentModuleUrl = import.meta.url;
 let scriptPath = process.argv[1];
-// Handle Windows paths
-if (scriptPath.includes('\\')) {
+// Handle Windows paths - check if scriptPath exists first
+if (scriptPath && scriptPath.includes('\\')) {
     scriptPath = `file:///${scriptPath.replace(/\\/g, '/')}`;
-} else {
+} else if (scriptPath) {
     // Handle Mac/Unix paths
     scriptPath = `file://${scriptPath}`;
 }
 // Decode the URLs to ensure proper comparison
 const normalizedCurrentUrl = decodeURIComponent(currentModuleUrl);
-const normalizedScriptPath = decodeURIComponent(scriptPath);
-const isDirectExecution = normalizedCurrentUrl === normalizedScriptPath || process.env.MCP_STDIO_MODE === 'true';
+const normalizedScriptPath = scriptPath ? decodeURIComponent(scriptPath) : '';
+const isDirectExecution = (scriptPath && normalizedCurrentUrl === normalizedScriptPath) || process.env.MCP_STDIO_MODE === 'true';
 
 // Prioritize MCP_STDIO_MODE environment variable
 if (process.env.MCP_STDIO_MODE === 'true') {
