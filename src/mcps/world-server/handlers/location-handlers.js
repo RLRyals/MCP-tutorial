@@ -417,7 +417,7 @@ export class LocationHandlers {
                 SELECT b.title as book_title, 
                        ${chapter_id ? 'ch.title as chapter_title, ch.chapter_number' : 'NULL as chapter_title, NULL as chapter_number'}
                 FROM books b 
-                ${chapter_id ? 'LEFT JOIN chapters ch ON ch.chapter_id = $2 AND ch.book_id = b.id' : ''}
+                ${chapter_id ? 'LEFT JOIN chapters ch ON ch.id = $2 AND ch.book_id = b.id' : ''}
                 WHERE b.id = $1
             `;
             

@@ -158,6 +158,124 @@ class WorldMCPServer extends BaseMCPServer {
         };
         return handlers[toolName];
     }
+
+    // =============================================
+    // CROSS-COMPONENT ANALYSIS METHODS
+    // These methods use multiple handlers together
+    // =============================================
+
+    async handleGetWorldOverview(args) {
+        try {
+            const { series_id } = args;
+
+            // Get counts from each world component
+            const locationCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM locations WHERE series_id = $1',
+                [series_id]
+            );
+
+            const worldElementCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM world_elements WHERE series_id = $1',
+                [series_id]
+            );
+
+            const organizationCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM organizations WHERE series_id = $1',
+                [series_id]
+            );
+
+            // Get recent additions
+            const recentLocations = await this.db.query(
+                'SELECT name, location_type FROM locations WHERE series_id = $1 ORDER BY created_at DESC LIMIT 3',
+                [series_id]
+            );
+
+            const recentElements = await this.db.query(
+                'SELECT name, element_type FROM world_elements WHERE series_id = $1 ORDER BY created_at DESC LIMIT 3',
+                [series_id]
+            );
+
+            let overviewText = `World Overview for Series ${series_id}\n\n`;
+            overviewText += `📍 Locations: ${locationCount.rows[0].count}\n`;
+            overviewText += `🌟 World Elements: ${worldElementCount.rows[0].count}\n`;
+            overviewText += `🏛️ Organizations: ${organizationCount.rows[0].count}\n\n`;
+
+            if (recentLocations.rows.length > 0) {
+                overviewText += `Recent Locations:\n`;
+                recentLocations.rows.forEach(loc => {
+                    overviewText += `  • ${loc.name} (${loc.location_type})\n`;
+                });
+                overviewText += '\n';
+            }
+
+            if (recentElements.rows.length > 0) {
+                overviewText += `Recent World Elements:\n`;
+                recentElements.rows.forEach(elem => {
+                    overviewText += `  • ${elem.name} (${elem.element_type})\n`;
+                });
+            }
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: overviewText
+                }]
+            };
+        } catch (error) {
+            throw new Error(`Failed to get world overview: ${error.message}`);
+        }
+    }
+
+    async handleAnalyzeWorldUsage(args) {
+        try {
+            const { series_id, element_type, element_id } = args;
+
+            // Get usage tracking data
+            const usageQuery = `
+                SELECT wu.*, b.title as book_title, ch.title as chapter_title, ch.chapter_number
+                FROM world_element_usage wu
+                LEFT JOIN books b ON wu.book_id = b.id
+                LEFT JOIN chapters ch ON wu.chapter_id = ch.id
+                WHERE wu.element_type = $1 AND wu.element_id = $2
+                ORDER BY b.book_number, ch.chapter_number
+            `;
+
+            const usageResult = await this.db.query(usageQuery, [element_type, element_id]);
+
+            if (usageResult.rows.length === 0) {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: `No usage tracking found for ${element_type} ID ${element_id}`
+                    }]
+                };
+            }
+
+            let usageText = `Usage Analysis for ${element_type} ID ${element_id}\n\n`;
+            usageText += `Total Appearances: ${usageResult.rows.length}\n\n`;
+
+            usageResult.rows.forEach(usage => {
+                usageText += `📚 ${usage.book_title || 'Unknown Book'}`;
+                if (usage.chapter_title) {
+                    usageText += ` - Chapter ${usage.chapter_number}: ${usage.chapter_title}`;
+                }
+                usageText += '\n';
+                if (usage.usage_notes) {
+                    usageText += `   Notes: ${usage.usage_notes}\n`;
+                }
+                usageText += '\n';
+            });
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: usageText
+                }]
+            };
+        } catch (error) {
+            throw new Error(`Failed to analyze world usage: ${error.message}`);
+        }
+    }
 }
 
 export { WorldMCPServer };

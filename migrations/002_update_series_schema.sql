@@ -40,40 +40,11 @@ BEGIN
     ALTER TABLE books ADD COLUMN IF NOT EXISTS isbn VARCHAR(20);
     ALTER TABLE books ADD COLUMN IF NOT EXISTS page_count INTEGER;
 
-    -- Update indices to use new column name
+-- Update indices to use new column name
     DROP INDEX idx_series_author_id;
     CREATE INDEX idx_series_author_id ON series(author_id);
 
     -- Add new indices for new columns
-
-    CREATE INDEX IF NOT EXISTS idx_series_status ON series(status);
-    CREATE INDEX IF NOT EXISTS idx_series_start_year ON series(start_year);
-    -- Update foreign key constraints to point to new column name
-    ALTER TABLE books ADD CONSTRAINT books_series_id_fkey 
-        FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    ALTER TABLE series_timeline ADD CONSTRAINT series_timeline_series_id_fkey 
-        FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    -- ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey 
-    --     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-
-    -- Add new columns
-    ALTER TABLE series ADD COLUMN IF NOT EXISTS status VARCHAR(50) 
-        CHECK (status IN ('ongoing', 'completed', 'hiatus')) DEFAULT 'ongoing';
-    ALTER TABLE series ADD COLUMN IF NOT EXISTS start_year INTEGER;
-
-    ALTER TABLE authors ADD COLUMN IF NOT EXISTS bio TEXT;
-    ALTER TABLE authors ADD COLUMN IF NOT EXISTS birth_year INTEGER;
-    ALTER TABLE books ADD COLUMN IF NOT EXISTS publication_year INTEGER;
-    ALTER TABLE books ADD COLUMN IF NOT EXISTS description TEXT;
-    ALTER TABLE books ADD COLUMN IF NOT EXISTS isbn VARCHAR(20);
-    ALTER TABLE books ADD COLUMN IF NOT EXISTS page_count INTEGER;
-
-    -- Update indices to use new column name
-    DROP INDEX idx_series_author_id;
-    CREATE INDEX idx_series_author_id ON series(author_id);
-
-    -- Add new indices for new columns
-
     CREATE INDEX IF NOT EXISTS idx_series_status ON series(status);
     CREATE INDEX IF NOT EXISTS idx_series_start_year ON series(start_year);
 
