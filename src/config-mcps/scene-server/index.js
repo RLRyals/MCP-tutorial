@@ -14,17 +14,15 @@ import { BaseMCPServer } from '../../shared/base-server.js';
 
 // Import ONLY handler classes - NOT full servers
 // This prevents creating multiple database connections
-import { ChapterHandlers } from '../../mcps/book-server/handlers/chapter-handlers.js';
 import { SceneHandlers } from '../../mcps/book-server/handlers/scene-handlers.js';
-import { CharacterKnowledgeHandlers } from '../../mcps/character-server/handlers/character-knowledge-handlers.js';
 import { CharacterDetailHandlers } from '../../mcps/character-server/handlers/character-detail-handlers.js';
 import { CharacterTimelineHandlers } from '../../mcps/character-server/handlers/character-timeline-handlers.js';
-import { PlotThreadHandlers } from '../../mcps/plot-server/handlers/plot-thread-handlers.js';
-import { GenreExtensions } from '../../mcps/plot-server/handlers/genre-extensions.js';
-import { RelationshipHandlers } from '../../mcps/relationship-server/handlers/relationship-handlers.js';
-import { LocationHandlers } from '../../mcps/world-server/handlers/location-handlers.js';
-import { WorldElementHandlers } from '../../mcps/world-server/handlers/world-element-handlers.js';
-import { EventChapterMappingHandlers } from '../../mcps/timeline-server/handlers/timeline-chapter-mapping-handler.js';
+import { ValidationHandlers } from '../../mcps/writing-server/handlers/validation-handlers.js';
+import { SessionHandlers } from '../../mcps/writing-server/handlers/session-handlers.js';
+import { ExportHandlers } from '../../mcps/writing-server/handlers/export-handlers.js';
+
+// Import phase-specific schemas directly to reduce token usage
+import { minimalSceneWritingSchemas } from '../../mcps/book-server/schemas/scene-writing-schemas.js';
 
 class SceneWritingMCPServer extends BaseMCPServer {
     constructor() {
@@ -42,17 +40,12 @@ class SceneWritingMCPServer extends BaseMCPServer {
     initializeHandlers() {
         // Create handler instances passing our shared database
         // These handlers are lightweight and don't create their own DB connections
-        this.chapterHandlers = new ChapterHandlers(this.db);
         this.sceneHandlers = new SceneHandlers(this.db);
-        this.characterKnowledgeHandlers = new CharacterKnowledgeHandlers(this.db);
         this.characterDetailHandlers = new CharacterDetailHandlers(this.db);
         this.characterTimelineHandlers = new CharacterTimelineHandlers(this.db);
-        this.plotThreadHandlers = new PlotThreadHandlers(this.db);
-        this.informationRevealHandlers = new GenreExtensions(this.db);
-        this.relationshipHandlers = new RelationshipHandlers(this.db);
-        this.locationHandlers = new LocationHandlers(this.db);
-        this.worldElementHandlers = new WorldElementHandlers(this.db);
-        this.eventChapterMappingHandlers = new EventChapterMappingHandlers(this.db);
+        this.validationHandlers = new ValidationHandlers(this.db);
+        this.sessionHandlers = new SessionHandlers(this.db);
+        this.exportHandlers = new ExportHandlers(this.db);
 
         console.error('[SCENE-WRITING-SERVER] Handlers initialized with shared DB');
     }
@@ -60,76 +53,32 @@ class SceneWritingMCPServer extends BaseMCPServer {
     buildTools() {
         const tools = [];
 
-        // Book Server - Chapter Tools
-        const chapterTools = this.chapterHandlers.getChapterTools();
-        const getChapter = chapterTools.find(t => t.name === 'get_chapter');
-        if (getChapter) {
-            tools.push({
-                ...getChapter,
-                name: 'book_get_chapter',
-                description: '[BOOK] Review the chapter plan before writing scenes'
-            });
-        }
+        // BOOK - Scene Tools
+        tools.push({
+            ...minimalSceneWritingSchemas.create_scene,
+            name: 'book_create_scene',
+            description: '[BOOK] Create new scenes as they are written'
+        });
 
-        // Book Server - Scene Tools
-        const sceneTools = this.sceneHandlers.getSceneTools();
-        const getScene = sceneTools.find(t => t.name === 'get_scene');
-        if (getScene) {
-            tools.push({
-                ...getScene,
-                name: 'book_get_scene',
-                description: '[BOOK] Get details of a specific scene'
-            });
-        }
+        tools.push({
+            ...minimalSceneWritingSchemas.update_scene,
+            name: 'book_update_scene',
+            description: '[BOOK] Update scenes with word counts and status changes'
+        });
 
-        const listScenes = sceneTools.find(t => t.name === 'list_scenes');
-        if (listScenes) {
-            tools.push({
-                ...listScenes,
-                name: 'book_list_scenes',
-                description: '[BOOK] Review existing scenes before adding new ones'
-            });
-        }
+        tools.push({
+            ...minimalSceneWritingSchemas.get_scene,
+            name: 'book_get_scene',
+            description: '[BOOK] Get details of a specific scene'
+        });
 
-        const createScene = sceneTools.find(t => t.name === 'create_scene');
-        if (createScene) {
-            tools.push({
-                ...createScene,
-                name: 'book_create_scene',
-                description: '[BOOK] Create new scenes as they are written'
-            });
-        }
+        tools.push({
+            ...minimalSceneWritingSchemas.list_scenes,
+            name: 'book_list_scenes',
+            description: '[BOOK] Review existing scenes before adding new ones'
+        });
 
-        const updateScene = sceneTools.find(t => t.name === 'update_scene');
-        if (updateScene) {
-            tools.push({
-                ...updateScene,
-                name: 'book_update_scene',
-                description: '[BOOK] Update scenes with word counts and status changes'
-            });
-        }
-
-        // Character Server - Knowledge Tools
-        const knowledgeTools = this.characterKnowledgeHandlers.getCharacterKnowledgeTools();
-        const checkCharacterKnowledge = knowledgeTools.find(t => t.name === 'check_character_knowledge');
-        if (checkCharacterKnowledge) {
-            tools.push({
-                ...checkCharacterKnowledge,
-                name: 'character_check_character_knowledge',
-                description: '[CHARACTER] CRITICAL: Verify what characters know before writing'
-            });
-        }
-
-        const addCharacterKnowledgeWithChapter = knowledgeTools.find(t => t.name === 'add_character_knowledge_with_chapter');
-        if (addCharacterKnowledgeWithChapter) {
-            tools.push({
-                ...addCharacterKnowledgeWithChapter,
-                name: 'character_add_character_knowledge_with_chapter',
-                description: '[CHARACTER] Track new knowledge acquired in scenes'
-            });
-        }
-
-        // Character Server - Detail Tools
+        // CHARACTER Tools
         const detailTools = this.characterDetailHandlers.getCharacterDetailTools();
         const getCharacterDetails = detailTools.find(t => t.name === 'get_character_details');
         if (getCharacterDetails) {
@@ -140,7 +89,6 @@ class SceneWritingMCPServer extends BaseMCPServer {
             });
         }
 
-        // Character Server - Timeline/Presence Tools
         const characterTimelineTools = this.characterTimelineHandlers.getCharacterTimelineTools();
         const getCharactersInChapter = characterTimelineTools.find(t => t.name === 'get_characters_in_chapter');
         if (getCharactersInChapter) {
@@ -151,175 +99,130 @@ class SceneWritingMCPServer extends BaseMCPServer {
             });
         }
 
-        // Plot Server - Plot Thread Tools
-        const plotThreadTools = this.plotThreadHandlers.getPlotThreadTools();
-        const getPlotThreads = plotThreadTools.find(t => t.name === 'get_plot_threads');
-        if (getPlotThreads) {
+        const checkCharacterContinuity = characterTimelineTools.find(t => t.name === 'check_character_continuity');
+        if (checkCharacterContinuity) {
             tools.push({
-                ...getPlotThreads,
-                name: 'plot_get_plot_threads',
-                description: '[PLOT] Check active threads relevant to the scene'
+                ...checkCharacterContinuity,
+                name: 'character_check_character_continuity',
+                description: '[CHARACTER] Verify character consistency across chapter boundaries'
             });
         }
 
-        // Plot Server - Information Reveal Tools
-        const infoRevealTools = this.informationRevealHandlers.getUniversalGenreTools();
-        const createInfoReveal = infoRevealTools.find(t => t.name === 'create_information_reveal');
-        if (createInfoReveal) {
+        // WRITING - Validation Tools
+        const validationTools = this.validationHandlers.getValidationTools();
+        const validateChapterStructure = validationTools.find(t => t.name === 'validate_chapter_structure');
+        if (validateChapterStructure) {
             tools.push({
-                ...createInfoReveal,
-                name: 'plot_create_information_reveal',
-                description: '[PLOT] Track when important information is revealed'
+                ...validateChapterStructure,
+                name: 'writing_validate_chapter_structure',
+                description: '[WRITING] Validate chapter structure and consistency'
             });
         }
 
-        const addRevealEvidence = infoRevealTools.find(t => t.name === 'add_reveal_evidence');
-        if (addRevealEvidence) {
+        const validateBeatPlacement = validationTools.find(t => t.name === 'validate_beat_placement');
+        if (validateBeatPlacement) {
             tools.push({
-                ...addRevealEvidence,
-                name: 'plot_add_reveal_evidence',
-                description: '[PLOT] Track evidence discovered during scenes'
+                ...validateBeatPlacement,
+                name: 'writing_validate_beat_placement',
+                description: '[WRITING] Validate story beats and pacing'
             });
         }
 
-        // Relationship Server Tools
-        const relationshipTools = this.relationshipHandlers.getRelationshipTools();
-        const trackRelationshipDynamics = relationshipTools.find(t => t.name === 'track_relationship_dynamics');
-        if (trackRelationshipDynamics) {
+        const checkStructureViolations = validationTools.find(t => t.name === 'check_structure_violations');
+        if (checkStructureViolations) {
             tools.push({
-                ...trackRelationshipDynamics,
-                name: 'relationship_track_relationship_dynamics',
-                description: '[RELATIONSHIP] Record relationship developments in scenes'
+                ...checkStructureViolations,
+                name: 'writing_check_structure_violations',
+                description: '[WRITING] Check for structural inconsistencies'
             });
         }
 
-        const getRelationshipArc = relationshipTools.find(t => t.name === 'get_relationship_arc');
-        if (getRelationshipArc) {
+        // WRITING - Session & Export Tools
+        const exportTools = this.exportHandlers.getExportTools();
+        const wordCountTracking = exportTools.find(t => t.name === 'word_count_tracking');
+        if (wordCountTracking) {
             tools.push({
-                ...getRelationshipArc,
-                name: 'relationship_get_relationship_arc',
-                description: '[RELATIONSHIP] Check the current state of relationships'
+                ...wordCountTracking,
+                name: 'writing_word_count_tracking',
+                description: '[WRITING] Track word count progress'
             });
         }
 
-        // World Server - Location Tools
-        const locationTools = this.locationHandlers.getLocationTools();
-        const getLocations = locationTools.find(t => t.name === 'get_locations');
-        if (getLocations) {
+        const sessionTools = this.sessionHandlers.getSessionTools();
+        const logWritingSession = sessionTools.find(t => t.name === 'log_writing_session');
+        if (logWritingSession) {
             tools.push({
-                ...getLocations,
-                name: 'world_get_locations',
-                description: '[WORLD] Ensure consistent location descriptions'
+                ...logWritingSession,
+                name: 'log_writing_session',
+                description: 'Log writing session activity'
             });
         }
 
-        const trackLocationUsage = locationTools.find(t => t.name === 'track_location_usage');
-        if (trackLocationUsage) {
+        const getWritingProgress = sessionTools.find(t => t.name === 'get_writing_progress');
+        if (getWritingProgress) {
             tools.push({
-                ...trackLocationUsage,
-                name: 'world_track_location_usage',
-                description: '[WORLD] Record where scenes take place'
+                ...getWritingProgress,
+                name: 'get_writing_progress',
+                description: 'Get writing progress tracking'
             });
         }
 
-        // World Server - Element Tools
-        const worldElementTools = this.worldElementHandlers.getWorldElementTools();
-        const getWorldElements = worldElementTools.find(t => t.name === 'get_world_elements');
-        if (getWorldElements) {
+        const setWritingGoals = sessionTools.find(t => t.name === 'set_writing_goals');
+        if (setWritingGoals) {
             tools.push({
-                ...getWorldElements,
-                name: 'world_get_world_elements',
-                description: '[WORLD] Verify magical/technological system details'
+                ...setWritingGoals,
+                name: 'set_writing_goals',
+                description: 'Set writing goals'
             });
         }
 
-        const trackElementUsage = worldElementTools.find(t => t.name === 'track_element_usage');
-        if (trackElementUsage) {
+        const getProductivityAnalytics = sessionTools.find(t => t.name === 'get_productivity_analytics');
+        if (getProductivityAnalytics) {
             tools.push({
-                ...trackElementUsage,
-                name: 'world_track_element_usage',
-                description: '[WORLD] Record when magic/technology is used in scenes'
-            });
-        }
-
-        // Timeline Server Tools
-        const eventChapterMappingTools = this.eventChapterMappingHandlers.getEventChapterMappingTools();
-        const getChapterEvents = eventChapterMappingTools.find(t => t.name === 'get_chapter_events');
-        if (getChapterEvents) {
-            tools.push({
-                ...getChapterEvents,
-                name: 'timeline_get_chapter_events',
-                description: '[TIMELINE] See what events are happening chronologically'
-            });
-        }
-
-        const mapEventToChapter = eventChapterMappingTools.find(t => t.name === 'map_event_to_chapter');
-        if (mapEventToChapter) {
-            tools.push({
-                ...mapEventToChapter,
-                name: 'timeline_map_event_to_chapter',
-                description: '[TIMELINE] Record how events are presented in scenes'
+                ...getProductivityAnalytics,
+                name: 'get_productivity_analytics',
+                description: 'Get productivity analytics'
             });
         }
 
         return tools;
     }
 
-    getHandlerForTool(toolName) {
+    getToolHandler(toolName) {
         // Route to the appropriate handler based on tool name
+        // Use arrow functions to defer binding until runtime
         const handlerMap = {
-            // Book Server - Chapter
-            'book_get_chapter': () => this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers),
+            // BOOK - Scene Tools
+            'book_create_scene': (args) => this.sceneHandlers.handleCreateScene(args),
+            'book_update_scene': (args) => this.sceneHandlers.handleUpdateScene(args),
+            'book_get_scene': (args) => this.sceneHandlers.handleGetScene(args),
+            'book_list_scenes': (args) => this.sceneHandlers.handleListScenes(args),
 
-            // Book Server - Scene
-            'book_get_scene': () => this.sceneHandlers.handleGetScene.bind(this.sceneHandlers),
-            'book_list_scenes': () => this.sceneHandlers.handleListScenes.bind(this.sceneHandlers),
-            'book_create_scene': () => this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers),
-            'book_update_scene': () => this.sceneHandlers.handleUpdateScene.bind(this.sceneHandlers),
+            // CHARACTER Tools
+            'character_get_character_details': (args) => this.characterDetailHandlers.handleGetCharacterDetails(args),
+            'character_get_characters_in_chapter': (args) => this.characterTimelineHandlers.handleGetCharactersInChapter(args),
+            'character_check_character_continuity': (args) => this.characterTimelineHandlers.handleCheckCharacterContinuity(args),
 
-            // Character Server - Knowledge
-            'character_check_character_knowledge': () => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge.bind(this.characterKnowledgeHandlers),
-            'character_add_character_knowledge_with_chapter': () => this.characterKnowledgeHandlers.handleAddCharacterKnowledgeWithChapter.bind(this.characterKnowledgeHandlers),
+            // WRITING - Validation Tools
+            'writing_validate_chapter_structure': (args) => this.validationHandlers.handleValidateChapterStructure(args),
+            'writing_validate_beat_placement': (args) => this.validationHandlers.handleValidateBeatPlacement(args),
+            'writing_check_structure_violations': (args) => this.validationHandlers.handleCheckStructureViolations(args),
 
-            // Character Server - Details
-            'character_get_character_details': () => this.characterDetailHandlers.handleGetCharacterDetails.bind(this.characterDetailHandlers),
-
-            // Character Server - Timeline/Presence
-            'character_get_characters_in_chapter': () => this.characterTimelineHandlers.handleGetCharactersInChapter.bind(this.characterTimelineHandlers),
-
-            // Plot Server - Plot Threads
-            'plot_get_plot_threads': () => this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers),
-
-            // Plot Server - Information Reveals
-            'plot_create_information_reveal': () => this.informationRevealHandlers.handleCreateInformationReveal.bind(this.informationRevealHandlers),
-            'plot_add_reveal_evidence': () => this.informationRevealHandlers.handleAddRevealEvidence.bind(this.informationRevealHandlers),
-
-            // Relationship Server
-            'relationship_track_relationship_dynamics': () => this.relationshipHandlers.handleTrackRelationshipDynamics.bind(this.relationshipHandlers),
-            'relationship_get_relationship_arc': () => this.relationshipHandlers.handleGetRelationshipArc.bind(this.relationshipHandlers),
-
-            // World Server - Locations
-            'world_get_locations': () => this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
-            'world_track_location_usage': () => this.locationHandlers.handleTrackLocationUsage.bind(this.locationHandlers),
-
-            // World Server - Elements
-            'world_get_world_elements': () => this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
-            'world_track_element_usage': () => this.worldElementHandlers.handleTrackElementUsage.bind(this.worldElementHandlers),
-
-            // Timeline Server
-            'timeline_get_chapter_events': () => this.eventChapterMappingHandlers.handleGetChapterEvents.bind(this.eventChapterMappingHandlers),
-            'timeline_map_event_to_chapter': () => this.eventChapterMappingHandlers.handleMapEventToChapter.bind(this.eventChapterMappingHandlers)
+            // WRITING - Session & Export Tools
+            'writing_word_count_tracking': (args) => this.exportHandlers.handleWordCountTracking(args),
+            'log_writing_session': (args) => this.sessionHandlers.handleLogWritingSession(args),
+            'get_writing_progress': (args) => this.sessionHandlers.handleGetWritingProgress(args),
+            'set_writing_goals': (args) => this.sessionHandlers.handleSetWritingGoals(args),
+            'get_productivity_analytics': (args) => this.sessionHandlers.handleGetProductivityAnalytics(args)
         };
 
-        const handlerFactory = handlerMap[toolName];
-        return handlerFactory ? handlerFactory() : null;
+        return handlerMap[toolName] || null;
     }
 }
 
 export { SceneWritingMCPServer };
 
 // CLI runner when called directly
-import { fileURLToPath } from 'url';
 
 const normalizePath = (path) => {
     if (!path) return '';

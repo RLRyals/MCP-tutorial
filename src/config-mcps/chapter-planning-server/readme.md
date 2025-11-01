@@ -1,0 +1,31 @@
+# Chapter planning tools
+
+## TIMELINE	
+timeline_map_event_to_chapter
+update_timeline_event
+update_event_mapping
+
+## WORLD	
+world_track_location_usage
+world_track_element_usage
+world_check_world_consistency
+update_location
+update_world_element
+track_organization_activity
+update_organization
+
+## BOOK	
+book_create_chapter
+book_update_chapter
+book_get_chapter
+book_list_chapters
+
+## CHARACTER	
+character_add_character_knowledge_with_chapter
+character_get_characters_who_know
+CHARACTER	track_character_presence
+
+## PLOT	
+plot_create_information_reveal
+plot_add_reveal_evidence
+resolve_plot_thread

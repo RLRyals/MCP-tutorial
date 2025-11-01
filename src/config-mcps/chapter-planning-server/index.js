@@ -1,6 +1,6 @@
 // src/config-mcps/chapter-planning-server/index.js
 // Phase-based MCP Server: Chapter Planning Phase
-// Aggregates ONLY the tools needed during chapter planning - NO code duplication, ONE database connection
+// Works alongside core-content-server (always-on) - NO tool duplication
 
 // Protect stdout from debug logging in MCP stdio mode
 if (process.env.MCP_STDIO_MODE === 'true') {
@@ -12,17 +12,18 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 
 import { BaseMCPServer } from '../../shared/base-server.js';
 
-// Import ONLY handler classes - NOT full servers
-// This prevents creating multiple database connections
-import { PlotThreadHandlers } from '../../mcps/plot-server/handlers/plot-thread-handlers.js';
-import { GenreExtensions } from '../../mcps/plot-server/handlers/genre-extensions.js';
+// Import handler classes for chapter planning phase
+import { ChapterHandlers } from '../../mcps/book-server/handlers/chapter-handlers.js';
+import { TimelineEventHandlers } from '../../mcps/timeline-server/handlers/timeline-event-handlers.js';
+import { EventChapterMappingHandlers } from '../../mcps/timeline-server/handlers/timeline-chapter-mapping-handler.js';
+import { LocationHandlers } from '../../mcps/world-server/handlers/location-handlers.js';
+import { WorldElementHandlers } from '../../mcps/world-server/handlers/world-element-handlers.js';
+import { WorldManagementHandlers } from '../../mcps/world-server/handlers/world-management-handlers.js';
+import { OrganizationHandlers } from '../../mcps/world-server/handlers/organization-handlers.js';
 import { CharacterKnowledgeHandlers } from '../../mcps/character-server/handlers/character-knowledge-handlers.js';
 import { CharacterTimelineHandlers } from '../../mcps/character-server/handlers/character-timeline-handlers.js';
-import { LocationHandlers } from '../../mcps/world-server/handlers/location-handlers.js';
-import { RelationshipHandlers } from '../../mcps/relationship-server/handlers/relationship-handlers.js';
-import { TimelineEventHandlers } from '../../mcps/timeline-server/handlers/timeline-event-handlers.js';
-import { ChapterHandlers } from '../../mcps/book-server/handlers/chapter-handlers.js';
-import { SceneHandlers } from '../../mcps/book-server/handlers/scene-handlers.js';
+import { PlotThreadHandlers } from '../../mcps/plot-server/handlers/plot-thread-handlers.js';
+import { GenreExtensions } from '../../mcps/plot-server/handlers/genre-extensions.js';
 
 class ChapterPlanningMCPServer extends BaseMCPServer {
     constructor() {
@@ -38,162 +39,149 @@ class ChapterPlanningMCPServer extends BaseMCPServer {
     }
 
     initializeHandlers() {
-        // Create handler instances passing our shared database
-        // These handlers are lightweight and don't create their own DB connections
-        this.plotThreadHandlers = new PlotThreadHandlers(this.db);
-        this.informationRevealHandlers = new GenreExtensions(this.db);
+        // Initialize all handler instances for chapter planning phase
+        this.chapterHandlers = new ChapterHandlers(this.db);
+        this.timelineEventHandlers = new TimelineEventHandlers(this.db);
+        this.eventChapterMappingHandlers = new EventChapterMappingHandlers(this.db);
+        this.locationHandlers = new LocationHandlers(this.db);
+        this.worldElementHandlers = new WorldElementHandlers(this.db);
+        this.worldManagementHandlers = new WorldManagementHandlers(this.db);
+        this.organizationHandlers = new OrganizationHandlers(this.db);
         this.characterKnowledgeHandlers = new CharacterKnowledgeHandlers(this.db);
         this.characterTimelineHandlers = new CharacterTimelineHandlers(this.db);
-        this.locationHandlers = new LocationHandlers(this.db);
-        this.relationshipHandlers = new RelationshipHandlers(this.db);
-        this.timelineEventHandlers = new TimelineEventHandlers(this.db);
-        this.chapterHandlers = new ChapterHandlers(this.db);
-        this.sceneHandlers = new SceneHandlers(this.db);
+        this.plotThreadHandlers = new PlotThreadHandlers(this.db);
+        this.genreExtensionHandlers = new GenreExtensions(this.db);
 
-        console.error('[CHAPTER-PLANNING-SERVER] Handlers initialized with shared DB');
+        console.error('[CHAPTER-PLANNING-SERVER] All handlers initialized');
     }
 
     buildTools() {
         const tools = [];
 
-        // Plot thread tools: get_plot_threads
-        const plotThreadTools = this.plotThreadHandlers.getPlotThreadTools();
-        const getPlotThreads = plotThreadTools.find(t => t.name === 'get_plot_threads');
-        if (getPlotThreads) {
-            tools.push({
-                ...getPlotThreads,
-                name: 'plot_get_plot_threads',
-                description: `[PLOT] Get active plot threads for this chapter`
-            });
-        }
+        // =============================================
+        // TIMELINE TOOLS
+        // =============================================
+        const timelineTools = this.eventChapterMappingHandlers.getEventChapterMappingTools();
+        tools.push(
+            { ...timelineTools.find(t => t.name === 'map_event_to_chapter'), name: 'timeline_map_event_to_chapter' }
+        );
 
-        // Information reveal tools: create_information_reveal
-        const infoRevealTools = this.informationRevealHandlers.getUniversalGenreTools();
-        const createInfoReveal = infoRevealTools.find(t => t.name === 'create_information_reveal');
-        if (createInfoReveal) {
-            tools.push({
-                ...createInfoReveal,
-                name: 'plot_create_information_reveal',
-                description: `[PLOT] Plan key evidence or information to be revealed in this chapter`
-            });
-        }
+        const eventTools = this.timelineEventHandlers.getTimelineEventTools();
+        tools.push(
+            { ...eventTools.find(t => t.name === 'update_timeline_event'), name: 'update_timeline_event' },
+            { ...eventTools.find(t => t.name === 'update_event_mapping') || timelineTools.find(t => t.name === 'update_event_mapping'), name: 'update_event_mapping' }
+        );
 
-        // Character knowledge tools: check_character_knowledge
-        const knowledgeTools = this.characterKnowledgeHandlers.getCharacterKnowledgeTools();
-        const checkCharacterKnowledge = knowledgeTools.find(t => t.name === 'check_character_knowledge');
-        if (checkCharacterKnowledge) {
-            tools.push({
-                ...checkCharacterKnowledge,
-                name: 'character_check_character_knowledge',
-                description: `[CHARACTER] Verify what a character knows before planning scenes`
-            });
-        }
-
-        // Character timeline/presence tools: get_characters_in_chapter
-        const characterTimelineTools = this.characterTimelineHandlers.getCharacterTimelineTools();
-        const getCharactersInChapter = characterTimelineTools.find(t => t.name === 'get_characters_in_chapter');
-        if (getCharactersInChapter) {
-            tools.push({
-                ...getCharactersInChapter,
-                name: 'character_get_characters_in_chapter',
-                description: `[CHARACTER] Get characters present in this chapter`
-            });
-        }
-
-        // Location tools: get_locations
+        // =============================================
+        // WORLD TOOLS
+        // =============================================
         const locationTools = this.locationHandlers.getLocationTools();
-        const getLocations = locationTools.find(t => t.name === 'get_locations');
-        if (getLocations) {
-            tools.push({
-                ...getLocations,
-                name: 'world_get_locations',
-                description: `[WORLD] Get location details for chapter settings`
-            });
-        }
+        tools.push(
+            { ...locationTools.find(t => t.name === 'track_location_usage'), name: 'world_track_location_usage' }
+        );
 
-        // Relationship tools: track_relationship_dynamics
-        const relationshipTools = this.relationshipHandlers.getRelationshipTools();
-        const trackRelationshipDynamics = relationshipTools.find(t => t.name === 'track_relationship_dynamics');
-        if (trackRelationshipDynamics) {
-            tools.push({
-                ...trackRelationshipDynamics,
-                name: 'relationship_track_relationship_dynamics',
-                description: `[RELATIONSHIP] Plan relationship developments in this chapter`
-            });
-        }
+        const worldElementTools = this.worldElementHandlers.getWorldElementTools();
+        tools.push(
+            { ...worldElementTools.find(t => t.name === 'track_element_usage'), name: 'world_track_element_usage' }
+        );
 
-        // Timeline tools: map_event_to_chapter
-        const timelineTools = this.timelineEventHandlers.getTimelineEventTools();
-        const mapEventToChapter = timelineTools.find(t => t.name === 'map_event_to_chapter');
-        if (mapEventToChapter) {
-            tools.push({
-                ...mapEventToChapter,
-                name: 'timeline_map_event_to_chapter',
-                description: `[TIMELINE] Plan how timeline events appear in this chapter`
-            });
-        }
+        const worldManagementTools = this.worldManagementHandlers.getWorldManagementTools();
+        tools.push(
+            { ...worldManagementTools.find(t => t.name === 'check_world_consistency'), name: 'world_check_world_consistency' }
+        );
 
-        // Chapter tools from book server
+        tools.push(
+            { ...locationTools.find(t => t.name === 'update_location'), name: 'update_location' }
+        );
+
+        tools.push(
+            { ...worldElementTools.find(t => t.name === 'update_world_element'), name: 'update_world_element' }
+        );
+
+        const organizationTools = this.organizationHandlers.getOrganizationTools();
+        tools.push(
+            { ...organizationTools.find(t => t.name === 'track_organization_activity'), name: 'track_organization_activity' },
+            { ...organizationTools.find(t => t.name === 'update_organization'), name: 'update_organization' }
+        );
+
+        // =============================================
+        // BOOK TOOLS
+        // =============================================
         const chapterTools = this.chapterHandlers.getChapterTools();
-        const createChapter = chapterTools.find(t => t.name === 'create_chapter');
-        if (createChapter) {
-            tools.push({
-                ...createChapter,
-                name: 'book_create_chapter',
-                description: '[BOOK] Create a new chapter in a book'
-            });
-        }
-        
-        const getChapter = chapterTools.find(t => t.name === 'get_chapter');
-        if (getChapter) {
-            tools.push({
-                ...getChapter,
-                name: 'book_get_chapter',
-                description: '[BOOK] Get chapter details'
-            });
-        }
-        
-        // Scene tools from book server
-        const sceneTools = this.sceneHandlers.getSceneTools();
-        const createScene = sceneTools.find(t => t.name === 'create_scene');
-        if (createScene) {
-            tools.push({
-                ...createScene,
-                name: 'book_create_scene',
-                description: '[BOOK] Create a new scene within a chapter'
-            });
-        }
-        
-        const listScenes = sceneTools.find(t => t.name === 'list_scenes');
-        if (listScenes) {
-            tools.push({
-                ...listScenes,
-                name: 'book_list_scenes',
-                description: '[BOOK] List scenes in a chapter'
-            });
-        }
+        tools.push(
+            { ...chapterTools.find(t => t.name === 'create_chapter'), name: 'book_create_chapter' },
+            { ...chapterTools.find(t => t.name === 'update_chapter'), name: 'book_update_chapter' },
+            { ...chapterTools.find(t => t.name === 'get_chapter'), name: 'book_get_chapter' },
+            { ...chapterTools.find(t => t.name === 'list_chapters'), name: 'book_list_chapters' }
+        );
 
-        return tools;
+        // =============================================
+        // CHARACTER TOOLS
+        // =============================================
+        const knowledgeTools = this.characterKnowledgeHandlers.getCharacterKnowledgeTools();
+        tools.push(
+            { ...knowledgeTools.find(t => t.name === 'add_character_knowledge_with_chapter'), name: 'character_add_character_knowledge_with_chapter' },
+            { ...knowledgeTools.find(t => t.name === 'get_characters_who_know'), name: 'character_get_characters_who_know' }
+        );
+
+        const characterTimelineTools = this.characterTimelineHandlers.getCharacterTimelineTools();
+        tools.push(
+            { ...characterTimelineTools.find(t => t.name === 'track_character_presence'), name: 'track_character_presence' }
+        );
+
+        // =============================================
+        // PLOT TOOLS
+        // =============================================
+        const genreTools = this.genreExtensionHandlers.getUniversalGenreTools();
+        tools.push(
+            { ...genreTools.find(t => t.name === 'create_information_reveal'), name: 'plot_create_information_reveal' },
+            { ...genreTools.find(t => t.name === 'add_reveal_evidence'), name: 'plot_add_reveal_evidence' }
+        );
+
+        const plotTools = this.plotThreadHandlers.getPlotThreadTools();
+        tools.push(
+            { ...plotTools.find(t => t.name === 'resolve_plot_thread'), name: 'resolve_plot_thread' }
+        );
+
+        // Filter out any undefined tools
+        return tools.filter(t => t && t.name);
     }
 
-    getHandlerForTool(toolName) {
+    getToolHandler(toolName) {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
-            'plot_get_plot_threads': () => this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers),
-            'plot_create_information_reveal': () => this.informationRevealHandlers.handleCreateInformationReveal.bind(this.informationRevealHandlers),
-            'character_check_character_knowledge': () => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge.bind(this.characterKnowledgeHandlers),
-            'character_get_characters_in_chapter': () => this.characterTimelineHandlers.handleGetCharactersInChapter.bind(this.characterTimelineHandlers),
-            'world_get_locations': () => this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
-            'relationship_track_relationship_dynamics': () => this.relationshipHandlers.handleTrackRelationshipDynamics.bind(this.relationshipHandlers),
-            'timeline_map_event_to_chapter': () => this.timelineEventHandlers.handleMapEventToChapter.bind(this.timelineEventHandlers),
-            'book_create_chapter': () => this.chapterHandlers.handleCreateChapter.bind(this.chapterHandlers),
-            'book_get_chapter': () => this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers),
-            'book_create_scene': () => this.sceneHandlers.handleCreateScene.bind(this.sceneHandlers),
-            'book_list_scenes': () => this.sceneHandlers.handleListScenes.bind(this.sceneHandlers)
+            // Timeline tools
+            'timeline_map_event_to_chapter': (args) => this.eventChapterMappingHandlers.handleMapEventToChapter(args),
+            'update_timeline_event': (args) => this.timelineEventHandlers.handleUpdateTimelineEvent(args),
+            'update_event_mapping': (args) => this.eventChapterMappingHandlers.handleUpdateEventMapping(args),
+
+            // World tools
+            'world_track_location_usage': (args) => this.locationHandlers.handleTrackLocationUsage(args),
+            'world_track_element_usage': (args) => this.worldElementHandlers.handleTrackElementUsage(args),
+            'world_check_world_consistency': (args) => this.worldManagementHandlers.handleCheckWorldConsistency(args),
+            'update_location': (args) => this.locationHandlers.handleUpdateLocation(args),
+            'update_world_element': (args) => this.worldElementHandlers.handleUpdateWorldElement(args),
+            'track_organization_activity': (args) => this.organizationHandlers.handleTrackOrganizationActivity(args),
+            'update_organization': (args) => this.organizationHandlers.handleUpdateOrganization(args),
+
+            // Book tools
+            'book_create_chapter': (args) => this.chapterHandlers.handleCreateChapter(args),
+            'book_update_chapter': (args) => this.chapterHandlers.handleUpdateChapter(args),
+            'book_get_chapter': (args) => this.chapterHandlers.handleGetChapter(args),
+            'book_list_chapters': (args) => this.chapterHandlers.handleListChapters(args),
+
+            // Character tools
+            'character_add_character_knowledge_with_chapter': (args) => this.characterKnowledgeHandlers.handleAddCharacterKnowledgeWithChapter(args),
+            'character_get_characters_who_know': (args) => this.characterKnowledgeHandlers.handleGetCharactersWhoKnow(args),
+            'track_character_presence': (args) => this.characterTimelineHandlers.handleTrackCharacterPresence(args),
+
+            // Plot tools
+            'plot_create_information_reveal': (args) => this.genreExtensionHandlers.handleCreateInformationReveal(args),
+            'plot_add_reveal_evidence': (args) => this.genreExtensionHandlers.handleAddRevealEvidence(args),
+            'resolve_plot_thread': (args) => this.plotThreadHandlers.handleResolvePlotThread(args)
         };
 
-        const handlerFactory = handlerMap[toolName];
-        return handlerFactory ? handlerFactory() : null;
+        return handlerMap[toolName] || null;
     }
 }
 

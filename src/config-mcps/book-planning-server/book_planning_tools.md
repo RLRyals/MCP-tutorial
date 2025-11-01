@@ -7,43 +7,39 @@ book-server:update_book - Update book details
 book-server:get_book - Retrieve book information
 book-server:list_books - View all books in the series
 
-2. Book-Specific Plot Tools
+2. Plot Tools
 
-plot-server:create_plot_thread - Create book-specific plot threads (case arc)
-plot-server:update_plot_thread - Update plot thread progression
-plot-server:get_plot_threads - Retrieve plot thread details with filters
-plot-server:resolve_plot_thread - Mark book-specific threads as resolved
+plot_create_plot_thread
+plot_update_plot_thread
+plot_define_world_system
 
-3. Book Timeline Tools
+3. Timeline Tools
 
 timeline-server:create_timeline_event - Create key chronological events
-timeline-server:list_timeline_events - View events in chronological order
-timeline-server:get_character_timeline_events - View events for specific character
+Notes: this tool needs be be more flexible in terms of date to include reletive of Fantasy dates. 
 
-4. Book Character Development Tools
+4. Character Development Tools
 
-character-server:update_character - Update character status/development
-character-server:add_character_detail - Add book-specific character details
-character-server:create_character_arc - Create character arc for this book
+character_create_character
+character_update_character
+character_add_character_detail
+character_create_character_arc
+character_check_character_knowledge
+update_character_detail
 
-5. Book Relationship Development Tools
+5. Relationship Development Tools
 
-relationship-server:update_relationship_arc - Update relationship progression
-relationship-server:create_relationship_arc - Create book-specific relationships
-relationship-server:list_relationship_arcs - View relationships with filters
+relationship_create_relationship_arc
+relationship_track_relationship_dynamics  
 
-6. Book-Specific World Elements
+6. World Elements
 
-world-server:create_location - Create book-specific locations
-world-server:create_organization - Create book-specific organizations
-world-server:create_world_element - Create book-specific supernatural elements
+world_create_location
+world_create_organization
+world_create_world_element
 
-7. Information Reveals Planning
+7. Meta Tools
 
-plot-server:create_information_reveal - Plan major revelations
-plot-server:add_reveal_evidence - Plan supporting evidence
-
-8. Initial Chapter Framework
-
-book-server:create_chapter - Create initial chapter structure
-book-server:list_chapters - View planned chapters
+metadata_get_available_options
+create_lookup_option
+assign_book_genres 

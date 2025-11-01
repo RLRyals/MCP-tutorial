@@ -31,6 +31,11 @@ import { WorldElementHandlers } from '../../mcps/world-server/handlers/world-ele
 import { OrganizationHandlers } from '../../mcps/world-server/handlers/organization-handlers.js';
 import { WorldManagementHandlers } from '../../mcps/world-server/handlers/world-management-handlers.js';
 
+// Import phase-specific schemas directly to reduce token usage
+import { revisionSchemas } from '../../mcps/book-server/schemas/revision-schemas.js';
+import { sceneWritingSchemas } from '../../mcps/book-server/schemas/scene-writing-schemas.js';
+import { plotThreadToolsSchema } from '../../mcps/plot-server/schemas/plot-tools-schema.js';
+
 class RevisionMCPServer extends BaseMCPServer {
     constructor() {
         super('revision-phase', '1.0.0');
@@ -70,81 +75,54 @@ class RevisionMCPServer extends BaseMCPServer {
     buildTools() {
         const tools = [];
 
-        // Book Server - Structure Revision Tools
-        const bookTools = this.bookHandlers.getBookTools();
-        const getBook = bookTools.find(t => t.name === 'get_book');
-        if (getBook) {
-            tools.push({
-                ...getBook,
-                name: 'book_get_book',
-                description: '[BOOK] Review the overall book structure and goals'
-            });
-        }
+        // Book Server - Structure Revision Tools - use revision schemas directly
+        tools.push({
+            ...revisionSchemas.get_book,
+            name: 'book_get_book',
+            description: '[BOOK] Review the overall book structure and goals'
+        });
 
-        const chapterTools = this.chapterHandlers.getChapterTools();
-        const getChapter = chapterTools.find(t => t.name === 'get_chapter');
-        if (getChapter) {
-            tools.push({
-                ...getChapter,
-                name: 'book_get_chapter',
-                description: '[BOOK] Examine chapter structure and details'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.get_chapter,
+            name: 'book_get_chapter',
+            description: '[BOOK] Examine chapter structure and details'
+        });
 
-        const listChapters = chapterTools.find(t => t.name === 'list_chapters');
-        if (listChapters) {
-            tools.push({
-                ...listChapters,
-                name: 'book_list_chapters',
-                description: '[BOOK] Review chapter structure and flow'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.list_chapters,
+            name: 'book_list_chapters',
+            description: '[BOOK] Review chapter structure and flow'
+        });
 
-        const updateChapter = chapterTools.find(t => t.name === 'update_chapter');
-        if (updateChapter) {
-            tools.push({
-                ...updateChapter,
-                name: 'book_update_chapter',
-                description: '[BOOK] Update chapter status and make structural changes'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.update_chapter,
+            name: 'book_update_chapter',
+            description: '[BOOK] Update chapter status and make structural changes'
+        });
 
-        const sceneTools = this.sceneHandlers.getSceneTools();
-        const getScene = sceneTools.find(t => t.name === 'get_scene');
-        if (getScene) {
-            tools.push({
-                ...getScene,
-                name: 'book_get_scene',
-                description: '[BOOK] Review scene content in detail'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.get_scene,
+            name: 'book_get_scene',
+            description: '[BOOK] Review scene content in detail'
+        });
 
-        const listScenes = sceneTools.find(t => t.name === 'list_scenes');
-        if (listScenes) {
-            tools.push({
-                ...listScenes,
-                name: 'book_list_scenes',
-                description: '[BOOK] Review scene content and pacing'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.list_scenes,
+            name: 'book_list_scenes',
+            description: '[BOOK] Review scene content and pacing'
+        });
 
-        const updateScene = sceneTools.find(t => t.name === 'update_scene');
-        if (updateScene) {
-            tools.push({
-                ...updateScene,
-                name: 'book_update_scene',
-                description: '[BOOK] Revise scene content, dialogue, descriptions'
-            });
-        }
+        tools.push({
+            ...revisionSchemas.update_scene,
+            name: 'book_update_scene',
+            description: '[BOOK] Revise scene content, dialogue, descriptions'
+        });
 
-        const reorderScenes = sceneTools.find(t => t.name === 'reorder_scenes');
-        if (reorderScenes) {
-            tools.push({
-                ...reorderScenes,
-                name: 'book_reorder_scenes',
-                description: '[BOOK] Adjust scene sequencing for better flow'
-            });
-        }
+        tools.push({
+            ...sceneWritingSchemas.reorder_scenes,
+            name: 'book_reorder_scenes',
+            description: '[BOOK] Adjust scene sequencing for better flow'
+        });
 
         // Writing Server - Validation and Quality Tools
         const validationTools = this.validationHandlers.getValidationTools();
@@ -234,9 +212,8 @@ class RevisionMCPServer extends BaseMCPServer {
             });
         }
 
-        // Plot Server - Arc Coherence Tools
-        const plotThreadTools = this.plotThreadHandlers.getPlotThreadTools();
-        const getPlotThreads = plotThreadTools.find(t => t.name === 'get_plot_threads');
+        // Plot Server - Arc Coherence Tools - import schema directly
+        const getPlotThreads = plotThreadToolsSchema.find(t => t.name === 'get_plot_threads');
         if (getPlotThreads) {
             tools.push({
                 ...getPlotThreads,
@@ -245,7 +222,7 @@ class RevisionMCPServer extends BaseMCPServer {
             });
         }
 
-        const updatePlotThread = plotThreadTools.find(t => t.name === 'update_plot_thread');
+        const updatePlotThread = plotThreadToolsSchema.find(t => t.name === 'update_plot_thread');
         if (updatePlotThread) {
             tools.push({
                 ...updatePlotThread,
@@ -348,54 +325,53 @@ class RevisionMCPServer extends BaseMCPServer {
         return tools;
     }
 
-    getHandlerForTool(toolName) {
+    getToolHandler(toolName) {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
             // Book Server - Structure
-            'book_get_book': () => this.bookHandlers.handleGetBook.bind(this.bookHandlers),
-            'book_get_chapter': () => this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers),
-            'book_list_chapters': () => this.chapterHandlers.handleListChapters.bind(this.chapterHandlers),
-            'book_update_chapter': () => this.chapterHandlers.handleUpdateChapter.bind(this.chapterHandlers),
-            'book_get_scene': () => this.sceneHandlers.handleGetScene.bind(this.sceneHandlers),
-            'book_list_scenes': () => this.sceneHandlers.handleListScenes.bind(this.sceneHandlers),
-            'book_update_scene': () => this.sceneHandlers.handleUpdateScene.bind(this.sceneHandlers),
-            'book_reorder_scenes': () => this.sceneHandlers.handleReorderScenes.bind(this.sceneHandlers),
+            'book_get_book': this.bookHandlers.handleGetBook.bind(this.bookHandlers),
+            'book_get_chapter': this.chapterHandlers.handleGetChapter.bind(this.chapterHandlers),
+            'book_list_chapters': this.chapterHandlers.handleListChapters.bind(this.chapterHandlers),
+            'book_update_chapter': this.chapterHandlers.handleUpdateChapter.bind(this.chapterHandlers),
+            'book_get_scene': this.sceneHandlers.handleGetScene.bind(this.sceneHandlers),
+            'book_list_scenes': this.sceneHandlers.handleListScenes.bind(this.sceneHandlers),
+            'book_update_scene': this.sceneHandlers.handleUpdateScene.bind(this.sceneHandlers),
+            'book_reorder_scenes': this.sceneHandlers.handleReorderScenes.bind(this.sceneHandlers),
 
             // Writing Server - Validation and Quality
-            'writing_validate_chapter_structure': () => this.validationHandlers.handleValidateChapterStructure.bind(this.validationHandlers),
-            'writing_validate_beat_placement': () => this.validationHandlers.handleValidateBeatPlacement.bind(this.validationHandlers),
-            'writing_check_structure_violations': () => this.validationHandlers.handleCheckStructureViolations.bind(this.validationHandlers),
-            'writing_word_count_tracking': () => this.exportHandlers.handleWordCountTracking.bind(this.exportHandlers),
-            'writing_export_manuscript': () => this.exportHandlers.handleExportManuscript.bind(this.exportHandlers),
+            'writing_validate_chapter_structure': this.validationHandlers.handleValidateChapterStructure.bind(this.validationHandlers),
+            'writing_validate_beat_placement': this.validationHandlers.handleValidateBeatPlacement.bind(this.validationHandlers),
+            'writing_check_structure_violations': this.validationHandlers.handleCheckStructureViolations.bind(this.validationHandlers),
+            'writing_word_count_tracking': this.exportHandlers.handleWordCountTracking.bind(this.exportHandlers),
+            'writing_export_manuscript': this.exportHandlers.handleExportManuscript.bind(this.exportHandlers),
 
             // Character Server - Continuity
-            'character_check_character_continuity': () => this.characterTimelineHandlers.handleCheckCharacterContinuity.bind(this.characterTimelineHandlers),
-            'character_get_character_timeline': () => this.characterTimelineHandlers.handleGetCharacterTimeline.bind(this.characterTimelineHandlers),
-            'character_get_character_details': () => this.characterDetailHandlers.handleGetCharacterDetails.bind(this.characterDetailHandlers),
-            'character_get_characters_who_know': () => this.characterKnowledgeHandlers.handleGetCharactersWhoKnow.bind(this.characterKnowledgeHandlers),
+            'character_check_character_continuity': this.characterTimelineHandlers.handleCheckCharacterContinuity.bind(this.characterTimelineHandlers),
+            'character_get_character_timeline': this.characterTimelineHandlers.handleGetCharacterTimeline.bind(this.characterTimelineHandlers),
+            'character_get_character_details': this.characterDetailHandlers.handleGetCharacterDetails.bind(this.characterDetailHandlers),
+            'character_get_characters_who_know': this.characterKnowledgeHandlers.handleGetCharactersWhoKnow.bind(this.characterKnowledgeHandlers),
 
             // Plot Server - Arc Coherence
-            'plot_get_plot_threads': () => this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers),
-            'plot_update_plot_thread': () => this.plotThreadHandlers.handleUpdatePlotThread.bind(this.plotThreadHandlers),
+            'plot_get_plot_threads': this.plotThreadHandlers.handleGetPlotThreads.bind(this.plotThreadHandlers),
+            'plot_update_plot_thread': this.plotThreadHandlers.handleUpdatePlotThread.bind(this.plotThreadHandlers),
 
             // Relationship Server - Dynamic Consistency
-            'relationship_get_relationship_arc': () => this.relationshipHandlers.handleGetRelationshipArc.bind(this.relationshipHandlers),
-            'relationship_get_relationship_timeline': () => this.relationshipHandlers.handleGetRelationshipTimeline.bind(this.relationshipHandlers),
+            'relationship_get_relationship_arc': this.relationshipHandlers.handleGetRelationshipArc.bind(this.relationshipHandlers),
+            'relationship_get_relationship_timeline': this.relationshipHandlers.handleGetRelationshipTimeline.bind(this.relationshipHandlers),
 
             // Timeline Server - Chronological Consistency
-            'timeline_list_timeline_events': () => this.timelineEventHandlers.handleListTimelineEvents.bind(this.timelineEventHandlers),
-            'timeline_get_event_mappings': () => this.eventChapterMappingHandlers.handleGetEventMappings.bind(this.eventChapterMappingHandlers),
-            'timeline_analyze_narrative_structure': () => this.eventChapterMappingHandlers.handleAnalyzeNarrativeStructure.bind(this.eventChapterMappingHandlers),
+            'timeline_list_timeline_events': this.timelineEventHandlers.handleListTimelineEvents.bind(this.timelineEventHandlers),
+            'timeline_get_event_mappings': this.eventChapterMappingHandlers.handleGetEventMappings.bind(this.eventChapterMappingHandlers),
+            'timeline_analyze_narrative_structure': this.eventChapterMappingHandlers.handleAnalyzeNarrativeStructure.bind(this.eventChapterMappingHandlers),
 
             // World Server - Setting Consistency
-            'world_get_locations': () => this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
-            'world_get_world_elements': () => this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
-            'world_get_organizations': () => this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers),
-            'world_check_world_consistency': () => this.worldManagementHandlers.handleCheckWorldConsistency.bind(this.worldManagementHandlers)
+            'world_get_locations': this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
+            'world_get_world_elements': this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
+            'world_get_organizations': this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers),
+            'world_check_world_consistency': this.worldManagementHandlers.handleCheckWorldConsistency.bind(this.worldManagementHandlers)
         };
 
-        const handlerFactory = handlerMap[toolName];
-        return handlerFactory ? handlerFactory() : null;
+        return handlerMap[toolName] || null;
     }
 }
 

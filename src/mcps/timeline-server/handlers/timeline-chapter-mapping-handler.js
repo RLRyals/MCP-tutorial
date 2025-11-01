@@ -1,10 +1,12 @@
 /**
  * Timeline Event-Chapter Mapping Handler for Timeline Server MCP
- * 
+ *
  * Manages the relationship between chronological timeline events and their
  * presentation in narrative chapters. Supports non-linear storytelling,
  * multiple POVs, flashbacks, and other advanced narrative techniques.
  */
+
+import { eventChapterMappingSchemas } from '../schemas/timeline-chapter-mapping-schema.js';
 
 export class EventChapterMappingHandlers {
     /**
@@ -19,6 +21,11 @@ export class EventChapterMappingHandlers {
      * @returns {Array} Array of tool definitions
      */
     getEventChapterMappingTools() {
+        return eventChapterMappingSchemas;
+    }
+
+    // Legacy method for backward compatibility - returns inline schemas
+    _getEventChapterMappingToolsInline() {
         return [
             {
                 name: 'map_event_to_chapter',

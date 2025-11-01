@@ -2,6 +2,8 @@
 // Core Book Management Handler - CRUD operations for books within series
 // Designed for AI Writing Teams to manage book-level story structure
 
+import { bookPlanningSchemas } from '../schemas/book-planning-schemas.js';
+
 export class BookHandlers {
     constructor(db) {
         this.db = db;
@@ -11,172 +13,12 @@ export class BookHandlers {
     // BOOK TOOL DEFINITIONS
     // =============================================
     getBookTools() {
+        // Import schemas from external file to reduce handler size and token usage
         return [
-            {
-                name: 'list_books',
-                description: 'List all books, optionally filtered by series',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        series_id: { 
-                            type: 'integer', 
-                            description: 'Filter by series ID (optional)' 
-                        },
-                        status: {
-                            type: 'string',
-                            enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                            description: 'Filter by book status (optional)'
-                        },
-                        include_stats: {
-                            type: 'boolean',
-                            default: false,
-                            description: 'Include chapter and word count statistics'
-                        }
-                    },
-                    required: []
-                }
-            },
-            {
-                name: 'get_book',
-                description: 'Get detailed information about a specific book',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        book_id: { 
-                            type: 'integer', 
-                            description: 'The ID of the book' 
-                        },
-                        include_chapters: {
-                            type: 'boolean',
-                            default: false,
-                            description: 'Include chapter summary information'
-                        }
-                    },
-                    required: ['book_id']
-                }
-            },
-            {
-                name: 'create_book',
-                description: 'Create a new book in a series',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        title: { 
-                            type: 'string', 
-                            description: 'Book title' 
-                        },
-                        series_id: { 
-                            type: 'integer', 
-                            description: 'ID of the series this book belongs to' 
-                        },
-                        book_number: { 
-                            type: 'integer', 
-                            description: 'Position in the series' 
-                        },
-                        status: { 
-                            type: 'string', 
-                            enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                            default: 'planned',
-                            description: 'Book status' 
-                        },
-                        target_word_count: { 
-                            type: 'integer', 
-                            description: 'Target word count for the book' 
-                        },
-                        actual_word_count: { 
-                            type: 'integer', 
-                            default: 0,
-                            description: 'Current word count of the book' 
-                        },
-                        publication_year: { 
-                            type: 'integer', 
-                            description: 'Year of publication' 
-                        },
-                        description: { 
-                            type: 'string', 
-                            description: 'Book description/summary' 
-                        },
-                        isbn: { 
-                            type: 'string', 
-                            description: 'ISBN number' 
-                        },
-                        page_count: { 
-                            type: 'integer', 
-                            description: 'Number of pages' 
-                        },
-                        cover_image_url: {
-                            type: 'string',
-                            description: 'URL to book cover image'
-                        },
-                        genre_names: {
-                            type: 'array',
-                            items: { type: 'string' },
-                            description: 'Genre names for this specific book'
-                        }
-                    },
-                    required: ['title', 'series_id', 'book_number']
-                }
-            },
-            {
-                name: 'update_book',
-                description: 'Update an existing book',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        book_id: { 
-                            type: 'integer', 
-                            description: 'The ID of the book to update' 
-                        },
-                        title: { 
-                            type: 'string', 
-                            description: 'Book title' 
-                        },
-                        book_number: { 
-                            type: 'integer', 
-                            description: 'Position in the series' 
-                        },
-                        status: {
-                            type: 'string',
-                            enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                            description: 'Book status'
-                        },
-                        target_word_count: {
-                            type: 'integer',
-                            description: 'Target word count for the book'
-                        },
-                        actual_word_count: {
-                            type: 'integer',
-                            description: 'Current word count of the book'
-                        },
-                        publication_year: { 
-                            type: 'integer', 
-                            description: 'Year of publication' 
-                        },
-                        isbn: { 
-                            type: 'string', 
-                            description: 'ISBN number' 
-                        },
-                        page_count: { 
-                            type: 'integer', 
-                            description: 'Number of pages' 
-                        },
-                        description: { 
-                            type: 'string', 
-                            description: 'Book description/summary' 
-                        },
-                        cover_image_url: {
-                            type: 'string',
-                            description: 'URL to book cover image'
-                        },
-                        genre_names: {
-                            type: 'array',
-                            items: { type: 'string' },
-                            description: 'Genre names for this specific book'
-                        }
-                    },
-                    required: ['book_id']
-                }
-            },
+            bookPlanningSchemas.list_books,
+            bookPlanningSchemas.get_book,
+            bookPlanningSchemas.create_book,
+            bookPlanningSchemas.update_book,
             {
                 name: 'delete_book',
                 description: 'Delete a book and all its chapters/scenes',

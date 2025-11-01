@@ -102,10 +102,10 @@ export const bookToolsSchema = [
                     type: 'string',
                     description: 'URL to book cover image'
                 },
-                genre_tags: {
+                genre_names: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Genre tags for this specific book'
+                    description: 'Genre names for this specific book'
                 }
             },
             required: ['title', 'series_id', 'book_number']
@@ -162,10 +162,10 @@ export const bookToolsSchema = [
                     type: 'string',
                     description: 'URL to book cover image'
                 },
-                genre_tags: {
+                genre_names: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Genre tags for this specific book'
+                    description: 'Genre names for this specific book'
                 }
             },
             required: ['book_id']

@@ -2,6 +2,8 @@
 // World Management Handler - FULLY IMPLEMENTED
 // Handles world consistency checking, analysis, and comprehensive world guides
 
+import { worldManagementSchemas } from '../schemas/world-management-schema.js';
+
 export class WorldManagementHandlers {
     constructor(db) {
         this.db = db;
@@ -11,6 +13,11 @@ export class WorldManagementHandlers {
     // WORLD MANAGEMENT TOOL DEFINITIONS
     // =============================================
     getWorldManagementTools() {
+        return worldManagementSchemas;
+    }
+
+    // Legacy method for backward compatibility - returns inline schemas
+    _getWorldManagementToolsInline() {
         return [
             {
                 name: 'check_world_consistency',
@@ -836,6 +843,211 @@ export class WorldManagementHandlers {
             };
         } catch (error) {
             throw new Error(`Failed to validate world relationships: ${error.message}`);
+        }
+    }
+
+    // =============================================
+    // WORLD OVERVIEW AND USAGE ANALYSIS
+    // =============================================
+
+    async handleGetWorldOverview(args) {
+        try {
+            const { series_id, include_stats = true } = args;
+
+            // Get counts from each world component
+            const locationCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM locations WHERE series_id = $1',
+                [series_id]
+            );
+
+            const worldElementCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM world_elements WHERE series_id = $1',
+                [series_id]
+            );
+
+            const organizationCount = await this.db.query(
+                'SELECT COUNT(*) as count FROM organizations WHERE series_id = $1',
+                [series_id]
+            );
+
+            let overviewText = `World Overview for Series ${series_id}\n`;
+            overviewText += `Generated: ${new Date().toISOString()}\n\n`;
+            overviewText += `📍 Locations: ${locationCount.rows[0].count}\n`;
+            overviewText += `🌟 World Elements: ${worldElementCount.rows[0].count}\n`;
+            overviewText += `🏛️ Organizations: ${organizationCount.rows[0].count}\n\n`;
+
+            if (include_stats) {
+                // Get recent additions
+                const recentLocations = await this.db.query(
+                    'SELECT name, location_type FROM locations WHERE series_id = $1 ORDER BY created_at DESC LIMIT 3',
+                    [series_id]
+                );
+
+                const recentElements = await this.db.query(
+                    'SELECT name, element_type FROM world_elements WHERE series_id = $1 ORDER BY created_at DESC LIMIT 3',
+                    [series_id]
+                );
+
+                if (recentLocations.rows.length > 0) {
+                    overviewText += `Recent Locations:\n`;
+                    recentLocations.rows.forEach(loc => {
+                        overviewText += `  • ${loc.name} (${loc.location_type})\n`;
+                    });
+                    overviewText += '\n';
+                }
+
+                if (recentElements.rows.length > 0) {
+                    overviewText += `Recent World Elements:\n`;
+                    recentElements.rows.forEach(elem => {
+                        overviewText += `  • ${elem.name} (${elem.element_type})\n`;
+                    });
+                }
+            }
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: overviewText
+                }]
+            };
+        } catch (error) {
+            throw new Error(`Failed to get world overview: ${error.message}`);
+        }
+    }
+
+    async handleAnalyzeWorldUsage(args) {
+        try {
+            const { series_id, element_type = 'all' } = args;
+
+            let usageText = `World Element Usage Analysis for Series ${series_id}\n`;
+            usageText += `Element Type Filter: ${element_type}\n`;
+            usageText += `Generated: ${new Date().toISOString()}\n\n`;
+
+            // Build query based on element_type filter
+            let usageQuery;
+            let queryParams;
+
+            if (element_type === 'all') {
+                usageQuery = `
+                    SELECT
+                        'location' as element_type,
+                        l.name as element_name,
+                        COUNT(DISTINCT lu.book_id) as books_used,
+                        COUNT(DISTINCT lu.chapter_id) as chapters_used
+                    FROM locations l
+                    LEFT JOIN location_usage lu ON l.id = lu.location_id
+                    WHERE l.series_id = $1
+                    GROUP BY l.id, l.name
+
+                    UNION ALL
+
+                    SELECT
+                        'world_element' as element_type,
+                        we.name as element_name,
+                        COUNT(DISTINCT weu.book_id) as books_used,
+                        COUNT(DISTINCT weu.chapter_id) as chapters_used
+                    FROM world_elements we
+                    LEFT JOIN world_element_usage weu ON we.id = weu.element_id
+                    WHERE we.series_id = $1
+                    GROUP BY we.id, we.name
+
+                    ORDER BY chapters_used DESC, element_name
+                `;
+                queryParams = [series_id];
+            } else if (element_type === 'location') {
+                usageQuery = `
+                    SELECT
+                        'location' as element_type,
+                        l.name as element_name,
+                        l.location_type,
+                        COUNT(DISTINCT lu.book_id) as books_used,
+                        COUNT(DISTINCT lu.chapter_id) as chapters_used
+                    FROM locations l
+                    LEFT JOIN location_usage lu ON l.id = lu.location_id
+                    WHERE l.series_id = $1
+                    GROUP BY l.id, l.name, l.location_type
+                    ORDER BY chapters_used DESC, element_name
+                `;
+                queryParams = [series_id];
+            } else if (element_type === 'world_element') {
+                usageQuery = `
+                    SELECT
+                        'world_element' as element_type,
+                        we.name as element_name,
+                        we.element_type as specific_type,
+                        COUNT(DISTINCT weu.book_id) as books_used,
+                        COUNT(DISTINCT weu.chapter_id) as chapters_used
+                    FROM world_elements we
+                    LEFT JOIN world_element_usage weu ON we.id = weu.element_id
+                    WHERE we.series_id = $1
+                    GROUP BY we.id, we.name, we.element_type
+                    ORDER BY chapters_used DESC, element_name
+                `;
+                queryParams = [series_id];
+            } else {
+                return {
+                    content: [{
+                        type: 'text',
+                        text: `Invalid element_type: ${element_type}. Use 'all', 'location', 'world_element', or 'organization'.`
+                    }]
+                };
+            }
+
+            const usageResult = await this.db.query(usageQuery, queryParams);
+
+            if (usageResult.rows.length === 0) {
+                usageText += `No world elements found for series ${series_id}.\n`;
+            } else {
+                usageText += `Found ${usageResult.rows.length} world elements:\n\n`;
+
+                // Group by usage frequency
+                const unused = usageResult.rows.filter(r => r.chapters_used === '0');
+                const lightlyUsed = usageResult.rows.filter(r => parseInt(r.chapters_used) > 0 && parseInt(r.chapters_used) <= 3);
+                const moderatelyUsed = usageResult.rows.filter(r => parseInt(r.chapters_used) > 3 && parseInt(r.chapters_used) <= 10);
+                const heavilyUsed = usageResult.rows.filter(r => parseInt(r.chapters_used) > 10);
+
+                if (heavilyUsed.length > 0) {
+                    usageText += `🔥 HEAVILY USED (>10 chapters):\n`;
+                    heavilyUsed.forEach(item => {
+                        usageText += `  • ${item.element_name} (${item.element_type}): ${item.chapters_used} chapters, ${item.books_used} books\n`;
+                    });
+                    usageText += '\n';
+                }
+
+                if (moderatelyUsed.length > 0) {
+                    usageText += `📊 MODERATELY USED (4-10 chapters):\n`;
+                    moderatelyUsed.forEach(item => {
+                        usageText += `  • ${item.element_name} (${item.element_type}): ${item.chapters_used} chapters, ${item.books_used} books\n`;
+                    });
+                    usageText += '\n';
+                }
+
+                if (lightlyUsed.length > 0) {
+                    usageText += `📍 LIGHTLY USED (1-3 chapters):\n`;
+                    lightlyUsed.forEach(item => {
+                        usageText += `  • ${item.element_name} (${item.element_type}): ${item.chapters_used} chapters, ${item.books_used} books\n`;
+                    });
+                    usageText += '\n';
+                }
+
+                if (unused.length > 0) {
+                    usageText += `⚠️ UNUSED ELEMENTS (0 chapters):\n`;
+                    unused.forEach(item => {
+                        usageText += `  • ${item.element_name} (${item.element_type})\n`;
+                    });
+                    usageText += '\n';
+                    usageText += `💡 TIP: Consider using these ${unused.length} elements in your story or removing them if no longer relevant.\n`;
+                }
+            }
+
+            return {
+                content: [{
+                    type: 'text',
+                    text: usageText
+                }]
+            };
+        } catch (error) {
+            throw new Error(`Failed to analyze world usage: ${error.message}`);
         }
     }
 

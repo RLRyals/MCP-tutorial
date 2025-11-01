@@ -63,6 +63,60 @@ export class RelationshipHandlers {
                 }
             },
             {
+                name: 'update_relationship_arc',
+                description: 'Update an existing relationship arc',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        arc_id: {
+                            type: 'integer',
+                            description: 'ID of the relationship arc to update'
+                        },
+                        arc_name: {
+                            type: 'string',
+                            description: 'Name for this relationship arc'
+                        },
+                        participants: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    character_id: { type: 'integer' },
+                                    role_in_relationship: {
+                                        type: 'string',
+                                        description: 'primary, secondary, catalyst, observer'
+                                    },
+                                    character_name: { type: 'string' }
+                                },
+                                required: ['character_id', 'role_in_relationship']
+                            },
+                            description: 'Characters involved (2 or more, flexible roles)'
+                        },
+                        relationship_type: {
+                            type: 'string',
+                            enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
+                            description: 'Type of relationship'
+                        },
+                        current_dynamic: {
+                            type: 'string',
+                            description: 'Current relationship dynamic/stage'
+                        },
+                        development_factors: {
+                            type: 'array',
+                            items: { type: 'string' },
+                            description: 'What drives development in this relationship'
+                        },
+                        complexity_level: {
+                            type: 'integer',
+                            minimum: 1,
+                            maximum: 10,
+                            description: 'Relationship complexity (1=simple, 10=very complex)'
+                        }
+                    },
+                    required: ['arc_id']
+                }
+            },
+            {
                 name: 'track_relationship_dynamics',
                 description: 'Track how relationship dynamics change over time',
                 inputSchema: {
@@ -223,6 +277,106 @@ export class RelationshipHandlers {
         }
     }
 
+    async handleUpdateRelationshipArc(args) {
+        try {
+            const { arc_id, ...updates } = args;
+
+            // Check if arc exists first
+            const arcCheck = await this.db.query(
+                'SELECT id, arc_name FROM relationship_arcs WHERE id = $1',
+                [arc_id]
+            );
+
+            if (arcCheck.rows.length === 0) {
+                throw new Error(`Relationship arc with ID ${arc_id} not found`);
+            }
+
+            // If participants are being updated, validate all characters exist
+            if (updates.participants) {
+                const characterIds = updates.participants.map(p => p.character_id);
+                const charactersCheck = await this.db.query(
+                    'SELECT id, name FROM characters WHERE id = ANY($1)',
+                    [characterIds]
+                );
+
+                if (charactersCheck.rows.length !== characterIds.length) {
+                    const foundIds = charactersCheck.rows.map(c => c.id);
+                    const missingIds = characterIds.filter(id => !foundIds.includes(id));
+                    throw new Error(`One or more characters not found. Missing character IDs: ${missingIds.join(', ')}`);
+                }
+            }
+
+            // Build dynamic update query
+            const updateFields = [];
+            const params = [arc_id];
+            let paramCount = 1;
+
+            for (const [key, value] of Object.entries(updates)) {
+                if (value !== undefined) {
+                    paramCount++;
+                    // Handle JSON fields
+                    if (key === 'participants' || key === 'development_factors') {
+                        updateFields.push(`${key} = $${paramCount}`);
+                        params.push(JSON.stringify(value));
+                    } else {
+                        updateFields.push(`${key} = $${paramCount}`);
+                        params.push(value);
+                    }
+                }
+            }
+
+            if (updateFields.length === 0) {
+                throw new Error('No fields to update');
+            }
+
+            updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+            const query = `
+                UPDATE relationship_arcs
+                SET ${updateFields.join(', ')}
+                WHERE id = $1
+                RETURNING *
+            `;
+
+            const result = await this.db.query(query, params);
+            const arc = result.rows[0];
+
+            // Get character names if participants were updated
+            let characterNames = [];
+            if (updates.participants) {
+                const charResult = await this.db.query(
+                    'SELECT name FROM characters WHERE id = ANY($1)',
+                    [updates.participants.map(p => p.character_id)]
+                );
+                characterNames = charResult.rows.map(c => c.name);
+            }
+
+            // participants is already a JSONB object, not a string
+            const participants = typeof arc.participants === 'string'
+                ? JSON.parse(arc.participants)
+                : arc.participants;
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: `Relationship arc updated!\n\n` +
+                              `**Arc ID:** ${arc.id}\n` +
+                              `**Arc Name:** ${arc.arc_name}\n` +
+                              `**Type:** ${arc.relationship_type}\n` +
+                              `**Complexity Level:** ${arc.complexity_level}/10\n` +
+                              `${updates.participants ? `**Characters:** ${characterNames.join(', ')}\n` : ''}` +
+                              `${arc.current_dynamic ? `**Current Dynamic:** ${arc.current_dynamic}\n` : ''}` +
+                              `**Updated:** ${new Date(arc.updated_at).toLocaleString()}`
+                    }
+                ]
+            };
+
+        } catch (error) {
+            throw new Error(`Failed to update relationship arc: ${error.message}`);
+        }
+    }
+
     async handleTrackRelationshipDynamics(args) {
         try {
             // Validate arc exists
@@ -301,7 +455,10 @@ export class RelationshipHandlers {
             }
 
             const arc = result.rows[0];
-            const participants = JSON.parse(arc.participants);
+            // participants is already a JSONB object, not a string
+            const participants = typeof arc.participants === 'string'
+                ? JSON.parse(arc.participants)
+                : arc.participants;
 
             return {
                 content: [{
@@ -365,7 +522,9 @@ export class RelationshipHandlers {
             }
 
             const arcsList = result.rows.map(arc => {
-                const participants = JSON.parse(arc.participants);
+                const participants = typeof arc.participants === 'string'
+                    ? JSON.parse(arc.participants)
+                    : arc.participants;
                 return `**${arc.arc_name}** (ID: ${arc.id})\n` +
                        `  Type: ${arc.relationship_type}\n` +
                        `  Participants: ${participants.length}\n` +
