@@ -232,8 +232,8 @@ class WorldMCPServer extends BaseMCPServer {
             const usageQuery = `
                 SELECT wu.*, b.title as book_title, ch.title as chapter_title, ch.chapter_number
                 FROM world_element_usage wu
-                LEFT JOIN books b ON wu.book_id = b.book_id
-                LEFT JOIN chapters ch ON wu.chapter_id = ch.chapter_id
+                LEFT JOIN books b ON wu.book_id = b.id
+                LEFT JOIN chapters ch ON wu.chapter_id = ch.id
                 WHERE wu.element_type = $1 AND wu.element_id = $2
                 ORDER BY b.book_number, ch.chapter_number
             `;
