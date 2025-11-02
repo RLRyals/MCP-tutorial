@@ -56,26 +56,26 @@ class SceneWritingMCPServer extends BaseMCPServer {
         // BOOK - Scene Tools
         tools.push({
             ...minimalSceneWritingSchemas.create_scene,
-            name: 'book_create_scene',
-            description: '[BOOK] Create new scenes as they are written'
+            name: 'create_scene',
+            description: 'Create new scenes as they are written'
         });
 
         tools.push({
             ...minimalSceneWritingSchemas.update_scene,
-            name: 'book_update_scene',
-            description: '[BOOK] Update scenes with word counts and status changes'
+            name: 'update_scene',
+            description: 'Update scenes with word counts and status changes'
         });
 
         tools.push({
             ...minimalSceneWritingSchemas.get_scene,
-            name: 'book_get_scene',
-            description: '[BOOK] Get details of a specific scene'
+            name: 'get_scene',
+            description: 'Get details of a specific scene'
         });
 
         tools.push({
             ...minimalSceneWritingSchemas.list_scenes,
-            name: 'book_list_scenes',
-            description: '[BOOK] Review existing scenes before adding new ones'
+            name: 'list_scenes',
+            description: 'Review existing scenes before adding new ones'
         });
 
         // CHARACTER Tools
@@ -84,8 +84,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
         if (getCharactersInChapter) {
             tools.push({
                 ...getCharactersInChapter,
-                name: 'character_get_characters_in_chapter',
-                description: '[CHARACTER] See who is supposed to appear in the chapter'
+                name: 'get_characters_in_chapter',
+                description: 'See who is supposed to appear in the chapter'
             });
         }
         
@@ -95,8 +95,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
         if (validateChapterStructure) {
             tools.push({
                 ...validateChapterStructure,
-                name: 'writing_validate_chapter_structure',
-                description: '[WRITING] Validate chapter structure and consistency'
+                name: 'validate_chapter_structure',
+                description: 'Validate chapter structure and consistency'
             });
         }
 
@@ -104,8 +104,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
         if (validateBeatPlacement) {
             tools.push({
                 ...validateBeatPlacement,
-                name: 'writing_validate_beat_placement',
-                description: '[WRITING] Validate story beats and pacing'
+                name: 'validate_beat_placement',
+                description: 'Validate story beats and pacing'
             });
         }
 
@@ -113,8 +113,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
         if (checkStructureViolations) {
             tools.push({
                 ...checkStructureViolations,
-                name: 'writing_check_structure_violations',
-                description: '[WRITING] Check for structural inconsistencies'
+                name: 'check_structure_violations',
+                description: 'Check for structural inconsistencies'
             });
         }
 
@@ -124,8 +124,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
         if (wordCountTracking) {
             tools.push({
                 ...wordCountTracking,
-                name: 'writing_word_count_tracking',
-                description: '[WRITING] Track word count progress'
+                name: 'word_count_tracking',
+                description: 'Track word count progress'
             });
         }
 
@@ -157,23 +157,23 @@ class SceneWritingMCPServer extends BaseMCPServer {
         // Use arrow functions to defer binding until runtime
         const handlerMap = {
             // BOOK - Scene Tools
-            'book_create_scene': (args) => this.sceneHandlers.handleCreateScene(args),
-            'book_update_scene': (args) => this.sceneHandlers.handleUpdateScene(args),
-            'book_get_scene': (args) => this.sceneHandlers.handleGetScene(args),
-            'book_list_scenes': (args) => this.sceneHandlers.handleListScenes(args),
+            'create_scene': (args) => this.sceneHandlers.handleCreateScene(args),
+            'update_scene': (args) => this.sceneHandlers.handleUpdateScene(args),
+            'get_scene': (args) => this.sceneHandlers.handleGetScene(args),
+            'list_scenes': (args) => this.sceneHandlers.handleListScenes(args),
 
             // CHARACTER Tools
-            'character_get_character_details': (args) => this.characterDetailHandlers.handleGetCharacterDetails(args),
-            'character_get_characters_in_chapter': (args) => this.characterTimelineHandlers.handleGetCharactersInChapter(args),
-            'character_check_character_continuity': (args) => this.characterTimelineHandlers.handleCheckCharacterContinuity(args),
+            'get_character_details': (args) => this.characterDetailHandlers.handleGetCharacterDetails(args),
+            'get_characters_in_chapter': (args) => this.characterTimelineHandlers.handleGetCharactersInChapter(args),
+            'check_character_continuity': (args) => this.characterTimelineHandlers.handleCheckCharacterContinuity(args),
 
             // WRITING - Validation Tools
-            'writing_validate_chapter_structure': (args) => this.validationHandlers.handleValidateChapterStructure(args),
-            'writing_validate_beat_placement': (args) => this.validationHandlers.handleValidateBeatPlacement(args),
-            'writing_check_structure_violations': (args) => this.validationHandlers.handleCheckStructureViolations(args),
+            'validate_chapter_structure': (args) => this.validationHandlers.handleValidateChapterStructure(args),
+            'validate_beat_placement': (args) => this.validationHandlers.handleValidateBeatPlacement(args),
+            'check_structure_violations': (args) => this.validationHandlers.handleCheckStructureViolations(args),
 
             // WRITING - Session & Export Tools
-            'writing_word_count_tracking': (args) => this.exportHandlers.handleWordCountTracking(args),
+            'word_count_tracking': (args) => this.exportHandlers.handleWordCountTracking(args),
             'log_writing_session': (args) => this.sessionHandlers.handleLogWritingSession(args)
          };
 

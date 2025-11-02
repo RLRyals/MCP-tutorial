@@ -44,8 +44,8 @@ class ReportingMCPServer extends BaseMCPServer {
         reportingToolsSchema.forEach(tool => {
             tools.push({
                 ...tool,
-                name: `report_${tool.name}`,
-                description: `[REPORT] ${tool.description}`
+                name: `${tool.name}`,
+                description: ` ${tool.description}`
             });
         });
 
@@ -55,7 +55,7 @@ class ReportingMCPServer extends BaseMCPServer {
     getToolHandler(toolName) {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
-            'report_generate_report': this.reportingHandlers.handleGenerateReport.bind(this.reportingHandlers)
+            'generate_report': this.reportingHandlers.handleGenerateReport.bind(this.reportingHandlers)
         };
 
         return handlerMap[toolName] || null;

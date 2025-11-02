@@ -62,8 +62,8 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
         seriesToolsSchema.forEach(tool => {
             tools.push({
                 ...tool,
-                name: `series_${tool.name}`,
-                description: `[SERIES] ${tool.description}`
+                name: `${tool.name}`,
+                description: `${tool.description}`
             });
         });
 
@@ -82,8 +82,8 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
             .forEach(tool => {
                 tools.push({
                     ...tool,
-                    name: `world_${tool.name}`,
-                    description: `[WORLD] ${tool.description}`
+                    name: `${tool.name}`,
+                    description: `${tool.description}`
                 });
             });
 
@@ -94,8 +94,8 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
             .forEach(tool => {
                 tools.push({
                     ...tool,
-                    name: `world_${tool.name}`,
-                    description: `[WORLD] ${tool.description}`
+                    name: `${tool.name}`,
+                    description: `${tool.description}`
                 });
             });
 
@@ -106,8 +106,8 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
             .forEach(tool => {
                 tools.push({
                     ...tool,
-                    name: `world_${tool.name}`,
-                    description: `[WORLD] ${tool.description}`
+                    name: `${tool.name}`,
+                    description: `${tool.description}`
                 });
             });
 
@@ -118,8 +118,8 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
             .forEach(tool => {
                 tools.push({
                     ...tool,
-                    name: `plot_${tool.name}`,
-                    description: `[PLOT] ${tool.description}`
+                    name: `${tool.name}`,
+                    description: `${tool.description}`
                 });
             });
 
@@ -130,28 +130,28 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
             // Series handlers - imported from series-server (ALL TOOLS)
-            'series_list_series': this.seriesHandlers.handleListSeries.bind(this.seriesHandlers),
-            'series_create_series': this.seriesHandlers.handleCreateSeries.bind(this.seriesHandlers),
-            'series_get_series': this.seriesHandlers.handleGetSeries.bind(this.seriesHandlers),
-            'series_update_series': this.seriesHandlers.handleUpdateSeries.bind(this.seriesHandlers),
+            'list_series': this.seriesHandlers.handleListSeries.bind(this.seriesHandlers),
+            'create_series': this.seriesHandlers.handleCreateSeries.bind(this.seriesHandlers),
+            'get_series': this.seriesHandlers.handleGetSeries.bind(this.seriesHandlers),
+            'update_series': this.seriesHandlers.handleUpdateSeries.bind(this.seriesHandlers),
 
             // Metadata handlers - imported from metadata-server
             'assign_series_genres': this.lookupHandlers.handleAssignSeriesGenres.bind(this.lookupHandlers),
 
             // World building handlers - locations
-            'world_create_location': this.locationHandlers.handleCreateLocation.bind(this.locationHandlers),
-            'world_get_locations': this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
+            'create_location': this.locationHandlers.handleCreateLocation.bind(this.locationHandlers),
+            'get_locations': this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
 
             // World building handlers - organizations
-            'world_create_organization': this.organizationHandlers.handleCreateOrganization.bind(this.organizationHandlers),
-            'world_get_organizations': this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers),
+            'create_organization': this.organizationHandlers.handleCreateOrganization.bind(this.organizationHandlers),
+            'get_organizations': this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers),
 
             // World building handlers - world elements
-            'world_create_world_element': this.worldElementHandlers.handleCreateWorldElement.bind(this.worldElementHandlers),
-            'world_get_world_elements': this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
+            'create_world_element': this.worldElementHandlers.handleCreateWorldElement.bind(this.worldElementHandlers),
+            'get_world_elements': this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
 
             // Plot/Genre extension handlers
-            'plot_define_world_system': this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions)
+            'define_world_system': this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions)
         };
 
         return handlerMap[toolName] || null;

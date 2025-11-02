@@ -56,8 +56,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getCharacter) {
             tools.push({
                 ...getCharacter,
-                name: 'character_get_character',
-                description: '[CHARACTER] Get character basic information'
+                name: 'get_character',
+                description: 'Get character basic information'
             });
         }
 
@@ -66,8 +66,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getCharacterDetails) {
             tools.push({
                 ...getCharacterDetails,
-                name: 'character_get_character_details',
-                description: '[CHARACTER] Get detailed character information'
+                name: 'get_character_details',
+                description: 'Get detailed character information'
             });
         }
 
@@ -76,8 +76,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (checkCharacterKnowledge) {
             tools.push({
                 ...checkCharacterKnowledge,
-                name: 'character_check_character_knowledge',
-                description: '[CHARACTER] Check what a character knows'
+                name: 'check_character_knowledge',
+                description: 'Check what a character knows'
             });
         }
 
@@ -86,8 +86,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (checkCharacterContinuity) {
             tools.push({
                 ...checkCharacterContinuity,
-                name: 'character_check_character_continuity',
-                description: '[CHARACTER] Check character continuity across chapters'
+                name: 'check_character_continuity',
+                description: 'Check character continuity across chapters'
             });
         }
 
@@ -97,8 +97,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getPlotThreads) {
             tools.push({
                 ...getPlotThreads,
-                name: 'plot_get_plot_threads',
-                description: '[PLOT] Get plot threads for checking continuity'
+                name: 'get_plot_threads',
+                description: 'Get plot threads for checking continuity'
             });
         }
 
@@ -108,8 +108,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getRelationshipArc) {
             tools.push({
                 ...getRelationshipArc,
-                name: 'relationship_get_relationship_arc',
-                description: '[RELATIONSHIP] Get relationship arc details'
+                name: 'get_relationship_arc',
+                description: 'Get relationship arc details'
             });
         }
 
@@ -117,8 +117,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getRelationshipTimeline) {
             tools.push({
                 ...getRelationshipTimeline,
-                name: 'relationship_get_relationship_timeline',
-                description: '[RELATIONSHIP] Get relationship progression timeline'
+                name: 'get_relationship_timeline',
+                description: 'Get relationship progression timeline'
             });
         }
 
@@ -128,8 +128,8 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         if (getEventMappings) {
             tools.push({
                 ...getEventMappings,
-                name: 'timeline_get_event_mappings',
-                description: '[TIMELINE] Get timeline event to chapter mappings'
+                name: 'get_event_mappings',
+                description: 'Get timeline event to chapter mappings'
             });
         }
 
@@ -140,20 +140,20 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
             // Character handlers
-            'character_get_character': (args) => this.characterHandlers.handleGetCharacter(args),
-            'character_get_character_details': (args) => this.characterDetailHandlers.handleGetCharacterDetails(args),
-            'character_check_character_knowledge': (args) => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge(args),
-            'character_check_character_continuity': (args) => this.characterTimelineHandlers.handleCheckCharacterContinuity(args),
+            'get_character': (args) => this.characterHandlers.handleGetCharacter(args),
+            'get_character_details': (args) => this.characterDetailHandlers.handleGetCharacterDetails(args),
+            'check_character_knowledge': (args) => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge(args),
+            'check_character_continuity': (args) => this.characterTimelineHandlers.handleCheckCharacterContinuity(args),
 
             // Plot handlers
-            'plot_get_plot_threads': (args) => this.plotThreadHandlers.handleGetPlotThreads(args),
+            'get_plot_threads': (args) => this.plotThreadHandlers.handleGetPlotThreads(args),
 
             // Relationship handlers
-            'relationship_get_relationship_arc': (args) => this.relationshipHandlers.handleGetRelationshipArc(args),
-            'relationship_get_relationship_timeline': (args) => this.relationshipHandlers.handleGetRelationshipTimeline(args),
+            'get_relationship_arc': (args) => this.relationshipHandlers.handleGetRelationshipArc(args),
+            'get_relationship_timeline': (args) => this.relationshipHandlers.handleGetRelationshipTimeline(args),
 
             // Timeline handlers
-            'timeline_get_event_mappings': (args) => this.eventChapterMappingHandlers.handleGetEventMappings(args)
+            'get_event_mappings': (args) => this.eventChapterMappingHandlers.handleGetEventMappings(args)
         };
 
         return handlerMap[toolName] || null;

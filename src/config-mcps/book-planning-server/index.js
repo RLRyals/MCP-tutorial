@@ -41,8 +41,6 @@ class BookPlanningMCPServer extends BaseMCPServer {
 
     initializeHandlers() {
         // Create phase-specific handler instances
-        // Note: Core GET/LIST tools are in core-content-server
-        // This server only needs handlers for CREATE/UPDATE operations
         this.bookHandlers = new BookHandlers(this.db);
         this.timelineEventHandlers = new TimelineEventHandlers(this.db);
         this.locationHandlers = new LocationHandlers(this.db);
@@ -61,26 +59,26 @@ class BookPlanningMCPServer extends BaseMCPServer {
         // =============================================
         tools.push({
             ...bookPlanningSchemas.create_book,
-            name: 'book_create_book',
-            description: `[BOOK] ${bookPlanningSchemas.create_book.description}`
+            name: 'create_book',
+            description: `${bookPlanningSchemas.create_book.description}`
         });
 
         tools.push({
             ...bookPlanningSchemas.update_book,
-            name: 'book_update_book',
-            description: `[BOOK] ${bookPlanningSchemas.update_book.description}`
+            name: 'update_book',
+            description: `${bookPlanningSchemas.update_book.description}`
         });
 
         tools.push({
             ...bookPlanningSchemas.get_book,
-            name: 'book_get_book',
-            description: `[BOOK] ${bookPlanningSchemas.get_book.description}`
+            name: 'get_book',
+            description: `${bookPlanningSchemas.get_book.description}`
         });
 
         tools.push({
             ...bookPlanningSchemas.list_books,
-            name: 'book_list_books',
-            description: `[BOOK] ${bookPlanningSchemas.list_books.description}`
+            name: 'list_books',
+            description: `${bookPlanningSchemas.list_books.description}`
         });
 
         // =============================================
@@ -92,8 +90,8 @@ class BookPlanningMCPServer extends BaseMCPServer {
         if (createPlotThread) {
             tools.push({
                 ...createPlotThread,
-                name: 'plot_create_plot_thread',
-                description: `[PLOT] ${createPlotThread.description}`
+                name: 'create_plot_thread',
+                description: `${createPlotThread.description}`
             });
         }
 
@@ -101,8 +99,8 @@ class BookPlanningMCPServer extends BaseMCPServer {
         if (updatePlotThread) {
             tools.push({
                 ...updatePlotThread,
-                name: 'plot_update_plot_thread',
-                description: `[PLOT] ${updatePlotThread.description}`
+                name: 'update_plot_thread',
+                description: `${updatePlotThread.description}`
             });
         }
         
@@ -114,8 +112,8 @@ class BookPlanningMCPServer extends BaseMCPServer {
         if (createTimelineEvent) {
             tools.push({
                 ...createTimelineEvent,
-                name: 'timeline_create_timeline_event',
-                description: `[TIMELINE] ${createTimelineEvent.description}`
+                name: 'create_timeline_event',
+                description: `${createTimelineEvent.description}`
             });
         }
 
@@ -128,7 +126,7 @@ class BookPlanningMCPServer extends BaseMCPServer {
             tools.push({
                 ...assignBookGenres,
                 name: 'assign_book_genres',
-                description: `[METADATA] ${assignBookGenres.description}`
+                description: `${assignBookGenres.description}`
             });
         }
 
@@ -139,17 +137,17 @@ class BookPlanningMCPServer extends BaseMCPServer {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
             // Book handlers
-            'book_create_book': (args) => this.bookHandlers.handleCreateBook(args),
-            'book_update_book': (args) => this.bookHandlers.handleUpdateBook(args),
-            'book_get_book': (args) => this.bookHandlers.handleGetBook(args),
-            'book_list_books': (args) => this.bookHandlers.handleListBooks(args),
+            'create_book': (args) => this.bookHandlers.handleCreateBook(args),
+            'update_book': (args) => this.bookHandlers.handleUpdateBook(args),
+            'get_book': (args) => this.bookHandlers.handleGetBook(args),
+            'list_books': (args) => this.bookHandlers.handleListBooks(args),
 
             // Plot thread handlers
-            'plot_create_plot_thread': (args) => this.plotThreadHandlers.handleCreatePlotThread(args),
-            'plot_update_plot_thread': (args) => this.plotThreadHandlers.handleUpdatePlotThread(args),
+            'create_plot_thread': (args) => this.plotThreadHandlers.handleCreatePlotThread(args),
+            'update_plot_thread': (args) => this.plotThreadHandlers.handleUpdatePlotThread(args),
 
             // Timeline handlers
-            'timeline_create_timeline_event': (args) => this.timelineEventHandlers.handleCreateTimelineEvent(args),
+            'create_timeline_event': (args) => this.timelineEventHandlers.handleCreateTimelineEvent(args),
 
             // Metadata handlers
             'assign_book_genres': (args) => this.lookupHandlers.handleAssignBookGenres(args)

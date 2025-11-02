@@ -59,8 +59,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (validateChapterStructure) {
             tools.push({
                 ...validateChapterStructure,
-                name: 'writing_validate_chapter_structure',
-                description: '[WRITING] Check for structural consistency'
+                name: 'validate_chapter_structure',
+                description: 'Check for structural consistency'
             });
         }
 
@@ -68,8 +68,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (validateBeatPlacement) {
             tools.push({
                 ...validateBeatPlacement,
-                name: 'writing_validate_beat_placement',
-                description: '[WRITING] Analyze story pacing and emotional beats'
+                name: 'validate_beat_placement',
+                description: 'Analyze story pacing and emotional beats'
             });
         }
 
@@ -77,8 +77,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (checkStructureViolations) {
             tools.push({
                 ...checkStructureViolations,
-                name: 'writing_check_structure_violations',
-                description: '[WRITING] Identify continuity issues and plot holes'
+                name: 'check_structure_violations',
+                description: 'Identify continuity issues and plot holes'
             });
         }
 
@@ -87,8 +87,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (wordCountTracking) {
             tools.push({
                 ...wordCountTracking,
-                name: 'writing_word_count_tracking',
-                description: '[WRITING] Analyze pacing and chapter length distribution'
+                name: 'word_count_tracking',
+                description: 'Analyze pacing and chapter length distribution'
             });
         }
 
@@ -96,8 +96,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (exportManuscript) {
             tools.push({
                 ...exportManuscript,
-                name: 'writing_export_manuscript',
-                description: '[WRITING] Generate full or partial manuscript for review'
+                name: 'export_manuscript',
+                description: 'Generate full or partial manuscript for review'
             });
         }
 
@@ -107,8 +107,8 @@ class ReviewMCPServer extends BaseMCPServer {
         if (checkWorldConsistency) {
             tools.push({
                 ...checkWorldConsistency,
-                name: 'world_check_world_consistency',
-                description: '[WORLD] Identify world-building contradictions'
+                name: 'check_world_consistency',
+                description: 'Identify world-building contradictions'
             });
         }
 
@@ -148,17 +148,17 @@ class ReviewMCPServer extends BaseMCPServer {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
             // Writing Server - Validation and Quality
-            'writing_validate_chapter_structure': this.validationHandlers.handleValidateChapterStructure.bind(this.validationHandlers),
-            'writing_validate_beat_placement': this.validationHandlers.handleValidateBeatPlacement.bind(this.validationHandlers),
-            'writing_check_structure_violations': this.validationHandlers.handleCheckStructureViolations.bind(this.validationHandlers),
-            'writing_word_count_tracking': this.exportHandlers.handleWordCountTracking.bind(this.exportHandlers),
-            'writing_export_manuscript': this.exportHandlers.handleExportManuscript.bind(this.exportHandlers),
+            'validate_chapter_structure': this.validationHandlers.handleValidateChapterStructure.bind(this.validationHandlers),
+            'validate_beat_placement': this.validationHandlers.handleValidateBeatPlacement.bind(this.validationHandlers),
+            'check_structure_violations': this.validationHandlers.handleCheckStructureViolations.bind(this.validationHandlers),
+            'word_count_tracking': this.exportHandlers.handleWordCountTracking.bind(this.exportHandlers),
+            'export_manuscript': this.exportHandlers.handleExportManuscript.bind(this.exportHandlers),
             'get_writing_progress': (args) => this.sessionHandlers.handleGetWritingProgress(args),
             'set_writing_goals': (args) => this.sessionHandlers.handleSetWritingGoals(args),
             'get_productivity_analytics': (args) => this.sessionHandlers.handleGetProductivityAnalytics(args),
 
             // World Server - Setting Consistency
-            'world_check_world_consistency': this.worldManagementHandlers.handleCheckWorldConsistency.bind(this.worldManagementHandlers)
+            'check_world_consistency': this.worldManagementHandlers.handleCheckWorldConsistency.bind(this.worldManagementHandlers)
         };
 
         return handlerMap[toolName] || null;

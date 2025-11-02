@@ -63,8 +63,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (listCharacters) {
             tools.push({
                 ...listCharacters,
-                name: 'character_list_characters',
-                description: `[CHARACTER] ${listCharacters.description}`
+                name: 'list_characters',
+                description: `${listCharacters.description}`
             });
         }
 
@@ -72,8 +72,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (createCharacter) {
             tools.push({
                 ...createCharacter,
-                name: 'character_create_character',
-                description: `[CHARACTER] ${createCharacter.description}`
+                name: 'create_character',
+                description: `${createCharacter.description}`
             });
         }
 
@@ -81,8 +81,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (updateCharacterSchema) {
             tools.push({
                 ...updateCharacterSchema,
-                name: 'character_update_character',
-                description: '[CHARACTER] Update character status/development for this book'
+                name: 'update_character',
+                description: 'Update character status/development for this book'
             });
         }
 
@@ -90,8 +90,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (addCharacterDetailSchema) {
             tools.push({
                 ...addCharacterDetailSchema,
-                name: 'character_add_character_detail',
-                description: '[CHARACTER] Add book-specific character details'
+                name: 'add_character_detail',
+                description: 'Add book-specific character details'
             });
         }
 
@@ -100,7 +100,7 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
             tools.push({
                 ...updateCharacterDetailSchema,
                 name: 'update_character_detail',
-                description: '[CHARACTER] Update existing character details'
+                description: 'Update existing character details'
             });
         }
 
@@ -113,8 +113,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (checkCharacterKnowledge) {
             tools.push({
                 ...checkCharacterKnowledge,
-                name: 'character_check_character_knowledge',
-                description: '[CHARACTER] Check what a character knows to prevent plot holes'
+                name: 'check_character_knowledge',
+                description: 'Check what a character knows to prevent plot holes'
             });
         }
 
@@ -126,8 +126,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (createCharacterArcSchema) {
             tools.push({
                 ...createCharacterArcSchema,
-                name: 'character_create_character_arc',
-                description: '[CHARACTER] Create character arc for this book'
+                name: 'create_character_arc',
+                description: 'Create character arc for this book'
             });
         }
 
@@ -142,8 +142,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (createRelationshipArc) {
             tools.push({
                 ...createRelationshipArc,
-                name: 'relationship_create_relationship_arc',
-                description: `[RELATIONSHIP] ${createRelationshipArc.description}`
+                name: 'create_relationship_arc',
+                description: `${createRelationshipArc.description}`
             });
         }
 
@@ -151,8 +151,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (updateRelationshipArc) {
             tools.push({
                 ...updateRelationshipArc,
-                name: 'relationship_update_relationship_arc',
-                description: `[RELATIONSHIP] ${updateRelationshipArc.description}`
+                name: 'update_relationship_arc',
+                description: `${updateRelationshipArc.description}`
             });
         }
 
@@ -160,8 +160,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (trackRelationshipDynamics) {
             tools.push({
                 ...trackRelationshipDynamics,
-                name: 'relationship_track_relationship_dynamics',
-                description: `[RELATIONSHIP] ${trackRelationshipDynamics.description}`
+                name: 'track_relationship_dynamics',
+                description: `${trackRelationshipDynamics.description}`
             });
         }
 
@@ -169,8 +169,8 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         if (listRelationshipArcs) {
             tools.push({
                 ...listRelationshipArcs,
-                name: 'relationship_list_relationship_arcs',
-                description: `[RELATIONSHIP] ${listRelationshipArcs.description}`
+                name: 'list_relationship_arcs',
+                description: `${listRelationshipArcs.description}`
             });
         }
 
@@ -183,20 +183,20 @@ class CharacterPlanningMCPServer extends BaseMCPServer {
         const handlerMap = {
        
             // Character handlers
-            'character_list_characters': (args) => this.characterHandlers.handleListCharacters(args),
-            'character_create_character': (args) => this.characterHandlers.handleCreateCharacter(args),
-            'character_get_character': (args) => this.characterHandlers.handleGetCharacter(args),
-            'character_update_character': (args) => this.characterHandlers.handleUpdateCharacter(args),
-            'character_add_character_detail': (args) => this.characterDetailHandlers.handleAddCharacterDetail(args),
+            'list_characters': (args) => this.characterHandlers.handleListCharacters(args),
+            'create_character': (args) => this.characterHandlers.handleCreateCharacter(args),
+            'get_character': (args) => this.characterHandlers.handleGetCharacter(args),
+            'update_character': (args) => this.characterHandlers.handleUpdateCharacter(args),
+            'add_character_detail': (args) => this.characterDetailHandlers.handleAddCharacterDetail(args),
             'update_character_detail': (args) => this.characterDetailHandlers.handleUpdateCharacterDetail(args),
-            'character_check_character_knowledge': (args) => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge(args),
-            'character_create_character_arc': (args) => this.characterArcHandlers.handleCreateCharacterArc(args),
+            'check_character_knowledge': (args) => this.characterKnowledgeHandlers.handleCheckCharacterKnowledge(args),
+            'create_character_arc': (args) => this.characterArcHandlers.handleCreateCharacterArc(args),
 
             // Relationship handlers
-            'relationship_create_relationship_arc': (args) => this.relationshipHandlers.handleCreateRelationshipArc(args),
-            'relationship_update_relationship_arc': (args) => this.relationshipHandlers.handleUpdateRelationshipArc(args),
-            'relationship_track_relationship_dynamics': (args) => this.relationshipHandlers.handleTrackRelationshipDynamics(args),
-            'relationship_list_relationship_arcs': (args) => this.relationshipHandlers.handleListRelationshipArcs(args),
+            'create_relationship_arc': (args) => this.relationshipHandlers.handleCreateRelationshipArc(args),
+            'update_relationship_arc': (args) => this.relationshipHandlers.handleUpdateRelationshipArc(args),
+            'track_relationship_dynamics': (args) => this.relationshipHandlers.handleTrackRelationshipDynamics(args),
+            'list_relationship_arcs': (args) => this.relationshipHandlers.handleListRelationshipArcs(args),
 
         };
 
