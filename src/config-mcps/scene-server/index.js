@@ -79,16 +79,6 @@ class SceneWritingMCPServer extends BaseMCPServer {
         });
 
         // CHARACTER Tools
-        const detailTools = this.characterDetailHandlers.getCharacterDetailTools();
-        const getCharacterDetails = detailTools.find(t => t.name === 'get_character_details');
-        if (getCharacterDetails) {
-            tools.push({
-                ...getCharacterDetails,
-                name: 'character_get_character_details',
-                description: '[CHARACTER] Ensure consistent character descriptions and traits'
-            });
-        }
-
         const characterTimelineTools = this.characterTimelineHandlers.getCharacterTimelineTools();
         const getCharactersInChapter = characterTimelineTools.find(t => t.name === 'get_characters_in_chapter');
         if (getCharactersInChapter) {
@@ -98,16 +88,7 @@ class SceneWritingMCPServer extends BaseMCPServer {
                 description: '[CHARACTER] See who is supposed to appear in the chapter'
             });
         }
-
-        const checkCharacterContinuity = characterTimelineTools.find(t => t.name === 'check_character_continuity');
-        if (checkCharacterContinuity) {
-            tools.push({
-                ...checkCharacterContinuity,
-                name: 'character_check_character_continuity',
-                description: '[CHARACTER] Verify character consistency across chapter boundaries'
-            });
-        }
-
+        
         // WRITING - Validation Tools
         const validationTools = this.validationHandlers.getValidationTools();
         const validateChapterStructure = validationTools.find(t => t.name === 'validate_chapter_structure');
@@ -167,23 +148,6 @@ class SceneWritingMCPServer extends BaseMCPServer {
             });
         }
 
-        const setWritingGoals = sessionTools.find(t => t.name === 'set_writing_goals');
-        if (setWritingGoals) {
-            tools.push({
-                ...setWritingGoals,
-                name: 'set_writing_goals',
-                description: 'Set writing goals'
-            });
-        }
-
-        const getProductivityAnalytics = sessionTools.find(t => t.name === 'get_productivity_analytics');
-        if (getProductivityAnalytics) {
-            tools.push({
-                ...getProductivityAnalytics,
-                name: 'get_productivity_analytics',
-                description: 'Get productivity analytics'
-            });
-        }
 
         return tools;
     }
@@ -210,11 +174,8 @@ class SceneWritingMCPServer extends BaseMCPServer {
 
             // WRITING - Session & Export Tools
             'writing_word_count_tracking': (args) => this.exportHandlers.handleWordCountTracking(args),
-            'log_writing_session': (args) => this.sessionHandlers.handleLogWritingSession(args),
-            'get_writing_progress': (args) => this.sessionHandlers.handleGetWritingProgress(args),
-            'set_writing_goals': (args) => this.sessionHandlers.handleSetWritingGoals(args),
-            'get_productivity_analytics': (args) => this.sessionHandlers.handleGetProductivityAnalytics(args)
-        };
+            'log_writing_session': (args) => this.sessionHandlers.handleLogWritingSession(args)
+         };
 
         return handlerMap[toolName] || null;
     }

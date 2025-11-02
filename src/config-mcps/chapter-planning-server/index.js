@@ -85,10 +85,7 @@ class ChapterPlanningMCPServer extends BaseMCPServer {
             { ...worldElementTools.find(t => t.name === 'track_element_usage'), name: 'world_track_element_usage' }
         );
 
-        const worldManagementTools = this.worldManagementHandlers.getWorldManagementTools();
-        tools.push(
-            { ...worldManagementTools.find(t => t.name === 'check_world_consistency'), name: 'world_check_world_consistency' }
-        );
+
 
         tools.push(
             { ...locationTools.find(t => t.name === 'update_location'), name: 'update_location' }

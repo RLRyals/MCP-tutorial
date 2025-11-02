@@ -16,10 +16,15 @@ import { BaseMCPServer } from '../../shared/base-server.js';
 // Import schemas from original MCPs - NO DUPLICATION
 import { seriesToolsSchema } from '../../mcps/series-server/schemas/series-tools-schema.js';
 import { lookupSystemToolsSchema } from '../../mcps/metadata-server/schemas/lookup-tools-schema.js';
+import { genreExtensionToolsSchema } from '../../mcps/plot-server/schemas/plot-tools-schema.js';
 
 // Import handlers from original MCPs - NO DUPLICATION
 import { SeriesHandlers } from '../../mcps/series-server/handlers/series-handlers.js';
 import { LookupManagementHandlers } from '../../mcps/metadata-server/handlers/lookup-management-handlers.js';
+import { LocationHandlers } from '../../mcps/world-server/handlers/location-handlers.js';
+import { OrganizationHandlers } from '../../mcps/world-server/handlers/organization-handlers.js';
+import { WorldElementHandlers } from '../../mcps/world-server/handlers/world-element-handlers.js';
+import { GenreExtensions } from '../../mcps/plot-server/handlers/genre-extensions.js';
 
 class SeriesPlanningMCPServer extends BaseMCPServer {
     constructor() {
@@ -39,23 +44,28 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
         this.seriesHandlers = new SeriesHandlers(this.db);
         this.lookupHandlers = new LookupManagementHandlers(this.db);
 
+        // World-building handlers
+        this.locationHandlers = new LocationHandlers(this.db);
+        this.organizationHandlers = new OrganizationHandlers(this.db);
+        this.worldElementHandlers = new WorldElementHandlers(this.db);
+
+        // Plot/Genre extension handlers
+        this.genreExtensions = new GenreExtensions(this.db);
+
         console.error('[SERIES-PLANNING-SERVER] Handlers initialized with shared DB');
     }
 
     buildTools() {
         const tools = [];
 
-        // Series tools - filter to only include needed tools from README
-        const neededSeriesTools = ['create_series', 'update_series', 'get_series', 'list_series'];
-        seriesToolsSchema
-            .filter(tool => neededSeriesTools.includes(tool.name))
-            .forEach(tool => {
-                tools.push({
-                    ...tool,
-                    name: `series_${tool.name}`,
-                    description: `[SERIES] ${tool.description}`
-                });
+        // Series tools - IMPORT ALL (no filtering per user request)
+        seriesToolsSchema.forEach(tool => {
+            tools.push({
+                ...tool,
+                name: `series_${tool.name}`,
+                description: `[SERIES] ${tool.description}`
             });
+        });
 
         // Metadata tools - only assign_series_genres
         const neededMetadataTools = ['assign_series_genres'];
@@ -65,20 +75,83 @@ class SeriesPlanningMCPServer extends BaseMCPServer {
                 tools.push(tool);
             });
 
+        // World building tools - locations
+        const neededLocationTools = ['create_location', 'get_locations'];
+        this.locationHandlers.getLocationTools()
+            .filter(tool => neededLocationTools.includes(tool.name))
+            .forEach(tool => {
+                tools.push({
+                    ...tool,
+                    name: `world_${tool.name}`,
+                    description: `[WORLD] ${tool.description}`
+                });
+            });
+
+        // World building tools - organizations
+        const neededOrgTools = ['create_organization', 'get_organizations'];
+        this.organizationHandlers.getOrganizationTools()
+            .filter(tool => neededOrgTools.includes(tool.name))
+            .forEach(tool => {
+                tools.push({
+                    ...tool,
+                    name: `world_${tool.name}`,
+                    description: `[WORLD] ${tool.description}`
+                });
+            });
+
+        // World building tools - world elements
+        const neededElementTools = ['create_world_element', 'get_world_elements'];
+        this.worldElementHandlers.getWorldElementTools()
+            .filter(tool => neededElementTools.includes(tool.name))
+            .forEach(tool => {
+                tools.push({
+                    ...tool,
+                    name: `world_${tool.name}`,
+                    description: `[WORLD] ${tool.description}`
+                });
+            });
+
+        // Plot/Genre extension tools - only define_world_system
+        const neededPlotTools = ['define_world_system'];
+        genreExtensionToolsSchema
+            .filter(tool => neededPlotTools.includes(tool.name))
+            .forEach(tool => {
+                tools.push({
+                    ...tool,
+                    name: `plot_${tool.name}`,
+                    description: `[PLOT] ${tool.description}`
+                });
+            });
+
         return tools;
     }
 
     getToolHandler(toolName) {
         // Route to the appropriate handler based on tool name
         const handlerMap = {
-            // Series handlers - imported from series-server
+            // Series handlers - imported from series-server (ALL TOOLS)
             'series_list_series': this.seriesHandlers.handleListSeries.bind(this.seriesHandlers),
             'series_create_series': this.seriesHandlers.handleCreateSeries.bind(this.seriesHandlers),
             'series_get_series': this.seriesHandlers.handleGetSeries.bind(this.seriesHandlers),
             'series_update_series': this.seriesHandlers.handleUpdateSeries.bind(this.seriesHandlers),
 
             // Metadata handlers - imported from metadata-server
-            'assign_series_genres': this.lookupHandlers.handleAssignSeriesGenres.bind(this.lookupHandlers)
+            'assign_series_genres': this.lookupHandlers.handleAssignSeriesGenres.bind(this.lookupHandlers),
+
+            // World building handlers - locations
+            'world_create_location': this.locationHandlers.handleCreateLocation.bind(this.locationHandlers),
+            'world_get_locations': this.locationHandlers.handleGetLocations.bind(this.locationHandlers),
+
+            // World building handlers - organizations
+            'world_create_organization': this.organizationHandlers.handleCreateOrganization.bind(this.organizationHandlers),
+            'world_get_organizations': this.organizationHandlers.handleGetOrganizations.bind(this.organizationHandlers),
+
+            // World building handlers - world elements
+            'world_create_world_element': this.worldElementHandlers.handleCreateWorldElement.bind(this.worldElementHandlers),
+            'world_get_world_elements': this.worldElementHandlers.handleGetWorldElements.bind(this.worldElementHandlers),
+
+            // Plot/Genre extension handlers
+            'plot_define_world_system': this.genreExtensions.handleDefineWorldSystem.bind(this.genreExtensions)
         };
 
         return handlerMap[toolName] || null;

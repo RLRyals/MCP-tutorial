@@ -1,15 +1,7 @@
-BOOK	book_create_scene
-BOOK	book_update_scene
-BOOK	book_get_scene
-BOOK	book_list_scenes
-CHARACTER	character_get_character_details
-CHARACTER	character_get_characters_in_chapter
-CHARACTER	character_check_character_continuity
-WRITING	writing_validate_chapter_structure
-WRITING	writing_validate_beat_placement
-WRITING	writing_check_structure_violations
-WRITING	writing_word_count_tracking
-WRITING	log_writing_session
-get_writing_progress
-set_writing_goals
-get_productivity_analytics
+book_create_scene
+book_update_scene
+book_get_scene
+book_list_scenes
+character_get_characters_in_chapter
+writing_word_count_tracking
+log_writing_session
