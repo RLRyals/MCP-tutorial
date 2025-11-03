@@ -308,9 +308,7 @@ class MetadataMCPServer extends BaseMCPServer {
                               `Type: ${metadata.metadata_type}\n` +
                               `Series: ${metadata.series_title || 'N/A'}\n` +
                               `Book: ${metadata.book_title || 'N/A'}\n` +
-                              `Author: ${metadata.author_name || 'N/A'}\n` +
-                              `Created: ${metadata.created_at}\n` +
-                              `Updated: ${metadata.updated_at}`
+                              `Author: ${metadata.author_name || 'N/A'}\n` 
                     }
                 ]
             };
@@ -469,8 +467,7 @@ class MetadataMCPServer extends BaseMCPServer {
                               `Type: ${metadata.metadata_type}\n` +
                               `Series: ${info.series_title || 'N/A'}\n` +
                               `Book: ${info.book_title || 'N/A'}\n` +
-                              `Author: ${info.author_name || 'N/A'}\n` +
-                              `Updated: ${metadata.updated_at}`
+                              `Author: ${info.author_name || 'N/A'}\n` 
                     }
                 ]
             };

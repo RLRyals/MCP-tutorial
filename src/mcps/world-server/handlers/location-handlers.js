@@ -275,8 +275,7 @@ export class LocationHandlers {
                           `${location.climate ? `Climate: ${location.climate}\n` : ''}` +
                           `${location.terrain ? `Terrain: ${location.terrain}\n` : ''}` +
                           `${location.atmosphere ? `Atmosphere: ${location.atmosphere}\n` : ''}` +
-                          `Description: ${location.description || 'No description'}\n` +
-                          `Updated: ${location.updated_at}`
+                          `Description: ${location.description || 'No description'}\n` 
                 }]
             };
         } catch (error) {
@@ -438,8 +437,7 @@ export class LocationHandlers {
                     text: `Successfully tracked location usage!\n\n` +
                           `Location: ${location.name} (${location.location_type})\n` +
                           `${contextInfo}\n` +
-                          `${usage_notes ? `Notes: ${usage_notes}\n` : ''}` +
-                          `Tracked at: ${usageResult.rows[0].created_at}`
+                          `${usage_notes ? `Notes: ${usage_notes}\n` : ''}` 
                 }]
             };
         } catch (error) {

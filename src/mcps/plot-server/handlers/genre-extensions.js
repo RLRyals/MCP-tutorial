@@ -255,7 +255,6 @@ export class GenreExtensions {
                               `**Associated Thread:** "${thread.title}"\n` +
                               `${args.affects_characters?.length ? `**Affects ${args.affects_characters.length} character(s)**\n` : ''}` +
                               `${args.revealed_in_chapter ? `**Revealed in Chapter:** ${args.revealed_in_chapter}\n` : ''}` +
-                              `**Created:** ${new Date(result.rows[0].created_at).toLocaleString()}\n\n` +
                               `*This works for any genre: evidence (mystery), secrets (romance), world rules (fantasy), backstory (literary)*`
                     }
                 ]
@@ -317,7 +316,6 @@ export class GenreExtensions {
                               `**Series:** "${series.title}"\n` +
                               `${args.limitations?.length ? `**Limitations:** ${args.limitations.length} defined\n` : ''}` +
                               `${args.system_rules?.length ? `**Rules:** ${args.system_rules.length} defined\n` : ''}` +
-                              `**Created:** ${new Date(result.rows[0].created_at).toLocaleString()}\n\n` +
                               `*This works for: magic systems, psychic powers, advanced technology, divine systems, supernatural abilities, mutations*`
                     }
                 ]
@@ -371,8 +369,7 @@ export class GenreExtensions {
                               `**Type:** ${args.evidence_type}\n` +
                               `**Description:** ${args.evidence_description}\n` +
                               `**Significance:** ${args.significance || 'supporting'}\n` +
-                              `${args.discovery_chapter ? `**Discovered in Chapter:** ${args.discovery_chapter}\n` : ''}` +
-                              `**Added:** ${new Date(result.rows[0].created_at).toLocaleString()}`
+                              `${args.discovery_chapter ? `**Discovered in Chapter:** ${args.discovery_chapter}\n` : ''}` 
                     }
                 ]
             };
@@ -436,8 +433,7 @@ export class GenreExtensions {
                               `**Power Level:** ${args.current_power_level}/10\n` +
                               `**Method:** ${args.progression_method}\n` +
                               `${args.cost_or_sacrifice ? `**Cost/Sacrifice:** ${args.cost_or_sacrifice}\n` : ''}` +
-                              `${args.chapter_id ? `**Chapter:** ${args.chapter_id}\n` : ''}` +
-                              `**Tracked:** ${new Date(result.rows[0].created_at).toLocaleString()}`
+                              `${args.chapter_id ? `**Chapter:** ${args.chapter_id}\n` : ''}`
                     }
                 ]
             };

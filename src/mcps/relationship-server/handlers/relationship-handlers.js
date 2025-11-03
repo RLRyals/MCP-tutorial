@@ -266,7 +266,6 @@ export class RelationshipHandlers {
                               `**Complexity Level:** ${args.complexity_level || 5}/10\n` +
                               `**Associated Thread:** "${thread.title}"\n` +
                               `${args.current_dynamic ? `**Current Dynamic:** ${args.current_dynamic}\n` : ''}` +
-                              `**Created:** ${new Date(result.rows[0].created_at).toLocaleString()}\n\n` +
                               `*This works for: romantic pairs, love triangles, family dynamics, friendships, professional relationships, antagonistic relationships*`
                     }
                 ]
@@ -421,8 +420,7 @@ export class RelationshipHandlers {
                               `**Dynamic Change:** ${args.dynamic_change}\n` +
                               `${args.tension_change ? `**Tension Change:** ${args.tension_change > 0 ? '+' : ''}${args.tension_change}\n` : ''}` +
                               `${args.trigger_event ? `**Trigger:** ${args.trigger_event}\n` : ''}` +
-                              `${args.chapter_id ? `**Chapter:** ${args.chapter_id}\n` : ''}` +
-                              `**Tracked:** ${new Date(result.rows[0].created_at).toLocaleString()}`
+                              `${args.chapter_id ? `**Chapter:** ${args.chapter_id}\n` : ''}` 
                     }
                 ]
             };
@@ -471,9 +469,7 @@ export class RelationshipHandlers {
                           `**Plot Thread:** ${arc.plot_thread_title}\n` +
                           `**Current Dynamic:** ${arc.current_dynamic || 'Not set'}\n` +
                           `**Participants:**\n${participants.map(p => `  - ${p.character_name} (${p.role_in_relationship})`).join('\n')}\n` +
-                          `${arc.development_factors ? `**Development Factors:** ${arc.development_factors.join(', ')}\n` : ''}` +
-                          `**Created:** ${new Date(arc.created_at).toLocaleString()}\n` +
-                          `**Updated:** ${new Date(arc.updated_at).toLocaleString()}`
+                          `${arc.development_factors ? `**Development Factors:** ${arc.development_factors.join(', ')}\n` : ''}` 
                 }]
             };
 
@@ -600,7 +596,7 @@ export class RelationshipHandlers {
                     if (dyn.trigger_event) {
                         timeline += `   Trigger: ${dyn.trigger_event}\n`;
                     }
-                    timeline += `   Recorded: ${new Date(dyn.created_at).toLocaleString()}\n\n`;
+                    timeline += `\n\n`;
                 });
             }
 

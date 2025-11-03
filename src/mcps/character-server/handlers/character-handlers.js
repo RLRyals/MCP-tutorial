@@ -105,9 +105,7 @@ export class CharacterHandlers {
                               `Series: ${character.series_title}\n` +
                               `Type: ${character.character_type}\n` +
                               `Status: ${character.status}\n` +
-                              `Aliases: ${character.aliases && character.aliases.length > 0 ? character.aliases.join(', ') : 'None'}\n` +
-                              `Created: ${character.created_at}\n` +
-                              `Updated: ${character.updated_at}`
+                              `Aliases: ${character.aliases && character.aliases.length > 0 ? character.aliases.join(', ') : 'None'}\n` 
                     }
                 ]
             };
@@ -206,8 +204,7 @@ export class CharacterHandlers {
                               `ID: ${character.id}\n` +
                               `Name: ${character.name}${character.full_name ? ` (${character.full_name})` : ''}\n` +
                               `Type: ${character.character_type}\n` +
-                              `Status: ${character.status}\n` +
-                              `Updated: ${character.updated_at}`
+                              `Status: ${character.status}\n` 
                     }
                 ]
             };

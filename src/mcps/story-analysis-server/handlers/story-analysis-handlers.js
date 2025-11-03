@@ -164,7 +164,6 @@ export class StoryAnalysisHandlers {
             }
 
             output += `**Analysis ID:** ${analysis.analysis_id}\n`;
-            output += `**Last Updated:** ${new Date(analysis.updated_at || analysis.created_at).toLocaleString()}`;
 
             return {
                 content: [
@@ -314,8 +313,7 @@ export class StoryAnalysisHandlers {
                               `${throughline.character_problem ? `**Problem:** ${throughline.character_problem}\n` : ''}` +
                               `${throughline.character_solution ? `**Solution:** ${throughline.character_solution}\n` : ''}` +
                               `${throughline.character_arc ? `**Arc:** ${throughline.character_arc}\n` : ''}` +
-                              `**Throughline ID:** ${throughline.id}\n` +
-                              `**Last Updated:** ${new Date(throughline.updated_at || throughline.created_at).toLocaleString()}`
+                              `**Throughline ID:** ${throughline.id}\n` 
                     }
                 ]
             };
@@ -378,8 +376,7 @@ export class StoryAnalysisHandlers {
                                   `**Value:** ${args.appreciation_value}\n` +
                                   `**Confidence Level:** ${args.confidence_level || 5}/10\n` +
                                   `${args.supporting_evidence ? `**Evidence:** ${args.supporting_evidence}\n` : ''}` +
-                                  `**Appreciation ID:** ${result.rows[0].id}\n` +
-                                  `**Recorded:** ${new Date(result.rows[0].created_at).toLocaleString()}`
+                                  `**Appreciation ID:** ${result.rows[0].id}\n` 
                         }
                     ]
                 };
@@ -484,8 +481,7 @@ export class StoryAnalysisHandlers {
                                   `**Problem:** ${args.problem}\n` +
                                   `**Solution:** ${args.solution}\n` +
                                   `**Effectiveness:** ${args.effectiveness || 'unknown'}\n` +
-                                  `**Mapping ID:** ${result.rows[0].id}\n` +
-                                  `**Recorded:** ${new Date(result.rows[0].created_at).toLocaleString()}`
+                                  `**Mapping ID:** ${result.rows[0].id}\n` 
                         }
                     ]
                 };

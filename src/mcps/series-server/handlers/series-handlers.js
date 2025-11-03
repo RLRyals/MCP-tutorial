@@ -110,9 +110,7 @@ export class SeriesHandlers {
                               `Genres: ${series.genre_names?.length > 0 ? series.genre_names.join(', ') : 'None'}\n` +
                               `Status: ${series.status || 'Unknown'}\n` +
                               `Start Year: ${series.start_year || 'Unknown'}\n` +
-                              `Description: ${series.description || 'No description available'}\n` +
-                              `Created: ${series.created_at}\n` +
-                              `Updated: ${series.updated_at}`
+                              `Description: ${series.description || 'No description available'}\n`
                     }
                 ]
             };
@@ -276,8 +274,7 @@ export class SeriesHandlers {
                               `Genres: ${series.genre_names?.length > 0 ? series.genre_names.join(', ') : 'None'}\n` +
                               `Status: ${series.status || 'Not specified'}\n` +
                               `Start Year: ${series.start_year || 'Not specified'}\n` +
-                              `Description: ${series.description || 'No description available'}\n` +
-                              `Updated: ${series.updated_at}`
+                              `Description: ${series.description || 'No description available'}\n`
                     }
                 ]
             };

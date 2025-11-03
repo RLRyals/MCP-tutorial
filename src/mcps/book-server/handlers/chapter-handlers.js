@@ -172,7 +172,6 @@ export class ChapterHandlers {
             responseText += `Status: ${chapter.status}\n`;
             responseText += `Word Count: ${chapter.word_count || 0}\n`;
             responseText += `Target: ${chapter.target_word_count || 'Not specified'}\n`;
-            responseText += `Updated: ${chapter.updated_at}\n`;
             
             return {
                 content: [{
@@ -254,9 +253,6 @@ export class ChapterHandlers {
             if (chapter.writing_notes) {
                 chapterText += `Writing Notes: ${chapter.writing_notes}\n`;
             }
-            
-            chapterText += `Created: ${chapter.created_at}\n`;
-            chapterText += `Updated: ${chapter.updated_at}\n`;
 
             if (include_scenes) {
                 const scenesQuery = `

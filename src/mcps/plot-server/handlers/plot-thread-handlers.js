@@ -120,8 +120,7 @@ export class PlotThreadHandlers {
                   `**Status:** active (default)\n` +
                   `**Importance:** ${newThread.importance_level}/10\n` +
                   `**Complexity:** ${newThread.complexity_level}/10\n` +
-                  `**Description:** ${newThread.description}\n` +
-                  `**Created:** ${new Date(newThread.created_at).toLocaleString()}`;
+                  `**Description:** ${newThread.description}\n` ;
 
             if (wasAutoCreated) {
                 successMessage += `\n\n**Note:** The thread type "${args.thread_type}" was automatically created. ` +

@@ -169,8 +169,7 @@ export class CharacterDetailHandlers {
                               `Character ID: ${character_id}\n` +
                               `${category}/${attribute}: ${detail.value}\n` +
                               `Confidence: ${detail.confidence_level}\n` +
-                              `Source Book ID: ${detail.source_book_id || 'Not specified'}\n` +
-                              `Updated: ${detail.updated_at}`
+                              `Source Book ID: ${detail.source_book_id || 'Not specified'}\n`
                     }
                 ]
             };

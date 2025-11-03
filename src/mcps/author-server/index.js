@@ -141,9 +141,7 @@ class AuthorMCPServer extends BaseMCPServer {
                               `Name: ${author.name}\n` +
                               `Email: ${author.email}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Bio: ${author.bio || 'No biography available'}\n` +
-                              `Created: ${author.created_at}\n` +
-                              `Updated: ${author.updated_at}`
+                              `Bio: ${author.bio || 'No biography available'}\n`
                     }
                 ]
             };
@@ -244,8 +242,7 @@ class AuthorMCPServer extends BaseMCPServer {
                               `ID: ${author.id}\n` +
                               `Name: ${author.name}\n` +
                               `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Bio: ${author.bio || 'No biography available'}\n` +
-                              `Updated: ${author.updated_at}`
+                              `Bio: ${author.bio || 'No biography available'}\n` 
                     }
                 ]
             };

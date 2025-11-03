@@ -303,8 +303,7 @@ export class WorldElementHandlers {
                           `Type: ${element.element_type}\n` +
                           `${element.power_source ? `Power Source: ${element.power_source}\n` : ''}` +
                           `Rarity: ${element.rarity}\n` +
-                          `Description: ${element.description}\n` +
-                          `Updated: ${element.updated_at}`
+                          `Description: ${element.description}\n`
                 }]
             };
         } catch (error) {
@@ -483,8 +482,7 @@ export class WorldElementHandlers {
                           `🌟 Element: ${element.name} (${element.element_type})\n` +
                           `${contextInfo}\n` +
                           `${power_level ? `Power Level: ${power_level}/10\n` : ''}` +
-                          `${usage_notes ? `Notes: ${usage_notes}\n` : ''}` +
-                          `Tracked at: ${usageResult.rows[0].created_at}`
+                          `${usage_notes ? `Notes: ${usage_notes}\n` : ''}` 
                 }]
             };
         } catch (error) {

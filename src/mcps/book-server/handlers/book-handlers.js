@@ -181,8 +181,6 @@ export class BookHandlers {
             }
             
             bookText += `Description: ${book.description || 'No description available'}\n`;
-            bookText += `Created: ${book.created_at}\n`;
-            bookText += `Updated: ${book.updated_at}\n`;
 
             if (include_chapters) {
                 const chaptersQuery = `
@@ -405,8 +403,7 @@ export class BookHandlers {
                           `Status: ${book.status}\n` +
                           `Target Word Count: ${book.target_word_count || 'Not specified'}\n` +
                           `Current Word Count: ${book.actual_word_count || 0}\n` +
-                          `Genre Tags: ${book.genre_names && book.genre_names.length > 0 ? book.genre_names.join(', ') : 'None'}\n` +
-                          `Updated: ${book.updated_at}`
+                          `Genre Tags: ${book.genre_names && book.genre_names.length > 0 ? book.genre_names.join(', ') : 'None'}\n` 
                 }]
             };
         } catch (error) {

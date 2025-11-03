@@ -247,7 +247,6 @@ export class SceneHandlers {
             if (scene.scene_revisions && scene.scene_revisions.length > 0) {
                 responseText += `Revisions: ${scene.scene_revisions.length} version(s)\n`;
             }
-            responseText += `Updated: ${scene.updated_at}\n`;
             
             return {
                 content: [{
@@ -358,9 +357,6 @@ export class SceneHandlers {
             if (scene.scene_revisions && scene.scene_revisions.length > 0) {
                 sceneText += `\nRevisions: ${scene.scene_revisions.length} version(s) stored\n`;
             }
-            
-            sceneText += `Created: ${scene.created_at}\n`;
-            sceneText += `Updated: ${scene.updated_at}\n`;
 
             if (include_characters && scene.scene_participants && scene.scene_participants.length > 0) {
                 // Get character names for participants

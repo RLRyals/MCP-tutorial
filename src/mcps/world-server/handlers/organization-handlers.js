@@ -232,8 +232,7 @@ export class OrganizationHandlers {
                           `Status: ${org.status}\n` +
                           `${headquartersName ? `Headquarters: ${headquartersName}\n` : ''}` +
                           `${org.member_count ? `Members: ${org.member_count}\n` : ''}` +
-                          `Description: ${org.description}\n` +
-                          `Created: ${org.created_at}`
+                          `Description: ${org.description}\n` 
                 }]
             };
         } catch (error) {
@@ -405,8 +404,7 @@ export class OrganizationHandlers {
                           `${contextInfo}\n` +
                           `${involved_characters && involved_characters.length > 0 ? 
                             `Involved Characters: ${involved_characters.join(', ')}\n` : ''}` +
-                          `${activity_notes ? `Notes: ${activity_notes}\n` : ''}` +
-                          `Tracked at: ${activityResult.rows[0].created_at}`
+                          `${activity_notes ? `Notes: ${activity_notes}\n` : ''}` 
                 }]
             };
         } catch (error) {
@@ -470,8 +468,7 @@ export class OrganizationHandlers {
                           `Influence Level: ${org.influence_level}/10\n` +
                           `Status: ${org.status}\n` +
                           `${org.member_count ? `Members: ${org.member_count}\n` : ''}` +
-                          `Description: ${org.description}\n` +
-                          `Updated: ${org.updated_at}`
+                          `Description: ${org.description}\n` 
                 }]
             };
         } catch (error) {
