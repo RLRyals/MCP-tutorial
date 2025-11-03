@@ -20,6 +20,7 @@ import { CharacterTimelineHandlers } from '../../mcps/character-server/handlers/
 import { PlotThreadHandlers } from '../../mcps/plot-server/handlers/plot-thread-handlers.js';
 import { RelationshipHandlers } from '../../mcps/relationship-server/handlers/relationship-handlers.js';
 import { EventChapterMappingHandlers } from '../../mcps/timeline-server/handlers/timeline-chapter-mapping-handler.js';
+import { LookupManagementHandlers } from '../../mcps/metadata-server/handlers/lookup-management-handlers.js';
 
 class CoreContinuityMCPServer extends BaseMCPServer {
     constructor() {
@@ -43,6 +44,7 @@ class CoreContinuityMCPServer extends BaseMCPServer {
         this.plotThreadHandlers = new PlotThreadHandlers(this.db);
         this.relationshipHandlers = new RelationshipHandlers(this.db);
         this.eventChapterMappingHandlers = new EventChapterMappingHandlers(this.db);
+        this.lookupHandlers = new LookupManagementHandlers(this.db);
 
         console.error('[CORE-CONTINUITY-SERVER] Handlers initialized with shared DB');
     }
@@ -133,6 +135,17 @@ class CoreContinuityMCPServer extends BaseMCPServer {
             });
         }
 
+        // LOOKUP TOOLS - Read-only access to lookup tables
+        const lookupTools = this.lookupHandlers.getLookupManagementTools();
+        const getAvailableOptions = lookupTools.find(t => t.name === 'get_available_options');
+        if (getAvailableOptions) {
+            tools.push({
+                ...getAvailableOptions,
+                name: 'get_available_options',
+                description: 'Get available lookup options (genres, plot thread types, relationship types, story elements)'
+            });
+        }
+
         return tools;
     }
 
@@ -153,7 +166,10 @@ class CoreContinuityMCPServer extends BaseMCPServer {
             'get_relationship_timeline': (args) => this.relationshipHandlers.handleGetRelationshipTimeline(args),
 
             // Timeline handlers
-            'get_event_mappings': (args) => this.eventChapterMappingHandlers.handleGetEventMappings(args)
+            'get_event_mappings': (args) => this.eventChapterMappingHandlers.handleGetEventMappings(args),
+
+            // Lookup handlers
+            'get_available_options': (args) => this.lookupHandlers.handleGetAvailableOptions(args)
         };
 
         return handlerMap[toolName] || null;

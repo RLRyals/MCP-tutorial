@@ -3,10 +3,12 @@
 // Designed for AI Writing Teams to manage chapter-level story structure and character presence
 
 import { chapterPlanningSchemas } from '../schemas/chapter-planning-schemas.js';
+import { LookupManagementHandlers } from '../../metadata-server/handlers/lookup-management-handlers.js';
 
 export class ChapterHandlers {
     constructor(db) {
         this.db = db;
+        this.lookupHandlers = new LookupManagementHandlers(db);
     }
 
     // =============================================
@@ -30,24 +32,29 @@ export class ChapterHandlers {
 
     async handleCreateChapter(args) {
         try {
-            const { book_id, chapter_number, title, subtitle, summary, target_word_count, 
-                    status = 'planned', pov_character_id, primary_location, story_time_start, 
+            const { book_id, chapter_number, title, subtitle, summary, target_word_count,
+                    status = 'planned', pov_character_id, primary_location, story_time_start,
                     story_time_end, story_duration, author_notes } = args;
-            
+
             // Check if chapter number already exists in this book
             const checkQuery = 'SELECT id FROM chapters WHERE book_id = $1 AND chapter_number = $2';
             const checkResult = await this.db.query(checkQuery, [book_id, chapter_number]);
-            
+
             if (checkResult.rows.length > 0) {
                 throw new Error(`Chapter ${chapter_number} already exists in this book`);
             }
-            
+
             // Verify the book exists
             const bookQuery = 'SELECT id, title FROM books WHERE id = $1';
             const bookResult = await this.db.query(bookQuery, [book_id]);
-            
+
             if (bookResult.rows.length === 0) {
                 throw new Error(`Book with ID ${book_id} not found`);
+            }
+
+            // Auto-create lookup value for writing status if provided
+            if (status) {
+                await this.lookupHandlers.autoCreateLookupValue('writing_statuses', status);
             }
             
             const query = `
@@ -108,12 +115,17 @@ export class ChapterHandlers {
     async handleUpdateChapter(args) {
         try {
             const { chapter_id, ...updates } = args;
-            
+
+            // Auto-create lookup value for writing status if being updated
+            if (updates.status) {
+                await this.lookupHandlers.autoCreateLookupValue('writing_statuses', updates.status);
+            }
+
             // Build dynamic update query
             const updateFields = [];
             const params = [chapter_id];
             let paramCount = 1;
-            
+
             for (const [key, value] of Object.entries(updates)) {
                 if (value !== undefined) {
                     paramCount++;
@@ -121,7 +133,7 @@ export class ChapterHandlers {
                     params.push(value);
                 }
             }
-            
+
             if (updateFields.length === 0) {
                 throw new Error('No fields to update');
             }

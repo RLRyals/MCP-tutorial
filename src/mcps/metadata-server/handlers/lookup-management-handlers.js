@@ -1,6 +1,8 @@
 // src/mcps/plot-server/handlers/lookup-management-handlers.js
 // Handlers for CRUD operations on lookup tables
 
+import { lookupSystemToolsSchema } from '../schemas/lookup-tools-schema.js';
+
 export class LookupManagementHandlers {
     constructor(db) {
         this.db = db;
@@ -41,8 +43,144 @@ export class LookupManagementHandlers {
                 table: 'story_judgments',
                 nameCol: 'judgment_name',
                 descCol: 'judgment_description'
+            },
+            'scene_purposes': {
+                table: 'scene_purposes',
+                nameCol: 'purpose_name',
+                descCol: 'purpose_description'
+            },
+            'scene_types': {
+                table: 'scene_types',
+                nameCol: 'type_name',
+                descCol: 'type_description'
+            },
+            'writing_statuses': {
+                table: 'writing_statuses',
+                nameCol: 'status_name',
+                descCol: 'status_description'
             }
         };
+    }
+
+    getLookupManagementTools() {
+        return lookupSystemToolsSchema;
+    }
+
+    /**
+     * Get available options from lookup tables
+     */
+    async handleGetAvailableOptions(args) {
+        try {
+            const { option_type, active_only = true } = args;
+
+            const lookupInfo = this.lookupTableMap[option_type];
+            if (!lookupInfo) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `Unknown option type: ${option_type}\n\n` +
+                                  `Available types: ${Object.keys(this.lookupTableMap).join(', ')}`
+                        }
+                    ]
+                };
+            }
+
+            try {
+                const activeFilter = active_only ? 'WHERE is_active = true' : '';
+                const query = `
+                    SELECT id, ${lookupInfo.nameCol}, ${lookupInfo.descCol}, is_active
+                    FROM ${lookupInfo.table}
+                    ${activeFilter}
+                    ORDER BY ${lookupInfo.nameCol}
+                `;
+
+                const result = await this.db.query(query);
+
+                if (result.rows.length > 0) {
+                    let output = `# Available ${option_type.replace('_', ' ').toUpperCase()}\n\n`;
+                    result.rows.forEach(row => {
+                        const name = row[lookupInfo.nameCol];
+                        const desc = row[lookupInfo.descCol];
+                        const active = row.is_active ? '' : ' (inactive)';
+                        output += `**${name}** (ID: ${row.id})${active} - ${desc || 'No description'}\n`;
+                    });
+
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: output
+                            }
+                        ]
+                    };
+                } else {
+                    return {
+                        content: [
+                            {
+                                type: 'text',
+                                text: `No ${active_only ? 'active ' : ''}${option_type.replace('_', ' ')} found in lookup table.`
+                            }
+                        ]
+                    };
+                }
+
+            } catch (dbError) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: `Lookup table for ${option_type} not available.\n\n` +
+                                  `Error: ${dbError.message}\n\n` +
+                                  `Run migration 004_plot_structure_and_universal_framework.sql to create lookup tables.`
+                        }
+                    ]
+                };
+            }
+        } catch (error) {
+            throw new Error(`Failed to get available options: ${error.message}`);
+        }
+    }
+
+    /**
+     * Auto-create a lookup value if it doesn't exist (helper for better UX)
+     * Returns the ID of the existing or newly created lookup value
+     */
+    async autoCreateLookupValue(option_type, value_name) {
+        try {
+            const lookupInfo = this.lookupTableMap[option_type];
+            if (!lookupInfo) {
+                throw new Error(`Unknown option type: ${option_type}`);
+            }
+
+            // Check if the value already exists (case-insensitive)
+            const checkQuery = `
+                SELECT id FROM ${lookupInfo.table}
+                WHERE LOWER(${lookupInfo.nameCol}) = LOWER($1)
+            `;
+            const existing = await this.db.query(checkQuery, [value_name]);
+
+            if (existing.rows.length > 0) {
+                // Value already exists, return its ID
+                return existing.rows[0].id;
+            }
+
+            // Value doesn't exist, create it with a default description
+            const defaultDescription = `Auto-created ${option_type.replace('_', ' ')} value`;
+            const insertQuery = `
+                INSERT INTO ${lookupInfo.table} (${lookupInfo.nameCol}, ${lookupInfo.descCol}, is_active)
+                VALUES ($1, $2, true)
+                RETURNING id
+            `;
+
+            const result = await this.db.query(insertQuery, [value_name, defaultDescription]);
+            console.error(`[LOOKUP-AUTO-CREATE] Created new ${option_type}: "${value_name}" (ID: ${result.rows[0].id})`);
+
+            return result.rows[0].id;
+        } catch (error) {
+            console.error(`[LOOKUP-AUTO-CREATE] Failed to auto-create ${option_type} "${value_name}":`, error.message);
+            throw new Error(`Failed to auto-create lookup value: ${error.message}`);
+        }
     }
 
     /**

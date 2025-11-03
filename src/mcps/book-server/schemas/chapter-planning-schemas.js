@@ -39,9 +39,8 @@ export const chapterPlanningSchemas = {
                 },
                 status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
                     default: 'planned',
-                    description: 'Chapter writing status'
+                    description: 'Chapter writing status (use get_available_options with option_type="writing_statuses")'
                 },
                 pov_character_id: {
                     type: 'integer',
@@ -104,8 +103,7 @@ export const chapterPlanningSchemas = {
                 },
                 status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Chapter writing status'
+                    description: 'Chapter writing status (use get_available_options with option_type="writing_statuses")'
                 },
                 pov_character_id: {
                     type: 'integer',
@@ -177,8 +175,7 @@ export const chapterPlanningSchemas = {
                 },
                 status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Filter by chapter status (optional)'
+                    description: 'Filter by chapter status (optional, use get_available_options with option_type="writing_statuses")'
                 },
                 include_stats: {
                     type: 'boolean',

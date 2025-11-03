@@ -10,7 +10,7 @@ export const lookupSystemToolsSchema = [
             properties: {
                 option_type: {
                     type: 'string',
-                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
+                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
                     description: 'Type of options to retrieve'
                 },
                 genre_filter: {
@@ -34,7 +34,7 @@ export const lookupSystemToolsSchema = [
             properties: {
                 option_type: {
                     type: 'string',
-                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
+                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
                     description: 'Type of option to create'
                 },
                 name: {
@@ -62,7 +62,7 @@ export const lookupSystemToolsSchema = [
             properties: {
                 option_type: {
                     type: 'string',
-                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
+                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
                     description: 'Type of option to update'
                 },
                 option_id: {
@@ -93,7 +93,7 @@ export const lookupSystemToolsSchema = [
             properties: {
                 option_type: {
                     type: 'string',
-                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments'],
+                    enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
                     description: 'Type of option to delete'
                 },
                 option_id: {

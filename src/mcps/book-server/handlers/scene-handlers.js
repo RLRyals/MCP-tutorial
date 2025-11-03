@@ -4,10 +4,12 @@
 
 
 import { sceneWritingSchemas } from '../schemas/scene-writing-schemas.js';
+import { LookupManagementHandlers } from '../../metadata-server/handlers/lookup-management-handlers.js';
 
 export class SceneHandlers {
     constructor(db) {
         this.db = db;
+        this.lookupHandlers = new LookupManagementHandlers(db);
     }
 
     // =============================================
@@ -35,31 +37,42 @@ export class SceneHandlers {
 
     async handleCreateScene(args) {
         try {
-            const { chapter_id, scene_number, scene_title, scene_purpose, scene_type, 
-                    location, time_of_day, duration, summary, pov_character_id, 
-                    scene_participants, writing_status = 'planned', target_word_count, 
-                    intensity_level, scene_elements, scene_outline, scene_content, 
+            const { chapter_id, scene_number, scene_title, scene_purpose, scene_type,
+                    location, time_of_day, duration, summary, pov_character_id,
+                    scene_participants, writing_status = 'planned', target_word_count,
+                    intensity_level, scene_elements, scene_outline, scene_content,
                     scene_revisions, notes } = args;
-            
+
             // Check if scene number already exists in this chapter
             const checkQuery = 'SELECT id FROM chapter_scenes WHERE chapter_id = $1 AND scene_number = $2';
             const checkResult = await this.db.query(checkQuery, [chapter_id, scene_number]);
-            
+
             if (checkResult.rows.length > 0) {
                 throw new Error(`Scene ${scene_number} already exists in this chapter`);
             }
-            
+
             // Verify the chapter exists and get chapter info
             const chapterQuery = `
-                SELECT c.id, c.title, c.chapter_number, b.title as book_title 
-                FROM chapters c 
-                JOIN books b ON c.book_id = b.id 
+                SELECT c.id, c.title, c.chapter_number, b.title as book_title
+                FROM chapters c
+                JOIN books b ON c.book_id = b.id
                 WHERE c.id = $1
             `;
             const chapterResult = await this.db.query(chapterQuery, [chapter_id]);
-            
+
             if (chapterResult.rows.length === 0) {
                 throw new Error(`Chapter with ID ${chapter_id} not found`);
+            }
+
+            // Auto-create lookup values if they don't exist
+            if (scene_purpose) {
+                await this.lookupHandlers.autoCreateLookupValue('scene_purposes', scene_purpose);
+            }
+            if (scene_type) {
+                await this.lookupHandlers.autoCreateLookupValue('scene_types', scene_type);
+            }
+            if (writing_status) {
+                await this.lookupHandlers.autoCreateLookupValue('writing_statuses', writing_status);
             }
             
             const query = `
@@ -144,12 +157,23 @@ export class SceneHandlers {
     async handleUpdateScene(args) {
         try {
             const { scene_id, ...updates } = args;
-            
+
+            // Auto-create lookup values if they don't exist
+            if (updates.scene_purpose) {
+                await this.lookupHandlers.autoCreateLookupValue('scene_purposes', updates.scene_purpose);
+            }
+            if (updates.scene_type) {
+                await this.lookupHandlers.autoCreateLookupValue('scene_types', updates.scene_type);
+            }
+            if (updates.writing_status) {
+                await this.lookupHandlers.autoCreateLookupValue('writing_statuses', updates.writing_status);
+            }
+
             // Build dynamic update query
             const updateFields = [];
             const params = [scene_id];
             let paramCount = 1;
-            
+
             for (const [key, value] of Object.entries(updates)) {
                 if (value !== undefined) {
                     paramCount++;
@@ -157,7 +181,7 @@ export class SceneHandlers {
                     params.push(value);
                 }
             }
-            
+
             if (updateFields.length === 0) {
                 throw new Error('No fields to update');
             }

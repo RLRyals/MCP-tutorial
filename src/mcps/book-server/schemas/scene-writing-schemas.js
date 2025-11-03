@@ -27,13 +27,11 @@ export const sceneWritingSchemas = {
                 },
                 scene_purpose: {
                     type: 'string',
-                    enum: ['action', 'dialogue', 'description', 'transition', 'exposition', 'conflict', 'resolution'],
-                    description: 'Primary purpose of this scene'
+                    description: 'Primary purpose of this scene (use get_available_options with option_type="scene_purposes")'
                 },
                 scene_type: {
                     type: 'string',
-                    enum: ['dramatic', 'comedic', 'action', 'romance', 'mystery', 'horror', 'slice_of_life'],
-                    description: 'Emotional tone or genre type of scene'
+                    description: 'Emotional tone or genre type of scene (use get_available_options with option_type="scene_types")'
                 },
                 location: {
                     type: 'string',
@@ -62,9 +60,8 @@ export const sceneWritingSchemas = {
                 },
                 writing_status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
                     default: 'planned',
-                    description: 'Writing progress status for this scene'
+                    description: 'Writing progress status for this scene (use get_available_options with option_type="writing_statuses")'
                 },
                 target_word_count: {
                     type: 'integer',
@@ -119,13 +116,11 @@ export const sceneWritingSchemas = {
                 },
                 scene_purpose: {
                     type: 'string',
-                    enum: ['action', 'dialogue', 'description', 'transition', 'exposition', 'conflict', 'resolution'],
-                    description: 'Primary purpose of this scene'
+                    description: 'Primary purpose of this scene (use get_available_options with option_type="scene_purposes")'
                 },
                 scene_type: {
                     type: 'string',
-                    enum: ['dramatic', 'comedic', 'action', 'romance', 'mystery', 'horror', 'slice_of_life'],
-                    description: 'Emotional tone or genre type of scene'
+                    description: 'Emotional tone or genre type of scene (use get_available_options with option_type="scene_types")'
                 },
                 location: {
                     type: 'string',
@@ -162,8 +157,7 @@ export const sceneWritingSchemas = {
                 },
                 writing_status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Writing status'
+                    description: 'Writing status (use get_available_options with option_type="writing_statuses")'
                 },
                 intensity_level: {
                     type: 'integer',
@@ -230,13 +224,11 @@ export const sceneWritingSchemas = {
                 },
                 scene_type: {
                     type: 'string',
-                    enum: ['dramatic', 'comedic', 'action', 'romance', 'mystery', 'horror', 'slice_of_life'],
-                    description: 'Filter by scene type (optional)'
+                    description: 'Filter by scene type (optional, use get_available_options with option_type="scene_types")'
                 },
                 writing_status: {
                     type: 'string',
-                    enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Filter by writing status (optional)'
+                    description: 'Filter by writing status (optional, use get_available_options with option_type="writing_statuses")'
                 },
                 include_stats: {
                     type: 'boolean',
