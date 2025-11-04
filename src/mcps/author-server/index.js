@@ -1,8 +1,9 @@
 // src/mcps/author-server/index.js
+// MODULAR VERSION - Author MCP Server with separated handlers and schemas
+// Designed for AI Writing Teams to manage author information
 
 // Protect stdout from debug logging in MCP stdio mode
 if (process.env.MCP_STDIO_MODE === 'true') {
-    const originalConsoleError = console.error;
     console.error = function() {
         // Keep the original console.error functionality but write to stderr instead
         process.stderr.write(Array.from(arguments).join(' ') + '\n');
@@ -10,6 +11,7 @@ if (process.env.MCP_STDIO_MODE === 'true') {
 }
 
 import { BaseMCPServer } from '../../shared/base-server.js';
+import { AuthorHandlers } from './handlers/author-handlers.js';
 
 class AuthorMCPServer extends BaseMCPServer {
     constructor() {
@@ -22,65 +24,76 @@ class AuthorMCPServer extends BaseMCPServer {
             console.error('[AUTHOR-SERVER] Stack:', error.stack);
             throw error;
         }
-         // Initialize tools after base constructor
+
+        // Initialize handler modules with database connection
+        this.authorHandlers = new AuthorHandlers(this.db);
+
+        // Properly bind handler methods to maintain context
+        this.bindHandlerMethods();
+
+        // Initialize tools after base constructor
         this.tools = this.getTools();
+
+        // Defensive check to ensure tools are properly initialized
+        if (!this.tools || !Array.isArray(this.tools) || this.tools.length === 0) {
+            console.error('[AUTHOR-SERVER] WARNING: Tools not properly initialized!');
+            this.tools = this.getTools(); // Try again
+        }
+
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error(`[AUTHOR-SERVER] Initialized with ${this.tools.length} tools`);
+        }
+
+        // Test database connection on startup (don't wait for it, just start it)
+        this.testDatabaseConnection();
     }
 
-    getTools() {
-        return [
-            {
-                name: 'list_authors',
-                description: 'List all authors in the database',
-                inputSchema: {
-                    type: 'object',
-                    properties: {},
-                    required: []
-                }
-            },
-            {
-                name: 'get_author',
-                description: 'Get detailed information about a specific author',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        author_id: { type: 'integer', description: 'The ID of the author' }
-                    },
-                    required: ['author_id']
-                }
-            },
-            {
-                name: 'create_author',
-                description: 'Create a new author',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        name: { type: 'string', description: 'Full name of the author' },
-                        email: { type: 'string', description: 'Author\'s email address' },
-                        bio: { type: 'string', description: 'Author biography' },
-                        birth_year: { type: 'integer', description: 'Year of birth' }
-                    },
-                    required: ['name']
-                }
-            },
-            {
-                name: 'update_author',
-                description: 'Update an existing author',
-                inputSchema: {
-                    type: 'object',
-                    properties: {
-                        author_id: { type: 'integer', description: 'The ID of the author to update' },
-                        name: { type: 'string', description: 'Full name of the author' },
-                        bio: { type: 'string', description: 'Author biography' },
-                        birth_year: { type: 'integer', description: 'Year of birth' }
-                    },
-                    required: ['author_id']
+    // Proper method binding to maintain context
+    bindHandlerMethods() {
+        // Bind author handler methods
+        this.handleListAuthors = this.authorHandlers.handleListAuthors.bind(this.authorHandlers);
+        this.handleGetAuthor = this.authorHandlers.handleGetAuthor.bind(this.authorHandlers);
+        this.handleCreateAuthor = this.authorHandlers.handleCreateAuthor.bind(this.authorHandlers);
+        this.handleUpdateAuthor = this.authorHandlers.handleUpdateAuthor.bind(this.authorHandlers);
+    }
+
+    async testDatabaseConnection() {
+        try {
+            if (this.db) {
+                // Quick health check with timeout
+                const healthPromise = this.db.healthCheck();
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Database health check timed out')), 5000)
+                );
+
+                const health = await Promise.race([healthPromise, timeoutPromise]);
+                if (health.healthy) {
+                    console.error('[AUTHOR-SERVER] Database connection verified');
+                } else {
+                    console.error('[AUTHOR-SERVER] Database health check failed:', health.error);
                 }
             }
+        } catch (error) {
+            console.error('[AUTHOR-SERVER] Database connection test failed:', error.message);
+        }
+    }
+
+    // =============================================
+    // COMPLETE TOOL REGISTRATION
+    // =============================================
+    getTools() {
+        return [
+            // Author Management Tools
+            ...this.authorHandlers.getAuthorTools()
         ];
     }
 
+    // =============================================
+    // COMPLETE TOOL HANDLER MAPPING
+    // =============================================
     getToolHandler(toolName) {
         const handlers = {
+            // Author Management Handlers
             'list_authors': this.handleListAuthors,
             'get_author': this.handleGetAuthor,
             'create_author': this.handleCreateAuthor,
@@ -88,179 +101,19 @@ class AuthorMCPServer extends BaseMCPServer {
         };
         return handlers[toolName];
     }
-
-    async handleListAuthors(args) {
-        try {
-            const query = 'SELECT * FROM authors ORDER BY name';
-            const result = await this.db.query(query);
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Found ${result.rows.length} authors:\n\n` +
-                              result.rows.map(author => 
-                                  `ID: ${author.id}\n` +
-                                  `Name: ${author.name}\n` +
-                                  `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                                  `Bio: ${author.bio || 'No biography available'}\n`
-                              ).join('\n---\n\n')
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to list authors: ${error.message}`);
-        }
-    }
-
-    async handleGetAuthor(args) {
-        try {
-            const { author_id } = args;
-            const query = 'SELECT * FROM authors WHERE id = $1';
-            const result = await this.db.query(query, [author_id]);
-            
-            if (result.rows.length === 0) {
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: `No author found with ID: ${author_id}`
-                        }
-                    ]
-                };
-            }
-            
-            const author = result.rows[0];
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Author Details:\n\n` +
-                              `ID: ${author.id}\n` +
-                              `Name: ${author.name}\n` +
-                              `Email: ${author.email}\n` +
-                              `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Bio: ${author.bio || 'No biography available'}\n`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to get author: ${error.message}`);
-        }
-    }
-
-    async handleCreateAuthor(args) {
-        try {
-            const { name, email, bio, birth_year } = args;
-            const query = `
-                INSERT INTO authors (name, email, bio, birth_year) 
-                VALUES ($1, $2, $3, $4) 
-                RETURNING *
-            `;
-            const result = await this.db.query(query, [
-                name,
-                email || null,
-                bio || null,
-                birth_year || null
-            ]);
-            const author = result.rows[0];
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Created author successfully!\n\n` +
-                              `ID: ${author.id}\n` +
-                              `Name: ${author.name}\n` +
-                              `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Bio: ${author.bio || 'No biography provided'}`
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to create author: ${error.message}`);
-        }
-    }
-
-    async handleUpdateAuthor(args) {
-        try {
-            const { author_id, name, bio, birth_year } = args;
-            
-            // Build dynamic update query
-            const updates = [];
-            const values = [];
-            let paramCount = 1;
-            
-            if (name !== undefined) {
-                updates.push(`name = $${paramCount++}`);
-                values.push(name);
-            }
-            if (bio !== undefined) {
-                updates.push(`bio = $${paramCount++}`);
-                values.push(bio);
-            }
-            if (birth_year !== undefined) {
-                updates.push(`birth_year = $${paramCount++}`);
-                values.push(birth_year);
-            }
-            
-            if (updates.length === 0) {
-                throw new Error('No fields to update');
-            }
-            
-            updates.push(`updated_at = CURRENT_TIMESTAMP`);
-            values.push(author_id);
-            
-            const query = `
-                UPDATE authors 
-                SET ${updates.join(', ')} 
-                WHERE id = $${paramCount} 
-                RETURNING *
-            `;
-            
-            const result = await this.db.query(query, values);
-            
-            if (result.rows.length === 0) {
-                return {
-                    content: [
-                        {
-                            type: 'text',
-                            text: `No author found with ID: ${author_id}`
-                        }
-                    ]
-                };
-            }
-            
-            const author = result.rows[0];
-            
-            return {
-                content: [
-                    {
-                        type: 'text',
-                        text: `Updated author successfully!\n\n` +
-                              `ID: ${author.id}\n` +
-                              `Name: ${author.name}\n` +
-                              `Birth Year: ${author.birth_year || 'Unknown'}\n` +
-                              `Bio: ${author.bio || 'No biography available'}\n` 
-                    }
-                ]
-            };
-        } catch (error) {
-            throw new Error(`Failed to update author: ${error.message}`);
-        }
-    }
 }
 
 export { AuthorMCPServer };
 
 // CLI runner when called directly (not when imported or run by MCP clients)
-import { fileURLToPath } from 'url';
 
-console.error('[AUTHOR-SERVER] Module loaded');
-console.error('[AUTHOR-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
-console.error('[AUTHOR-SERVER] import.meta.url:', import.meta.url);
-console.error('[AUTHOR-SERVER] process.argv[1]:', process.argv[1]);
+// Only log debug info if not in stdio mode
+if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[AUTHOR-SERVER] Module loaded');
+    console.error('[AUTHOR-SERVER] MCP_STDIO_MODE:', process.env.MCP_STDIO_MODE);
+    console.error('[AUTHOR-SERVER] import.meta.url:', import.meta.url);
+    console.error('[AUTHOR-SERVER] process.argv[1]:', process.argv[1]);
+}
 
 // Convert paths to handle cross-platform differences
 const currentModuleUrl = import.meta.url;
@@ -294,12 +147,14 @@ const normalizedScriptPath = normalizePath(scriptPath);
 const normalizedCurrentModuleUrl = currentModuleUrl.replace(/\/{3,}/g, '///')
     .replace(/^file:\/([^\/])/, 'file:///$1'); // Ensure proper file:/// format
 
-const isDirectExecution = normalizedCurrentModuleUrl === normalizedScriptPath || 
+const isDirectExecution = normalizedCurrentModuleUrl === normalizedScriptPath ||
     decodeURIComponent(normalizedCurrentModuleUrl) === normalizedScriptPath;
 
-console.error('[AUTHOR-SERVER] normalized current module url:', normalizedCurrentModuleUrl);
-console.error('[AUTHOR-SERVER] normalized script path:', normalizedScriptPath);
-console.error('[AUTHOR-SERVER] is direct execution:', isDirectExecution);
+if (process.env.MCP_STDIO_MODE !== 'true') {
+    console.error('[AUTHOR-SERVER] normalized current module url:', normalizedCurrentModuleUrl);
+    console.error('[AUTHOR-SERVER] normalized script path:', normalizedScriptPath);
+    console.error('[AUTHOR-SERVER] is direct execution:', isDirectExecution);
+}
 
 if (process.env.MCP_STDIO_MODE) {
     // When running in MCP stdio mode, always start the server
@@ -313,18 +168,23 @@ if (process.env.MCP_STDIO_MODE) {
         process.exit(1);
     }
 } else if (isDirectExecution) {
-    // When running directly as a CLI tool
-    console.error('[AUTHOR-SERVER] Starting CLI runner...');
+    if (process.env.MCP_STDIO_MODE !== 'true') {
+        console.error('[AUTHOR-SERVER] Starting CLI runner...');
+    }
     try {
         const { CLIRunner } = await import('../../shared/cli-runner.js');
         const runner = new CLIRunner(AuthorMCPServer);
         await runner.run();
     } catch (error) {
         console.error('[AUTHOR-SERVER] CLI runner failed:', error.message);
-        console.error('[AUTHOR-SERVER] CLI runner stack:', error.stack);
+        if (process.env.MCP_STDIO_MODE !== 'true') {
+            console.error('[AUTHOR-SERVER] CLI runner stack:', error.stack);
+        }
         throw error;
     }
 } else {
-    console.error('[AUTHOR-SERVER] Module imported - not starting server');
-    console.error('[AUTHOR-SERVER] Module export completed');
+    if (process.env.MCP_STDIO_MODE !== 'true') {
+        console.error('[AUTHOR-SERVER] Module imported - not starting server');
+        console.error('[AUTHOR-SERVER] Module export completed');
+    }
 }
