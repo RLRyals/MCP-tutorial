@@ -10,17 +10,17 @@ export class RelationshipHandlers {
         return [
             {
                 name: 'create_relationship_arc',
-                description: 'Track any relationship development across all genres and relationship types',
+                description: 'Track relationship development',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         plot_thread_id: {
                             type: 'integer',
-                            description: 'Associated plot thread ID'
+                            description: 'Plot thread ID'
                         },
                         arc_name: {
                             type: 'string',
-                            description: 'Name for this relationship arc'
+                            description: 'Arc name'
                         },
                         participants: {
                             type: 'array',
@@ -36,27 +36,27 @@ export class RelationshipHandlers {
                                 },
                                 required: ['character_id', 'role_in_relationship']
                             },
-                            description: 'Characters involved (2 or more, flexible roles)'
+                            description: 'Characters (2+, flexible roles)'
                         },
                         relationship_type: {
                             type: 'string',
                             enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
-                            description: 'Type of relationship'
+                            description: 'Relationship type'
                         },
                         current_dynamic: {
                             type: 'string',
-                            description: 'Current relationship dynamic/stage'
+                            description: 'Current dynamic/stage'
                         },
                         development_factors: {
                             type: 'array',
                             items: { type: 'string' },
-                            description: 'What drives development in this relationship'
+                            description: 'Development drivers'
                         },
                         complexity_level: {
                             type: 'integer',
                             minimum: 1,
                             maximum: 10,
-                            description: 'Relationship complexity (1=simple, 10=very complex)'
+                            description: 'Complexity (1-10)'
                         }
                     },
                     required: ['plot_thread_id', 'arc_name', 'participants', 'relationship_type']
@@ -64,17 +64,17 @@ export class RelationshipHandlers {
             },
             {
                 name: 'update_relationship_arc',
-                description: 'Update an existing relationship arc',
+                description: 'Update relationship arc',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         arc_id: {
                             type: 'integer',
-                            description: 'ID of the relationship arc to update'
+                            description: 'Arc ID'
                         },
                         arc_name: {
                             type: 'string',
-                            description: 'Name for this relationship arc'
+                            description: 'Arc name'
                         },
                         participants: {
                             type: 'array',
@@ -90,27 +90,27 @@ export class RelationshipHandlers {
                                 },
                                 required: ['character_id', 'role_in_relationship']
                             },
-                            description: 'Characters involved (2 or more, flexible roles)'
+                            description: 'Characters (2+, flexible roles)'
                         },
                         relationship_type: {
                             type: 'string',
                             enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
-                            description: 'Type of relationship'
+                            description: 'Relationship type'
                         },
                         current_dynamic: {
                             type: 'string',
-                            description: 'Current relationship dynamic/stage'
+                            description: 'Current dynamic/stage'
                         },
                         development_factors: {
                             type: 'array',
                             items: { type: 'string' },
-                            description: 'What drives development in this relationship'
+                            description: 'Development drivers'
                         },
                         complexity_level: {
                             type: 'integer',
                             minimum: 1,
                             maximum: 10,
-                            description: 'Relationship complexity (1=simple, 10=very complex)'
+                            description: 'Complexity (1-10)'
                         }
                     },
                     required: ['arc_id']
@@ -118,40 +118,40 @@ export class RelationshipHandlers {
             },
             {
                 name: 'track_relationship_dynamics',
-                description: 'Track how relationship dynamics change over time',
+                description: 'Track relationship dynamics changes',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         arc_id: {
                             type: 'integer',
-                            description: 'Relationship arc ID'
+                            description: 'Arc ID'
                         },
                         chapter_id: {
                             type: 'integer',
-                            description: 'Chapter where change occurs (optional)'
+                            description: 'Chapter ID'
                         },
                         scene_id: {
                             type: 'integer',
-                            description: 'Specific scene where change occurs (optional)'
+                            description: 'Scene ID'
                         },
                         dynamic_change: {
                             type: 'string',
-                            description: 'Description of how dynamic changed'
+                            description: 'How dynamic changed'
                         },
                         tension_change: {
                             type: 'integer',
                             minimum: -10,
                             maximum: 10,
-                            description: 'Change in tension level (-10 to +10)'
+                            description: 'Tension change (-10 to +10)'
                         },
                         change_type: {
                             type: 'string',
                             enum: ['emotional', 'power', 'trust', 'commitment', 'conflict'],
-                            description: 'Type of dynamic change'
+                            description: 'Change type'
                         },
                         trigger_event: {
                             type: 'string',
-                            description: 'What triggered this change'
+                            description: 'Change trigger'
                         }
                     },
                     required: ['arc_id', 'dynamic_change', 'change_type']
@@ -159,13 +159,13 @@ export class RelationshipHandlers {
             },
             {
                 name: 'get_relationship_arc',
-                description: 'Get details about a specific relationship arc',
+                description: 'Get relationship arc details',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         arc_id: {
                             type: 'integer',
-                            description: 'Relationship arc ID'
+                            description: 'Arc ID'
                         }
                     },
                     required: ['arc_id']
@@ -173,31 +173,31 @@ export class RelationshipHandlers {
             },
             {
                 name: 'list_relationship_arcs',
-                description: 'List all relationship arcs, optionally filtered by plot thread or relationship type',
+                description: 'List relationship arcs',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         plot_thread_id: {
                             type: 'integer',
-                            description: 'Filter by plot thread ID (optional)'
+                            description: 'Plot thread filter'
                         },
                         relationship_type: {
                             type: 'string',
                             enum: ['romantic', 'family', 'friendship', 'professional', 'antagonistic', 'mentor', 'alliance'],
-                            description: 'Filter by relationship type (optional)'
+                            description: 'Type filter'
                         }
                     }
                 }
             },
             {
                 name: 'get_relationship_timeline',
-                description: 'Get the complete timeline of dynamics changes for a relationship arc',
+                description: 'Get relationship dynamics timeline',
                 inputSchema: {
                     type: 'object',
                     properties: {
                         arc_id: {
                             type: 'integer',
-                            description: 'Relationship arc ID'
+                            description: 'Arc ID'
                         }
                     },
                     required: ['arc_id']

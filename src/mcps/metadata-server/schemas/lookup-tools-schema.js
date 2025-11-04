@@ -4,23 +4,23 @@
 export const lookupSystemToolsSchema = [
     {
         name: 'get_available_options',
-        description: 'Get available options from lookup tables (genres, plot thread types, story elements, etc.)',
+        description: 'Get lookup table options',
         inputSchema: {
             type: 'object',
             properties: {
                 option_type: {
                     type: 'string',
                     enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
-                    description: 'Type of options to retrieve'
+                    description: 'Option type'
                 },
                 genre_filter: {
                     type: 'string',
-                    description: 'Filter by specific genre name (optional)'
+                    description: 'Genre name filter'
                 },
                 active_only: {
                     type: 'boolean',
                     default: true,
-                    description: 'Only return active/available options'
+                    description: 'Active options only'
                 }
             },
             required: ['option_type']
@@ -28,27 +28,27 @@ export const lookupSystemToolsSchema = [
     },
     {
         name: 'create_lookup_option',
-        description: 'Create a new lookup option (genre, plot thread type, status, etc.) - Admin function',
+        description: 'Create lookup option - Admin',
         inputSchema: {
             type: 'object',
             properties: {
                 option_type: {
                     type: 'string',
                     enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
-                    description: 'Type of option to create'
+                    description: 'Option type'
                 },
                 name: {
                     type: 'string',
-                    description: 'Name of the new option (must be unique)'
+                    description: 'Option name (unique)'
                 },
                 description: {
                     type: 'string',
-                    description: 'Description of the option'
+                    description: 'Option description'
                 },
                 is_active: {
                     type: 'boolean',
                     default: true,
-                    description: 'Whether the option is immediately active'
+                    description: 'Active immediately'
                 }
             },
             required: ['option_type', 'name', 'description']
@@ -56,30 +56,30 @@ export const lookupSystemToolsSchema = [
     },
     {
         name: 'update_lookup_option',
-        description: 'Update an existing lookup option - Admin function',
+        description: 'Update lookup option - Admin',
         inputSchema: {
             type: 'object',
             properties: {
                 option_type: {
                     type: 'string',
                     enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
-                    description: 'Type of option to update'
+                    description: 'Option type'
                 },
                 option_id: {
                     type: 'integer',
-                    description: 'ID of the option to update'
+                    description: 'Option ID'
                 },
                 name: {
                     type: 'string',
-                    description: 'Updated name (optional)'
+                    description: 'Updated name'
                 },
                 description: {
                     type: 'string',
-                    description: 'Updated description (optional)'
+                    description: 'Updated description'
                 },
                 is_active: {
                     type: 'boolean',
-                    description: 'Update active status (optional)'
+                    description: 'Active status'
                 }
             },
             required: ['option_type', 'option_id']
@@ -87,23 +87,23 @@ export const lookupSystemToolsSchema = [
     },
     {
         name: 'delete_lookup_option',
-        description: 'Soft delete a lookup option (sets is_active to false) - Admin function',
+        description: 'Delete lookup option - Admin',
         inputSchema: {
             type: 'object',
             properties: {
                 option_type: {
                     type: 'string',
                     enum: ['genres', 'plot_thread_types', 'plot_thread_statuses', 'relationship_types', 'story_concerns', 'story_outcomes', 'story_judgments', 'scene_purposes', 'scene_types', 'writing_statuses'],
-                    description: 'Type of option to delete'
+                    description: 'Option type'
                 },
                 option_id: {
                     type: 'integer',
-                    description: 'ID of the option to delete'
+                    description: 'Option ID'
                 },
                 permanent: {
                     type: 'boolean',
                     default: false,
-                    description: 'If true, permanently delete (use with caution). If false, soft delete by setting is_active=false'
+                    description: 'True=permanent delete (caution), false=soft delete'
                 }
             },
             required: ['option_type', 'option_id']
@@ -111,7 +111,7 @@ export const lookupSystemToolsSchema = [
     },
     {
         name: 'assign_book_genres',
-        description: 'Assign genres to a book using the normalized genre system',
+        description: 'Assign genres to book',
         inputSchema: {
             type: 'object',
             properties: {
@@ -122,7 +122,7 @@ export const lookupSystemToolsSchema = [
                 genre_ids: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Array of genre IDs to assign (replaces existing genres)'
+                    description: 'Genre IDs (replaces existing)'
                 }
             },
             required: ['book_id', 'genre_ids']
@@ -130,7 +130,7 @@ export const lookupSystemToolsSchema = [
     },
     {
         name: 'assign_series_genres',
-        description: 'Assign genres to a series using the normalized genre system',
+        description: 'Assign genres to series',
         inputSchema: {
             type: 'object',
             properties: {
@@ -141,7 +141,7 @@ export const lookupSystemToolsSchema = [
                 genre_ids: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Array of genre IDs to assign (replaces existing genres)'
+                    description: 'Genre IDs (replaces existing)'
                 }
             },
             required: ['series_id', 'genre_ids']

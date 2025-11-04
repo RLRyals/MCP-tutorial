@@ -9,35 +9,35 @@ export class ExportHandlers {
         return [
             {
                 name: 'export_manuscript',
-                description: 'Export complete manuscript in various formats - AI team prepares automatically',
+                description: 'Export manuscript - AI prepares auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to export' 
+                            description: 'Book ID'
                         },
                         export_format: {
                             type: 'string',
                             enum: ['txt', 'md', 'rtf', 'standard_manuscript'],
                             default: 'txt',
-                            description: 'Export format for manuscript'
+                            description: 'Export format'
                         },
                         include_metadata: {
                             type: 'boolean',
                             default: true,
-                            description: 'Include chapter summaries and metadata'
+                            description: 'Include metadata'
                         },
                         chapters_to_include: {
                             type: 'array',
                             items: { type: 'integer' },
-                            description: 'Specific chapters to include (optional - includes all if not provided)'
+                            description: 'Chapter IDs (all if omitted)'
                         },
                         export_purpose: {
                             type: 'string',
                             enum: ['submission', 'beta_review', 'backup', 'publication'],
                             default: 'backup',
-                            description: 'Purpose of export for formatting decisions'
+                            description: 'Export purpose'
                         }
                     },
                     required: ['book_id']
@@ -45,29 +45,29 @@ export class ExportHandlers {
             },
             {
                 name: 'word_count_tracking',
-                description: 'Track and analyze word counts across manuscript - AI team monitors automatically',
+                description: 'Track word counts - AI monitors auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to analyze' 
+                            description: 'Book ID'
                         },
                         tracking_level: {
                             type: 'string',
                             enum: ['book', 'chapter', 'scene', 'detailed'],
                             default: 'chapter',
-                            description: 'Level of word count detail to track'
+                            description: 'Detail level'
                         },
                         include_history: {
                             type: 'boolean',
                             default: false,
-                            description: 'Include word count change history'
+                            description: 'Include history'
                         },
                         calculate_targets: {
                             type: 'boolean',
                             default: true,
-                            description: 'Calculate progress against targets'
+                            description: 'Calc vs targets'
                         }
                     },
                     required: ['book_id']

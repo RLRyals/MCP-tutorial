@@ -9,91 +9,91 @@
 export const sceneWritingSchemas = {
     create_scene: {
         name: 'create_scene',
-        description: 'Create a new scene within a chapter',
+        description: 'Create scene',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter this scene belongs to'
+                    description: 'Chapter ID'
                 },
                 scene_number: {
                     type: 'integer',
-                    description: 'Scene number within the chapter'
+                    description: 'Scene # in chapter'
                 },
                 scene_title: {
                     type: 'string',
-                    description: 'Optional scene title or name'
+                    description: 'Title'
                 },
                 scene_purpose: {
                     type: 'string',
-                    description: 'Primary purpose of this scene (use get_available_options with option_type="scene_purposes")'
+                    description: 'Purpose (use get_available_options w/ option_type="scene_purposes")'
                 },
                 scene_type: {
                     type: 'string',
-                    description: 'Emotional tone or genre type of scene (use get_available_options with option_type="scene_types")'
+                    description: 'Tone/genre (use get_available_options w/ option_type="scene_types")'
                 },
                 location: {
                     type: 'string',
-                    description: 'Where this scene takes place'
+                    description: 'Location'
                 },
                 time_of_day: {
                     type: 'string',
-                    description: 'Time when scene occurs (morning, afternoon, night, etc.)'
+                    description: 'Time (morning, afternoon, night, etc.)'
                 },
                 duration: {
                     type: 'string',
-                    description: 'How long this scene lasts (5 minutes, 2 hours, etc.)'
+                    description: 'Duration (5 minutes, 2 hours, etc.)'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Brief summary of what happens in this scene'
+                    description: 'Summary'
                 },
                 pov_character_id: {
                     type: 'integer',
-                    description: 'ID of the POV character for this scene'
+                    description: 'POV character ID'
                 },
                 scene_participants: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Array of character IDs present in this scene'
+                    description: 'Character IDs in scene'
                 },
                 writing_status: {
                     type: 'string',
                     default: 'planned',
-                    description: 'Writing progress status for this scene (use get_available_options with option_type="writing_statuses")'
+                    description: 'Writing status (use get_available_options w/ option_type="writing_statuses")'
                 },
                 target_word_count: {
                     type: 'integer',
-                    description: 'Target word count for this scene'
+                    description: 'Target word count'
                 },
                 intensity_level: {
                     type: 'integer',
                     minimum: 1,
                     maximum: 10,
-                    description: 'Scene intensity for pacing (1=low, 10=maximum)'
+                    description: 'Intensity (1=low, 10=max)'
                 },
                 scene_elements: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Tags for scene elements (e.g., tropes, kinks, themes, moods)'
+                    description: 'Element tags (tropes, themes, moods)'
                 },
                 notes: {
                     type: 'string',
-                    description: 'Quick notes and reminders for this scene'
+                    description: 'Quick notes'
                 },
                 scene_outline: {
                     type: 'string',
-                    description: 'Detailed scene planning, beat sheet, and structural notes'
+                    description: 'Scene planning & structure'
                 },
                 scene_content: {
                     type: 'string',
-                    description: 'The actual written content of the scene'
+                    description: 'Written content'
                 },
                 scene_revisions: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Array of previous versions for tracking major revisions'
+                    description: 'Previous versions'
                 }
             },
             required: ['chapter_id', 'scene_number']
@@ -102,29 +102,29 @@ export const sceneWritingSchemas = {
 
     update_scene: {
         name: 'update_scene',
-        description: 'Update an existing scene',
+        description: 'Update scene',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene to update'
+                    description: 'Scene ID'
                 },
                 scene_title: {
                     type: 'string',
-                    description: 'Scene title'
+                    description: 'Title'
                 },
                 scene_purpose: {
                     type: 'string',
-                    description: 'Primary purpose of this scene (use get_available_options with option_type="scene_purposes")'
+                    description: 'Purpose (use get_available_options w/ option_type="scene_purposes")'
                 },
                 scene_type: {
                     type: 'string',
-                    description: 'Emotional tone or genre type of scene (use get_available_options with option_type="scene_types")'
+                    description: 'Tone/genre (use get_available_options w/ option_type="scene_types")'
                 },
                 location: {
                     type: 'string',
-                    description: 'Scene location'
+                    description: 'Location'
                 },
                 time_of_day: {
                     type: 'string',
@@ -132,15 +132,15 @@ export const sceneWritingSchemas = {
                 },
                 duration: {
                     type: 'string',
-                    description: 'Scene duration'
+                    description: 'Duration'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Scene summary'
+                    description: 'Summary'
                 },
                 word_count: {
                     type: 'integer',
-                    description: 'Current word count for this scene'
+                    description: 'Current word count'
                 },
                 target_word_count: {
                     type: 'integer',
@@ -153,39 +153,39 @@ export const sceneWritingSchemas = {
                 scene_participants: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Character IDs present in scene'
+                    description: 'Character IDs in scene'
                 },
                 writing_status: {
                     type: 'string',
-                    description: 'Writing status (use get_available_options with option_type="writing_statuses")'
+                    description: 'Writing status (use get_available_options w/ option_type="writing_statuses")'
                 },
                 intensity_level: {
                     type: 'integer',
                     minimum: 1,
                     maximum: 10,
-                    description: 'Scene intensity for pacing (1=low, 10=maximum)'
+                    description: 'Intensity (1=low, 10=max)'
                 },
                 scene_elements: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Tags for scene elements (e.g., tropes, kinks, themes, moods)'
+                    description: 'Element tags (tropes, themes, moods)'
                 },
                 notes: {
                     type: 'string',
-                    description: 'Quick scene notes'
+                    description: 'Quick notes'
                 },
                 scene_outline: {
                     type: 'string',
-                    description: 'Detailed scene planning and structure'
+                    description: 'Scene planning & structure'
                 },
                 scene_content: {
                     type: 'string',
-                    description: 'The actual written content of the scene'
+                    description: 'Written content'
                 },
                 scene_revisions: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Array of previous versions for tracking revisions'
+                    description: 'Previous versions'
                 }
             },
             required: ['scene_id']
@@ -194,18 +194,18 @@ export const sceneWritingSchemas = {
 
     get_scene: {
         name: 'get_scene',
-        description: 'Get detailed information about a specific scene',
+        description: 'Get scene details',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene'
+                    description: 'Scene ID'
                 },
                 include_characters: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include character participant details'
+                    description: 'Include character details'
                 }
             },
             required: ['scene_id']
@@ -214,26 +214,26 @@ export const sceneWritingSchemas = {
 
     list_scenes: {
         name: 'list_scenes',
-        description: 'List all scenes in a chapter',
+        description: 'List scenes',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter'
+                    description: 'Chapter ID'
                 },
                 scene_type: {
                     type: 'string',
-                    description: 'Filter by scene type (optional, use get_available_options with option_type="scene_types")'
+                    description: 'Scene type filter (use get_available_options w/ option_type="scene_types")'
                 },
                 writing_status: {
                     type: 'string',
-                    description: 'Filter by writing status (optional, use get_available_options with option_type="writing_statuses")'
+                    description: 'Status filter (use get_available_options w/ option_type="writing_statuses")'
                 },
                 include_stats: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include word count statistics'
+                    description: 'Include stats'
                 }
             },
             required: ['chapter_id']
@@ -242,17 +242,17 @@ export const sceneWritingSchemas = {
 
     delete_scene: {
         name: 'delete_scene',
-        description: 'Delete a scene',
+        description: 'Delete scene',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene to delete'
+                    description: 'Scene ID'
                 },
                 confirm_deletion: {
                     type: 'boolean',
-                    description: 'Must be true to confirm deletion'
+                    description: 'Confirm (must be true)'
                 }
             },
             required: ['scene_id', 'confirm_deletion']
@@ -261,13 +261,13 @@ export const sceneWritingSchemas = {
 
     reorder_scenes: {
         name: 'reorder_scenes',
-        description: 'Reorder scenes within a chapter by updating scene numbers',
+        description: 'Reorder scenes',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter'
+                    description: 'Chapter ID'
                 },
                 scene_order: {
                     type: 'array',
@@ -279,7 +279,7 @@ export const sceneWritingSchemas = {
                         },
                         required: ['scene_id', 'new_scene_number']
                     },
-                    description: 'Array of scene IDs and their new scene numbers'
+                    description: 'Scene IDs w/ new numbers'
                 }
             },
             required: ['chapter_id', 'scene_order']
@@ -288,18 +288,18 @@ export const sceneWritingSchemas = {
 
     analyze_scene_flow: {
         name: 'analyze_scene_flow',
-        description: 'Analyze the flow and pacing between scenes in a chapter',
+        description: 'Analyze scene flow & pacing',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter to analyze'
+                    description: 'Chapter ID'
                 },
                 include_suggestions: {
                     type: 'boolean',
                     default: true,
-                    description: 'Include improvement suggestions'
+                    description: 'Include suggestions'
                 }
             },
             required: ['chapter_id']

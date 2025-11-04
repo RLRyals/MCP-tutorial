@@ -8,7 +8,7 @@
 export const characterToolsSchema = [
     {
         name: 'list_characters',
-        description: 'List all characters in a series with optional filtering',
+        description: 'List characters in series',
         inputSchema: {
             type: 'object',
             properties: {
@@ -16,12 +16,12 @@ export const characterToolsSchema = [
                 character_type: {
                     type: 'string',
                     enum: ['main', 'supporting', 'minor', 'antagonist'],
-                    description: 'Filter by character type (optional)'
+                    description: 'Type filter'
                 },
                 status: {
                     type: 'string',
                     enum: ['alive', 'dead', 'missing', 'unknown'],
-                    description: 'Filter by character status (optional)'
+                    description: 'Status filter'
                 }
             },
             required: ['series_id']
@@ -29,7 +29,7 @@ export const characterToolsSchema = [
     },
     {
         name: 'get_character',
-        description: 'Get detailed information about a character',
+        description: 'Get character details',
         inputSchema: {
             type: 'object',
             properties: {
@@ -40,28 +40,28 @@ export const characterToolsSchema = [
     },
     {
         name: 'create_character',
-        description: 'Create a new character in a series',
+        description: 'Create character',
         inputSchema: {
             type: 'object',
             properties: {
-                series_id: { type: 'integer', description: 'ID of the series' },
-                name: { type: 'string', description: 'Character\'s primary name' },
-                full_name: { type: 'string', description: 'Character\'s full name (optional)' },
+                series_id: { type: 'integer', description: 'Series ID' },
+                name: { type: 'string', description: 'Primary name' },
+                full_name: { type: 'string', description: 'Full name' },
                 aliases: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Alternative names/nicknames (optional)'
+                    description: 'Alt names/nicknames'
                 },
                 character_type: {
                     type: 'string',
                     enum: ['main', 'supporting', 'minor', 'antagonist'],
-                    description: 'Character importance level'
+                    description: 'Importance level'
                 },
-                first_appearance_book_id: { type: 'integer', description: 'Book where character first appears (optional)' },
+                first_appearance_book_id: { type: 'integer', description: 'First appearance book ID' },
                 status: {
                     type: 'string',
                     enum: ['alive', 'dead', 'missing', 'unknown'],
-                    description: 'Character\'s current status'
+                    description: 'Status'
                 }
             },
             required: ['series_id', 'name']
@@ -69,22 +69,22 @@ export const characterToolsSchema = [
     },
     {
         name: 'update_character',
-        description: 'Update character information',
+        description: 'Update character',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
-                name: { type: 'string', description: 'Character\'s primary name' },
-                full_name: { type: 'string', description: 'Character\'s full name' },
+                name: { type: 'string', description: 'Primary name' },
+                full_name: { type: 'string', description: 'Full name' },
                 character_type: {
                     type: 'string',
                     enum: ['main', 'supporting', 'minor', 'antagonist'],
-                    description: 'Character importance level'
+                    description: 'Importance level'
                 },
                 status: {
                     type: 'string',
                     enum: ['alive', 'dead', 'missing', 'unknown'],
-                    description: 'Character\'s current status'
+                    description: 'Status'
                 }
             },
             required: ['character_id']
@@ -98,25 +98,25 @@ export const characterToolsSchema = [
 export const characterDetailToolsSchema = [
     {
         name: 'add_character_detail',
-        description: 'Add or update a character detail (physical trait, personality, background, etc.)',
+        description: 'Add/update character detail',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 category: {
                     type: 'string',
-                    description: 'Detail category (e.g., \'physical\', \'personality\', \'background\', \'skills\')'
+                    description: 'Category (physical/personality/background/skills)'
                 },
                 attribute: {
                     type: 'string',
-                    description: 'Specific attribute (e.g., \'eye_color\', \'height\', \'temperament\')'
+                    description: 'Attribute (eye_color/height/temperament)'
                 },
-                value: { type: 'string', description: 'The detail value' },
-                source_book_id: { type: 'integer', description: 'Book where this detail was established (optional)' },
+                value: { type: 'string', description: 'Value' },
+                source_book_id: { type: 'integer', description: 'Source book ID' },
                 confidence_level: {
                     type: 'string',
                     enum: ['established', 'mentioned', 'implied'],
-                    description: 'How definitively this detail was stated'
+                    description: 'Confidence level'
                 }
             },
             required: ['character_id', 'category', 'attribute', 'value']
@@ -124,14 +124,14 @@ export const characterDetailToolsSchema = [
     },
     {
         name: 'get_character_details',
-        description: 'Get all details for a character, optionally filtered by category',
+        description: 'Get character details',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 category: {
                     type: 'string',
-                    description: 'Filter by detail category (optional)'
+                    description: 'Category filter'
                 }
             },
             required: ['character_id']
@@ -139,25 +139,25 @@ export const characterDetailToolsSchema = [
     },
     {
         name: 'update_character_detail',
-        description: 'Update an existing character detail',
+        description: 'Update character detail',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 category: {
                     type: 'string',
-                    description: 'Detail category (e.g., \'physical\', \'personality\', \'background\', \'skills\')'
+                    description: 'Category (physical/personality/background/skills)'
                 },
                 attribute: {
                     type: 'string',
-                    description: 'Specific attribute to update (e.g., \'eye_color\', \'height\', \'temperament\')'
+                    description: 'Attribute to update'
                 },
-                value: { type: 'string', description: 'The new detail value' },
-                source_book_id: { type: 'integer', description: 'Book where this detail was updated (optional)' },
+                value: { type: 'string', description: 'New value' },
+                source_book_id: { type: 'integer', description: 'Source book ID' },
                 confidence_level: {
                     type: 'string',
                     enum: ['established', 'mentioned', 'implied'],
-                    description: 'How definitively this detail was stated'
+                    description: 'Confidence level'
                 }
             },
             required: ['character_id', 'category', 'attribute', 'value']
@@ -165,18 +165,18 @@ export const characterDetailToolsSchema = [
     },
     {
         name: 'delete_character_detail',
-        description: 'Delete a specific character detail',
+        description: 'Delete character detail',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 category: {
                     type: 'string',
-                    description: 'Detail category (e.g., \'physical\', \'personality\', \'background\', \'skills\')'
+                    description: 'Category'
                 },
                 attribute: {
                     type: 'string',
-                    description: 'Specific attribute to delete (e.g., \'eye_color\', \'height\', \'temperament\')'
+                    description: 'Attribute to delete'
                 }
             },
             required: ['character_id', 'category', 'attribute']
@@ -190,28 +190,28 @@ export const characterDetailToolsSchema = [
 export const characterKnowledgeToolsSchema = [
     {
         name: 'add_character_knowledge',
-        description: 'Track what a character knows (prevents plot holes)',
+        description: 'Track character knowledge',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 knowledge_category: {
                     type: 'string',
-                    description: 'Type of knowledge (e.g., \'secret\', \'skill\', \'person\', \'location\', \'event\')'
+                    description: 'Type (secret/skill/person/location/event)'
                 },
                 knowledge_item: {
                     type: 'string',
-                    description: 'What they know (e.g., \'vampire council exists\', \'Sarah is a witch\')'
+                    description: 'What they know'
                 },
                 knowledge_level: {
                     type: 'string',
                     enum: ['knows', 'suspects', 'unaware', 'forgot'],
-                    description: 'How well they know this information'
+                    description: 'Knowledge level'
                 },
-                learned_book_id: { type: 'integer', description: 'Book where they learned this (optional)' },
+                learned_book_id: { type: 'integer', description: 'Book learned in' },
                 learned_context: {
                     type: 'string',
-                    description: 'How/when they learned this information (optional)'
+                    description: 'How/when learned'
                 }
             },
             required: ['character_id', 'knowledge_category', 'knowledge_item']
@@ -219,30 +219,30 @@ export const characterKnowledgeToolsSchema = [
     },
     {
         name: 'add_character_knowledge_with_chapter',
-        description: 'Add character knowledge with specific chapter reference',
+        description: 'Add knowledge w/ chapter ref',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 knowledge_category: {
                     type: 'string',
-                    description: 'Type of knowledge (e.g., \'secret\', \'skill\', \'person\', \'location\', \'event\')'
+                    description: 'Type (secret/skill/person/location/event)'
                 },
                 knowledge_item: {
                     type: 'string',
-                    description: 'What they know (e.g., \'vampire council exists\', \'Sarah is a witch\')'
+                    description: 'What they know'
                 },
                 knowledge_level: {
                     type: 'string',
                     enum: ['knows', 'suspects', 'unaware', 'forgot'],
-                    description: 'How well they know this information',
+                    description: 'Knowledge level',
                     default: 'knows'
                 },
-                learned_chapter_id: { type: 'integer', description: 'Chapter where they learned this' },
-                learned_scene: { type: 'integer', description: 'Scene number where learned (optional)' },
+                learned_chapter_id: { type: 'integer', description: 'Chapter learned in' },
+                learned_scene: { type: 'integer', description: 'Scene number' },
                 learned_context: {
                     type: 'string',
-                    description: 'How/when they learned this information'
+                    description: 'How/when learned'
                 }
             },
             required: ['character_id', 'knowledge_category', 'knowledge_item', 'learned_chapter_id']
@@ -250,18 +250,18 @@ export const characterKnowledgeToolsSchema = [
     },
     {
         name: 'check_character_knowledge',
-        description: 'Check what a character knows about a specific topic',
+        description: 'Check character knowledge',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 knowledge_item: {
                     type: 'string',
-                    description: 'What to check (can be partial match)'
+                    description: 'Item to check (partial match)'
                 },
                 knowledge_category: {
                     type: 'string',
-                    description: 'Filter by knowledge category (optional)'
+                    description: 'Category filter'
                 }
             },
             required: ['character_id']
@@ -269,19 +269,19 @@ export const characterKnowledgeToolsSchema = [
     },
     {
         name: 'get_characters_who_know',
-        description: 'Find all characters who know about a specific thing',
+        description: 'Find who knows about something',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: { type: 'integer', description: 'Series ID' },
                 knowledge_item: {
                     type: 'string',
-                    description: 'What to search for (partial match supported)'
+                    description: 'Search term (partial match)'
                 },
                 knowledge_level: {
                     type: 'string',
                     enum: ['knows', 'suspects', 'unaware', 'forgot'],
-                    description: 'Filter by knowledge level (optional)'
+                    description: 'Level filter'
                 }
             },
             required: ['series_id', 'knowledge_item']
@@ -295,70 +295,70 @@ export const characterKnowledgeToolsSchema = [
 export const characterTimelineToolsSchema = [
     {
         name: 'track_character_presence',
-        description: 'Track a character\'s presence and state in a specific chapter',
+        description: 'Track character in chapter',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
                 chapter_id: { type: 'integer', description: 'Chapter ID' },
-                scene_id: { type: 'integer', description: 'Specific scene within chapter (optional)' },
+                scene_id: { type: 'integer', description: 'Scene ID' },
                 presence_type: {
                     type: 'string',
                     enum: ['present', 'mentioned', 'flashback', 'dream', 'phone_call'],
-                    description: 'How the character appears in this chapter'
+                    description: 'Presence type'
                 },
                 importance_level: {
                     type: 'string',
                     enum: ['major', 'minor', 'cameo', 'background'],
-                    description: 'Character\'s importance in this chapter'
+                    description: 'Importance'
                 },
-                physical_state: { type: 'string', description: 'Physical condition (injured, disguised, etc.)' },
-                emotional_state: { type: 'string', description: 'Emotional state (angry, suspicious, etc.)' },
-                enters_at_scene: { type: 'integer', description: 'Scene number when they arrive' },
-                exits_at_scene: { type: 'integer', description: 'Scene number when they leave' },
+                physical_state: { type: 'string', description: 'Physical state' },
+                emotional_state: { type: 'string', description: 'Emotional state' },
+                enters_at_scene: { type: 'integer', description: 'Entry scene #' },
+                exits_at_scene: { type: 'integer', description: 'Exit scene #' },
                 learns_this_chapter: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'New information learned in this chapter'
+                    description: 'Info learned'
                 },
                 reveals_this_chapter: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Secrets revealed in this chapter'
+                    description: 'Secrets revealed'
                 },
-                character_growth: { type: 'string', description: 'How the character changes in this chapter' }
+                character_growth: { type: 'string', description: 'Character changes' }
             },
             required: ['character_id', 'chapter_id', 'presence_type']
         }
     },
     {
         name: 'get_character_timeline',
-        description: 'Get a character\'s complete timeline across chapters showing their progression',
+        description: 'Get character timeline',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
-                book_id: { type: 'integer', description: 'Specific book (optional - shows all books if not provided)' },
-                include_scenes: { type: 'boolean', description: 'Include scene-level details', default: false },
-                include_knowledge: { type: 'boolean', description: 'Include knowledge gained per chapter', default: true },
-                include_relationships: { type: 'boolean', description: 'Include relationship changes', default: false }
+                book_id: { type: 'integer', description: 'Book ID' },
+                include_scenes: { type: 'boolean', description: 'Include scenes', default: false },
+                include_knowledge: { type: 'boolean', description: 'Include knowledge', default: true },
+                include_relationships: { type: 'boolean', description: 'Include relationships', default: false }
             },
             required: ['character_id']
         }
     },
     {
         name: 'check_character_continuity',
-        description: 'Verify character consistency across chapter boundaries',
+        description: 'Check character continuity',
         inputSchema: {
             type: 'object',
             properties: {
                 character_id: { type: 'integer', description: 'Character ID' },
-                from_chapter_id: { type: 'integer', description: 'Starting chapter' },
-                to_chapter_id: { type: 'integer', description: 'Ending chapter' },
+                from_chapter_id: { type: 'integer', description: 'Start chapter' },
+                to_chapter_id: { type: 'integer', description: 'End chapter' },
                 check_type: {
                     type: 'string',
                     enum: ['physical_state', 'emotional_state', 'knowledge', 'location', 'all'],
-                    description: 'What type of continuity to check',
+                    description: 'Check type',
                     default: 'all'
                 }
             },
@@ -367,21 +367,21 @@ export const characterTimelineToolsSchema = [
     },
     {
         name: 'get_characters_in_chapter',
-        description: 'Get all characters present in a specific chapter with their roles and states',
+        description: 'Get chapter characters',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: { type: 'integer', description: 'Chapter ID' },
-                scene_number: { type: 'integer', description: 'Filter to specific scene within chapter (optional)' },
+                scene_number: { type: 'integer', description: 'Scene # filter' },
                 presence_type: {
                     type: 'string',
                     enum: ['present', 'mentioned', 'flashback', 'dream', 'phone_call'],
-                    description: 'Filter by presence type (optional)'
+                    description: 'Presence filter'
                 },
                 importance_level: {
                     type: 'string',
                     enum: ['major', 'minor', 'cameo', 'background'],
-                    description: 'Filter by importance level (optional)'
+                    description: 'Importance filter'
                 }
             },
             required: ['chapter_id']
