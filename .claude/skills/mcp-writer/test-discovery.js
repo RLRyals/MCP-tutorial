@@ -22,14 +22,20 @@ async function testDiscovery() {
 
         // Test 2: List servers by category
         console.log('Test 2: Categorizing servers...');
-        const mainServers = servers.filter(s => s.type === 'main');
-        const configServers = servers.filter(s => s.type === 'config');
+        const databaseOrg = servers.filter(s => s.type === 'database-organized');
+        const writingPhase = servers.filter(s => s.type === 'writing-phase');
+        const recommended = servers.filter(s => s.recommended);
 
-        console.log(`  Main servers: ${mainServers.length}`);
-        mainServers.forEach(s => console.log(`    - ${s.name}`));
+        console.log(`  Database-organized servers: ${databaseOrg.length}`);
+        databaseOrg.forEach(s => {
+            const marker = s.recommended ? '✅' : '📖';
+            console.log(`    ${marker} ${s.name} [${s.usage}]`);
+        });
 
-        console.log(`  Config servers: ${configServers.length}`);
-        configServers.forEach(s => console.log(`    - ${s.name}`));
+        console.log(`  Writing-phase servers: ${writingPhase.length}`);
+        writingPhase.forEach(s => console.log(`    ✅ ${s.name} [${s.usage}]`));
+
+        console.log(`\n  Recommended for active use: ${recommended.length}`);
 
         console.log('✓ PASSED: Servers categorized correctly\n');
 
@@ -63,8 +69,12 @@ async function testDiscovery() {
         console.log('═══════════════════════════════════════');
         console.log('Test Summary:');
         console.log(`  Total servers discovered: ${servers.length}`);
-        console.log(`  Main writing tools: ${mainServers.length}`);
-        console.log(`  Configuration tools: ${configServers.length}`);
+        console.log(`  Database-organized: ${databaseOrg.length} (1 active, ${databaseOrg.length - 1} reference)`);
+        console.log(`  Writing-phase organized: ${writingPhase.length} (all active)`);
+        console.log(`  Recommended for use: ${recommended.length}`);
+        console.log('\n💡 Architecture:');
+        console.log('  ✅ author-server + config-mcps/* (9 servers total)');
+        console.log('  📖 Other mcps/* are reference implementations');
         console.log('═══════════════════════════════════════\n');
 
         return true;

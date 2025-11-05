@@ -63,35 +63,43 @@ await helper.close();
 
 ## Available MCP Servers
 
-### Main Writing Tools (12 servers)
+### 🎯 Recommended Servers (For Active Use)
 
-Located in `src/mcps/`:
+**Use these for your writing workflows:**
 
+✅ **Author Management** (`src/mcps/`):
 - **author-server** - Author profiles and management
-- **book-server** - Book tracking and metadata
-- **character-server** - Character profiles and development
-- **metadata-server** - Flexible metadata storage
-- **plot-server** - Plot arcs and story structure
-- **relationship-server** - Character relationships
-- **series-server** - Series management
-- **story-analysis-server** - Story analysis tools
-- **timeline-server** - Timeline and chronology
-- **trope-server** - Literary tropes and patterns
-- **world-server** - Worldbuilding and settings
-- **writing-server** - Writing sessions and productivity
 
-### Configuration Tools (8 servers)
-
-Located in `src/config-mcps/`:
-
+✅ **Writing Phase Servers** (`src/config-mcps/`):
+- **series-planning-server** - Series planning and structure
 - **book-planning-server** - Book structure planning
 - **chapter-planning-server** - Chapter organization
-- **charater-planning-server** - Character planning
-- **core-continuity-server** - Continuity tracking
-- **reporting-server** - Analytics and reports
-- **review-server** - Review and feedback
-- **scene-server** - Scene management
-- **series-planning-server** - Series planning
+- **charater-planning-server** - Character development planning
+- **scene-server** - Scene management across writing phases
+- **review-server** - Review and feedback workflows
+- **core-continuity-server** - Continuity tracking throughout writing
+- **reporting-server** - Analytics and reporting on progress
+
+### 📚 Reference Implementation (Database-Organized)
+
+Located in `src/mcps/` - These are organized by **database structure**:
+
+⚠️ **Note:** These servers (except author-server) are reference implementations. The **config-mcps reorganize these tools by writing phases** instead of database structure. Using both would cause duplication.
+
+- series-server, book-server, character-server (reference only)
+- plot-server, world-server, timeline-server (reference only)
+- trope-server, relationship-server, writing-server (reference only)
+- metadata-server, story-analysis-server (reference only)
+
+### 💡 Architecture Explained
+
+- **Database-organized** (`src/mcps/*`): Tools grouped by data tables (series, books, characters, etc.)
+- **Writing-phase organized** (`src/config-mcps/*`): Same tools regrouped by workflow phases (planning, drafting, reviewing, etc.)
+
+**Why two organizations?**
+- Some users prefer database structure for technical work
+- Most writers prefer workflow phases that match their creative process
+- The config-mcps provide a writer-friendly interface to the same underlying functionality
 
 ## Usage Examples
 

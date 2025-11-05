@@ -4,7 +4,7 @@
 import MCPHelper, { listAllSeries, getSeriesFullDetails, createNewSeries } from './mcp-helper.js';
 
 /**
- * Example 1: Basic Discovery and Connection
+ * Example 1: Basic Discovery and Understanding Server Architecture
  */
 export async function example1_discovery() {
     console.log('=== Example 1: Discover Available MCP Servers ===\n');
@@ -12,44 +12,63 @@ export async function example1_discovery() {
     const helper = new MCPHelper();
 
     try {
-        // Discover all available servers
-        const servers = await helper.discoverServers();
+        // Discover all available servers (including reference implementations)
+        const allServers = await helper.discoverServers();
+        console.log(`Found ${allServers.length} total MCP servers\n`);
 
-        console.log(`Found ${servers.length} MCP servers:\n`);
+        // Get only recommended servers for active use
+        const recommended = await helper.discoverRecommendedServers();
+        console.log(`Recommended for active use: ${recommended.length} servers\n`);
 
-        // Group by type
-        const mainServers = servers.filter(s => s.type === 'main');
-        const configServers = servers.filter(s => s.type === 'config');
+        // Group by organization type
+        const databaseOrg = allServers.filter(s => s.type === 'database-organized');
+        const writingPhase = allServers.filter(s => s.type === 'writing-phase');
 
-        console.log('Main Writing Tools:');
-        mainServers.forEach(s => console.log(`  - ${s.name}`));
+        console.log('📚 Database-Organized Servers (src/mcps/):');
+        databaseOrg.forEach(s => {
+            const marker = s.recommended ? '✅' : '📖';
+            const status = s.usage === 'active' ? 'ACTIVE' : 'REFERENCE';
+            console.log(`  ${marker} ${s.name} [${status}]`);
+            console.log(`     ${s.description}`);
+        });
 
-        console.log('\nConfiguration Tools:');
-        configServers.forEach(s => console.log(`  - ${s.name}`));
+        console.log('\n🔶 Writing-Phase Organized Servers (src/config-mcps/):');
+        writingPhase.forEach(s => {
+            console.log(`  ✅ ${s.name} [ACTIVE]`);
+            console.log(`     ${s.description}`);
+        });
 
-        return servers;
+        console.log('\n💡 Architecture Notes:');
+        console.log('  - Database-organized: Tools grouped by data tables');
+        console.log('  - Writing-phase organized: Same tools regrouped by workflow');
+        console.log('  - Use author-server + config-mcps to avoid duplication\n');
+
+        return { allServers, recommended };
     } finally {
         await helper.close();
     }
 }
 
 /**
- * Example 2: List Tools for a Specific Server
+ * Example 2: List Tools for a Recommended Server
  */
 export async function example2_listTools() {
-    console.log('\n=== Example 2: List Tools for Series Server ===\n');
+    console.log('\n=== Example 2: List Tools for Author Server ===\n');
 
     const helper = new MCPHelper();
 
     try {
-        const tools = await helper.listTools('series-server');
+        const tools = await helper.listTools('author-server');
 
-        console.log(`Series Server has ${tools.length} tools:\n`);
+        console.log(`Author Server has ${tools.length} tools:\n`);
 
         tools.forEach(tool => {
-            console.log(`  ${tool.name}`);
-            console.log(`    Description: ${tool.description}`);
-            console.log(`    Parameters: ${JSON.stringify(tool.inputSchema.properties || {}, null, 2)}`);
+            console.log(`  📌 ${tool.name}`);
+            console.log(`     Description: ${tool.description}`);
+            const params = tool.inputSchema.properties || {};
+            if (Object.keys(params).length > 0) {
+                console.log(`     Parameters: ${Object.keys(params).join(', ')}`);
+            }
             console.log('');
         });
 
@@ -60,26 +79,32 @@ export async function example2_listTools() {
 }
 
 /**
- * Example 3: Simple Tool Call - List Series
+ * Example 3: List Tools for Writing Phase Server
  */
-export async function example3_listSeries() {
-    console.log('\n=== Example 3: List All Series ===\n');
+export async function example3_writingPhaseTools() {
+    console.log('\n=== Example 3: Writing Phase Server Tools ===\n');
 
     const helper = new MCPHelper();
 
     try {
-        const series = await helper.callTool('series-server', 'list_series', {});
+        // Get tools from a writing-phase organized server
+        const tools = await helper.listTools('series-planning-server');
 
-        console.log(`Found ${series.length} series:\n`);
+        console.log(`Series Planning Server has ${tools.length} tools:\n`);
+        console.log('These tools are organized by writing workflow phases,');
+        console.log('not by database structure.\n');
 
-        series.forEach(s => {
-            console.log(`  [${s.series_id}] ${s.title}`);
-            if (s.genre) console.log(`      Genre: ${s.genre}`);
-            if (s.status) console.log(`      Status: ${s.status}`);
+        tools.forEach(tool => {
+            console.log(`  🔶 ${tool.name}`);
+            console.log(`     ${tool.description || 'No description'}`);
             console.log('');
         });
 
-        return series;
+        return tools;
+    } catch (error) {
+        console.error(`Note: ${error.message}`);
+        console.error('This server may not be fully implemented yet.\n');
+        return [];
     } finally {
         await helper.close();
     }
@@ -282,7 +307,7 @@ export async function runAllExamples() {
     try {
         await example1_discovery();
         await example2_listTools();
-        await example3_listSeries();
+        await example3_writingPhaseTools();
 
         // These examples may fail if no data exists yet
         try {
