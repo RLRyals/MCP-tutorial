@@ -20,10 +20,40 @@
         "MCP_STDIO_MODE": "true"
       }
     },
-    "revision-server": {
+    "charater-planning-server": {
       "command": "node",
       "args": [
-        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/revision-server/index.js"
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/charater-planning-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "core-continuity-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/core-continuity-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "reporting-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/reporting-server/index.js"
+      ],
+      "env": {
+        "NODE_ENV": "development",
+        "MCP_STDIO_MODE": "true"
+      }
+    },
+    "review-server": {
+      "command": "node",
+      "args": [
+        "C:/github/MCP-Tutorial-New/MCP-tutorial/src/config-mcps/review-server/index.js"
       ],
       "env": {
         "NODE_ENV": "development",

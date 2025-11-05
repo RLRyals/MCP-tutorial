@@ -148,3 +148,7 @@ scripts/delete_series_safe.sql
 config/claude-desktop.json
 config/claude-desktop-phase.json
 TOKEN_COMPARISON_DEMO.md
+config/claude-desktop-phase.json
+config/claude-desktop-phase.json
+config/claude-desktop.json
+.gitignore
