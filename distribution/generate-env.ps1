@@ -63,6 +63,7 @@ POSTGRES_USER=$dbUser
 POSTGRES_PASSWORD=$postgresPassword
 POSTGRES_CONTAINER_NAME=mcp-writing-db
 POSTGRES_PORT=$dbPort
+POSTGRES_VOLUME_NAME=mcp-writing-data
 
 # Database connection URL
 DATABASE_URL=postgresql://${dbUser}:${postgresPassword}@localhost:${dbPort}/${dbName}
@@ -84,9 +85,18 @@ MCP_AUTH_TOKEN=$authToken
 
 # MCP Connector port (Typing Mind standard)
 MCP_CONNECTOR_PORT=50880
+MCP_CONNECTOR_CONTAINER_NAME=mcp-connector
 
 # Include optional author server
 INCLUDE_AUTHOR_SERVER=true
+
+# MCP STDIO mode (use false for REST API mode)
+MCP_STDIO_MODE=false
+
+# ==========================================
+# Docker Configuration
+# ==========================================
+MCP_NETWORK_NAME=mcp-network
 
 # ==========================================
 # Node Environment
@@ -98,6 +108,7 @@ NODE_ENV=development
 # ==========================================
 TYPING_MIND_PORT=3000
 TYPING_MIND_DIR=./typing-mind-static
+TYPING_MIND_CONTAINER_NAME=typing-mind-web
 
 # ==========================================
 # Legacy Settings (for backward compatibility)
