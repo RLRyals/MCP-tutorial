@@ -9,49 +9,49 @@ export class SessionHandlers {
         return [
             {
                 name: 'log_writing_session',
-                description: 'Log a writing session with productivity metrics - AI team tracks automatically',
+                description: 'Log writing session w/ metrics - AI tracks auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book being worked on' 
+                            description: 'Book ID'
                         },
                         chapter_ids: {
                             type: 'array',
                             items: { type: 'integer' },
-                            description: 'Chapters worked on during session'
+                            description: 'Chapter IDs worked on'
                         },
-                        session_date: { 
+                        session_date: {
                             type: 'string',
-                            description: 'Date of writing session (YYYY-MM-DD)' 
+                            description: 'Date (YYYY-MM-DD)'
                         },
-                        start_time: { 
+                        start_time: {
                             type: 'string',
-                            description: 'Session start time (HH:MM)' 
+                            description: 'Start (HH:MM)'
                         },
-                        end_time: { 
+                        end_time: {
                             type: 'string',
-                            description: 'Session end time (HH:MM)' 
+                            description: 'End (HH:MM)'
                         },
-                        words_written: { 
+                        words_written: {
                             type: 'integer',
-                            description: 'New words created during session' 
+                            description: 'New words'
                         },
-                        words_edited: { 
+                        words_edited: {
                             type: 'integer',
-                            description: 'Existing words edited/revised',
-                            default: 0 
+                            description: 'Edited words',
+                            default: 0
                         },
-                        session_notes: { 
+                        session_notes: {
                             type: 'string',
-                            description: 'Optional notes about the session' 
+                            description: 'Session notes'
                         },
                         mood_rating: {
                             type: 'integer',
                             minimum: 1,
                             maximum: 10,
-                            description: 'Author mood/energy level (1-10)'
+                            description: 'Mood/energy (1-10)'
                         }
                     },
                     required: ['book_id', 'session_date', 'words_written']
@@ -59,24 +59,24 @@ export class SessionHandlers {
             },
             {
                 name: 'get_writing_progress',
-                description: 'Get writing progress analytics - AI team monitors automatically',
+                description: 'Get progress analytics - AI monitors auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to analyze' 
+                            description: 'Book ID'
                         },
                         time_period: {
                             type: 'string',
                             enum: ['week', 'month', 'quarter', 'all_time'],
                             default: 'month',
-                            description: 'Time period for analysis'
+                            description: 'Time period'
                         },
                         include_analytics: {
                             type: 'boolean',
                             default: true,
-                            description: 'Include detailed productivity analytics'
+                            description: 'Include details'
                         }
                     },
                     required: ['book_id']
@@ -84,30 +84,30 @@ export class SessionHandlers {
             },
             {
                 name: 'set_writing_goals',
-                description: 'Set writing goals for AI team to track progress against',
+                description: 'Set goals for AI tracking',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book for goal setting' 
+                            description: 'Book ID'
                         },
                         goal_type: {
                             type: 'string',
                             enum: ['daily_words', 'weekly_words', 'monthly_words', 'chapter_completion', 'book_completion'],
-                            description: 'Type of writing goal'
+                            description: 'Goal type'
                         },
-                        target_value: { 
+                        target_value: {
                             type: 'integer',
-                            description: 'Target number (words, chapters, etc.)' 
+                            description: 'Target # (words, chapters, etc.)'
                         },
-                        target_date: { 
+                        target_date: {
                             type: 'string',
-                            description: 'Goal completion date (YYYY-MM-DD)' 
+                            description: 'Target date (YYYY-MM-DD)'
                         },
-                        description: { 
+                        description: {
                             type: 'string',
-                            description: 'Goal description or motivation' 
+                            description: 'Goal description'
                         }
                     },
                     required: ['book_id', 'goal_type', 'target_value', 'target_date']
@@ -115,19 +115,19 @@ export class SessionHandlers {
             },
             {
                 name: 'get_productivity_analytics',
-                description: 'Get detailed productivity analytics - AI team analyzes patterns',
+                description: 'Get productivity analytics - AI analyzes patterns',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to analyze' 
+                            description: 'Book ID'
                         },
                         analysis_type: {
                             type: 'string',
                             enum: ['daily_patterns', 'weekly_trends', 'goal_progress', 'productivity_factors'],
                             default: 'daily_patterns',
-                            description: 'Type of analysis to perform'
+                            description: 'Analysis type'
                         },
                         date_range: {
                             type: 'object',
@@ -135,7 +135,7 @@ export class SessionHandlers {
                                 start_date: { type: 'string' },
                                 end_date: { type: 'string' }
                             },
-                            description: 'Optional date range for analysis'
+                            description: 'Date range'
                         }
                     },
                     required: ['book_id']

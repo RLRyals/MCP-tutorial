@@ -4,45 +4,45 @@
 export const eventChapterMappingSchemas = [
     {
         name: 'map_event_to_chapter',
-        description: 'Connect a timeline event to its presentation in a chapter',
+        description: 'Connect timeline event to chapter presentation',
         inputSchema: {
             type: 'object',
             required: ['event_id', 'chapter_id'],
             properties: {
-                event_id: { type: 'integer', description: 'Timeline event ID' },
-                chapter_id: { type: 'integer', description: 'Chapter where event appears' },
-                scene_number: { type: 'integer', description: 'Specific scene within chapter (optional)' },
+                event_id: { type: 'integer', description: 'Event ID' },
+                chapter_id: { type: 'integer', description: 'Chapter ID' },
+                scene_number: { type: 'integer', description: 'Scene # in chapter' },
                 presentation_type: {
                     type: 'string',
                     enum: ['direct_scene', 'flashback', 'memory', 'reference', 'foreshadowing', 'dream', 'retelling'],
-                    description: 'How the event is presented in the narrative'
+                    description: 'How event is presented'
                 },
-                pov_character_id: { type: 'integer', description: 'Character whose POV shows this event' },
-                event_aspect: { type: 'string', description: 'Which part or perspective of the event is shown' },
+                pov_character_id: { type: 'integer', description: 'POV character ID' },
+                event_aspect: { type: 'string', description: 'Part/perspective shown' },
                 completeness: {
                     type: 'string',
                     enum: ['full', 'partial', 'glimpse'],
-                    description: 'How completely the event is shown',
+                    description: 'Completeness level',
                     default: 'full'
                 },
-                narrative_function: { type: 'string', description: 'Purpose of showing this event here' }
+                narrative_function: { type: 'string', description: 'Purpose in narrative' }
             }
         }
     },
     {
         name: 'get_event_mappings',
-        description: 'Get chapters where a timeline event appears',
+        description: 'Get chapters where event appears',
         inputSchema: {
             type: 'object',
             required: ['event_id'],
             properties: {
-                event_id: { type: 'integer', description: 'Timeline event ID' }
+                event_id: { type: 'integer', description: 'Event ID' }
             }
         }
     },
     {
         name: 'get_chapter_events',
-        description: 'Get timeline events that appear in a chapter',
+        description: 'Get events in chapter',
         inputSchema: {
             type: 'object',
             required: ['chapter_id'],
@@ -50,63 +50,63 @@ export const eventChapterMappingSchemas = [
                 chapter_id: { type: 'integer', description: 'Chapter ID' },
                 presentation_type: {
                     type: 'string',
-                    description: 'Filter by presentation type (optional)'
+                    description: 'Presentation type filter'
                 },
                 pov_character_id: {
                     type: 'integer',
-                    description: 'Filter by POV character (optional)'
+                    description: 'POV character filter'
                 }
             }
         }
     },
     {
         name: 'update_event_mapping',
-        description: 'Update an existing event-chapter mapping',
+        description: 'Update event-chapter mapping',
         inputSchema: {
             type: 'object',
             required: ['mapping_id'],
             properties: {
-                mapping_id: { type: 'integer', description: 'ID of the mapping to update' },
-                scene_number: { type: 'integer', description: 'Specific scene within chapter' },
+                mapping_id: { type: 'integer', description: 'Mapping ID' },
+                scene_number: { type: 'integer', description: 'Scene # in chapter' },
                 presentation_type: {
                     type: 'string',
                     enum: ['direct_scene', 'flashback', 'memory', 'reference', 'foreshadowing', 'dream', 'retelling'],
-                    description: 'How the event is presented'
+                    description: 'How event is presented'
                 },
-                pov_character_id: { type: 'integer', description: 'Character POV for this presentation' },
-                event_aspect: { type: 'string', description: 'Which part of the event is shown' },
+                pov_character_id: { type: 'integer', description: 'POV character ID' },
+                event_aspect: { type: 'string', description: 'Part shown' },
                 completeness: {
                     type: 'string',
                     enum: ['full', 'partial', 'glimpse'],
-                    description: 'How completely the event is shown'
+                    description: 'Completeness level'
                 },
-                narrative_function: { type: 'string', description: 'Purpose of showing this event here' }
+                narrative_function: { type: 'string', description: 'Purpose in narrative' }
             }
         }
     },
     {
         name: 'delete_event_mapping',
-        description: 'Remove a mapping between an event and a chapter',
+        description: 'Delete event-chapter mapping',
         inputSchema: {
             type: 'object',
             required: ['mapping_id'],
             properties: {
-                mapping_id: { type: 'integer', description: 'ID of the mapping to delete' }
+                mapping_id: { type: 'integer', description: 'Mapping ID' }
             }
         }
     },
     {
         name: 'analyze_narrative_structure',
-        description: 'Analyze the relationship between chronological events and narrative presentation',
+        description: 'Analyze chronological events vs narrative presentation',
         inputSchema: {
             type: 'object',
             required: ['book_id'],
             properties: {
-                book_id: { type: 'integer', description: 'Book to analyze' },
+                book_id: { type: 'integer', description: 'Book ID' },
                 analysis_type: {
                     type: 'string',
                     enum: ['linearity', 'pov_distribution', 'event_coverage', 'all'],
-                    description: 'Type of analysis to perform',
+                    description: 'Analysis type',
                     default: 'all'
                 }
             }

@@ -9,62 +9,62 @@
 export const chapterPlanningSchemas = {
     create_chapter: {
         name: 'create_chapter',
-        description: 'Create a new chapter within a book',
+        description: 'Create chapter',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'ID of the book this chapter belongs to'
+                    description: 'Book ID'
                 },
                 chapter_number: {
                     type: 'integer',
-                    description: 'Chapter number within the book'
+                    description: 'Chapter # in book'
                 },
                 title: {
                     type: 'string',
-                    description: 'Chapter title'
+                    description: 'Title'
                 },
                 subtitle: {
                     type: 'string',
-                    description: 'Optional chapter subtitle'
+                    description: 'Subtitle'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Brief chapter summary'
+                    description: 'Summary'
                 },
                 target_word_count: {
                     type: 'integer',
-                    description: 'Target word count for this chapter'
+                    description: 'Target word count'
                 },
                 status: {
                     type: 'string',
                     default: 'planned',
-                    description: 'Chapter writing status (use get_available_options with option_type="writing_statuses")'
+                    description: 'Writing status (use get_available_options w/ option_type="writing_statuses")'
                 },
                 pov_character_id: {
                     type: 'integer',
-                    description: 'ID of the POV character for this chapter'
+                    description: 'POV character ID'
                 },
                 primary_location: {
                     type: 'string',
-                    description: 'Main setting for this chapter'
+                    description: 'Main setting'
                 },
                 story_time_start: {
                     type: 'string',
-                    description: 'When chapter events begin (e.g., "Day 1, 3pm")'
+                    description: 'Start time (e.g., "Day 1, 3pm")'
                 },
                 story_time_end: {
                     type: 'string',
-                    description: 'When chapter events end'
+                    description: 'End time'
                 },
                 story_duration: {
                     type: 'string',
-                    description: 'How long chapter events take (e.g., "2 hours")'
+                    description: 'Duration (e.g., "2 hours")'
                 },
                 author_notes: {
                     type: 'string',
-                    description: 'Planning notes and reminders'
+                    description: 'Planning notes'
                 }
             },
             required: ['book_id', 'chapter_number']
@@ -73,25 +73,25 @@ export const chapterPlanningSchemas = {
 
     update_chapter: {
         name: 'update_chapter',
-        description: 'Update an existing chapter',
+        description: 'Update chapter',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter to update'
+                    description: 'Chapter ID'
                 },
                 title: {
                     type: 'string',
-                    description: 'Chapter title'
+                    description: 'Title'
                 },
                 subtitle: {
                     type: 'string',
-                    description: 'Chapter subtitle'
+                    description: 'Subtitle'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Chapter summary'
+                    description: 'Summary'
                 },
                 word_count: {
                     type: 'integer',
@@ -103,7 +103,7 @@ export const chapterPlanningSchemas = {
                 },
                 status: {
                     type: 'string',
-                    description: 'Chapter writing status (use get_available_options with option_type="writing_statuses")'
+                    description: 'Writing status (use get_available_options w/ option_type="writing_statuses")'
                 },
                 pov_character_id: {
                     type: 'integer',
@@ -111,19 +111,19 @@ export const chapterPlanningSchemas = {
                 },
                 primary_location: {
                     type: 'string',
-                    description: 'Main setting for this chapter'
+                    description: 'Main setting'
                 },
                 story_time_start: {
                     type: 'string',
-                    description: 'Chapter start time'
+                    description: 'Start time'
                 },
                 story_time_end: {
                     type: 'string',
-                    description: 'Chapter end time'
+                    description: 'End time'
                 },
                 story_duration: {
                     type: 'string',
-                    description: 'Chapter duration'
+                    description: 'Duration'
                 },
                 author_notes: {
                     type: 'string',
@@ -131,7 +131,7 @@ export const chapterPlanningSchemas = {
                 },
                 writing_notes: {
                     type: 'string',
-                    description: 'Writing process notes'
+                    description: 'Writing notes'
                 }
             },
             required: ['chapter_id']
@@ -140,23 +140,23 @@ export const chapterPlanningSchemas = {
 
     get_chapter: {
         name: 'get_chapter',
-        description: 'Get detailed information about a specific chapter',
+        description: 'Get chapter details',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter'
+                    description: 'Chapter ID'
                 },
                 include_scenes: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include scene information'
+                    description: 'Include scenes'
                 },
                 include_characters: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include character presence information'
+                    description: 'Include character presence'
                 }
             },
             required: ['chapter_id']
@@ -165,22 +165,22 @@ export const chapterPlanningSchemas = {
 
     list_chapters: {
         name: 'list_chapters',
-        description: 'List all chapters in a book',
+        description: 'List chapters',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'ID of the book'
+                    description: 'Book ID'
                 },
                 status: {
                     type: 'string',
-                    description: 'Filter by chapter status (optional, use get_available_options with option_type="writing_statuses")'
+                    description: 'Status filter (use get_available_options w/ option_type="writing_statuses")'
                 },
                 include_stats: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include word count and scene statistics'
+                    description: 'Include stats'
                 }
             },
             required: ['book_id']
@@ -189,17 +189,17 @@ export const chapterPlanningSchemas = {
 
     delete_chapter: {
         name: 'delete_chapter',
-        description: 'Delete a chapter and all its scenes',
+        description: 'Delete chapter & scenes',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter to delete'
+                    description: 'Chapter ID'
                 },
                 confirm_deletion: {
                     type: 'boolean',
-                    description: 'Must be true to confirm deletion'
+                    description: 'Confirm (must be true)'
                 }
             },
             required: ['chapter_id', 'confirm_deletion']

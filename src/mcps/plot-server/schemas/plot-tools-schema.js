@@ -7,75 +7,75 @@
 export const plotThreadToolsSchema = [
     {
         name: 'create_plot_thread',
-        description: 'Create a new plot thread (story arc, subplot, character arc)',
+        description: 'Create plot thread',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: { type: 'integer', description: 'Series ID' },
-                title: { type: 'string', description: 'Plot thread title' },
-                description: { type: 'string', description: 'Plot thread description' },
+                title: { type: 'string', description: 'Title' },
+                description: { type: 'string', description: 'Description' },
                 thread_type: {
                     type: 'string',
-                    description: 'Type of plot thread (use metadata-server\'s get_available_options with option_type="plot_thread_types" to see valid values)'
+                    description: 'Type (use get_available_options w/ option_type="plot_thread_types")'
                 },
-                importance_level: { 
-                    type: 'integer', 
-                    minimum: 1, 
-                    maximum: 10, 
+                importance_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
                     default: 5,
-                    description: 'Importance level (1-10)'
+                    description: 'Importance (1-10)'
                 },
-                complexity_level: { 
-                    type: 'integer', 
-                    minimum: 1, 
-                    maximum: 10, 
+                complexity_level: {
+                    type: 'integer',
+                    minimum: 1,
+                    maximum: 10,
                     default: 5,
-                    description: 'Complexity level (1-10)'
+                    description: 'Complexity (1-10)'
                 },
-                start_book: { type: 'integer', description: 'Starting book number' },
-                end_book: { type: 'integer', description: 'Ending book number (optional for ongoing threads)' },
-                related_characters: { 
-                    type: 'array', 
+                start_book: { type: 'integer', description: 'Start book #' },
+                end_book: { type: 'integer', description: 'End book #' },
+                related_characters: {
+                    type: 'array',
                     items: { type: 'integer' },
-                    description: 'Array of related character IDs'
+                    description: 'Related character IDs'
                 },
-                parent_thread_id: { type: 'integer', description: 'Parent thread ID for sub-threads' }
+                parent_thread_id: { type: 'integer', description: 'Parent thread ID' }
             },
             required: ['series_id', 'title', 'description', 'thread_type']
         }
     },
     {
         name: 'update_plot_thread',
-        description: 'Update plot thread information and status',
+        description: 'Update plot thread',
         inputSchema: {
             type: 'object',
             properties: {
-                thread_id: { type: 'integer', description: 'Plot thread ID' },
-                title: { type: 'string', description: 'Plot thread title' },
-                description: { type: 'string', description: 'Plot thread description' },
-                current_status: { 
-                    type: 'string', 
+                thread_id: { type: 'integer', description: 'Thread ID' },
+                title: { type: 'string', description: 'Title' },
+                description: { type: 'string', description: 'Description' },
+                current_status: {
+                    type: 'string',
                     enum: ['active', 'resolved', 'on_hold', 'abandoned'],
-                    description: 'Thread status'
+                    description: 'Status'
                 },
-                end_book: { type: 'integer', description: 'Ending book number' },
+                end_book: { type: 'integer', description: 'End book #' },
                 resolution_notes: { type: 'string', description: 'Resolution details' },
-                resolution_book: { type: 'integer', description: 'Book where resolved' }
+                resolution_book: { type: 'integer', description: 'Resolution book #' }
             },
             required: ['thread_id']
         }
     },
     {
         name: 'get_plot_threads',
-        description: 'Get plot threads for a series with filtering options',
+        description: 'Get plot threads',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: { type: 'integer', description: 'Series ID' },
-                thread_type: { type: 'string', description: 'Filter by thread type' },
-                current_status: { type: 'string', description: 'Filter by status' },
-                book_number: { type: 'integer', description: 'Filter threads active in specific book' },
-                importance_min: { type: 'integer', description: 'Minimum importance level' }
+                thread_type: { type: 'string', description: 'Type filter' },
+                current_status: { type: 'string', description: 'Status filter' },
+                book_number: { type: 'integer', description: 'Book # filter' },
+                importance_min: { type: 'integer', description: 'Min importance' }
             },
             required: ['series_id']
         }
@@ -107,13 +107,13 @@ export const plotThreadToolsSchema = [
     // },
     {
         name: 'resolve_plot_thread',
-        description: 'Mark a plot thread as resolved with details',
+        description: 'Resolve plot thread',
         inputSchema: {
             type: 'object',
             properties: {
-                thread_id: { type: 'integer', description: 'Plot thread ID' },
-                resolution_book: { type: 'integer', description: 'Book where resolved' },
-                resolution_notes: { type: 'string', description: 'How the thread was resolved' }
+                thread_id: { type: 'integer', description: 'Thread ID' },
+                resolution_book: { type: 'integer', description: 'Resolution book #' },
+                resolution_notes: { type: 'string', description: 'Resolution details' }
             },
             required: ['thread_id', 'resolution_book', 'resolution_notes']
         }
@@ -132,49 +132,49 @@ export const plotThreadToolsSchema = [
 export const genreExtensionToolsSchema = [
     {
         name: 'create_information_reveal',
-        description: 'Track any information reveal across all genres (evidence, secrets, backstory, world rules)',
+        description: 'Track info reveal',
         inputSchema: {
             type: 'object',
             properties: {
                 plot_thread_id: {
                     type: 'integer',
-                    description: 'Associated plot thread ID'
+                    description: 'Plot thread ID'
                 },
                 reveal_type: {
                     type: 'string',
                     enum: ['evidence', 'secret', 'backstory', 'world_rule', 'relationship', 'skill'],
-                    description: 'Type of information being revealed'
+                    description: 'Reveal type'
                 },
                 information_content: {
                     type: 'string',
-                    description: 'What information is revealed'
+                    description: 'Info content'
                 },
                 reveal_method: {
                     type: 'string',
-                    description: 'How the information is revealed (discovered, confessed, witnessed, deduced)'
+                    description: 'Reveal method (discovered/confessed/witnessed/deduced)'
                 },
                 significance_level: {
                     type: 'string',
                     enum: ['minor', 'major', 'climactic', 'world_changing'],
-                    description: 'Impact level of this reveal'
+                    description: 'Impact level'
                 },
                 affects_characters: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Character IDs who learn this information'
+                    description: 'Character IDs who learn this'
                 },
                 revealed_in_chapter: {
                     type: 'integer',
-                    description: 'Chapter where revealed (optional)'
+                    description: 'Reveal chapter ID'
                 },
                 consequences: {
                     type: 'string',
-                    description: 'What happens as a result of this reveal (optional)'
+                    description: 'Consequences'
                 },
                 foreshadowing_chapters: {
                     type: 'array',
                     items: { type: 'integer' },
-                    description: 'Chapters where this was hinted at (optional)'
+                    description: 'Foreshadowing chapter IDs'
                 }
             },
             required: ['plot_thread_id', 'reveal_type', 'information_content', 'reveal_method', 'significance_level']
@@ -182,7 +182,7 @@ export const genreExtensionToolsSchema = [
     },
     {
         name: 'define_world_system',
-        description: 'Define any systematic supernatural/advanced element with rules and limitations',
+        description: 'Define world system w/ rules',
         inputSchema: {
             type: 'object',
             properties: {
@@ -192,30 +192,30 @@ export const genreExtensionToolsSchema = [
                 },
                 system_name: {
                     type: 'string',
-                    description: 'Name of the system'
+                    description: 'System name'
                 },
                 system_type: {
                     type: 'string',
                     enum: ['magic', 'psionics', 'technology', 'divine', 'supernatural', 'mutation', 'alchemy'],
-                    description: 'Type of system'
+                    description: 'System type'
                 },
                 power_source: {
                     type: 'string',
-                    description: 'What powers this system'
+                    description: 'Power source'
                 },
                 access_method: {
                     type: 'string',
-                    description: 'How beings access/use this system'
+                    description: 'Access method'
                 },
                 limitations: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Constraints, costs, and limitations'
+                    description: 'Constraints & limitations'
                 },
                 system_rules: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Governing rules and principles'
+                    description: 'Rules & principles'
                 },
                 power_scaling: {
                     type: 'object',
@@ -224,7 +224,7 @@ export const genreExtensionToolsSchema = [
                         highest_level: { type: 'string' },
                         progression_method: { type: 'string' }
                     },
-                    description: 'How power levels work'
+                    description: 'Power levels'
                 }
             },
             required: ['series_id', 'system_name', 'system_type', 'power_source', 'access_method']
@@ -232,35 +232,35 @@ export const genreExtensionToolsSchema = [
     },
     {
         name: 'add_reveal_evidence',
-        description: 'Add specific evidence to an information reveal (universal evidence tracking)',
+        description: 'Add evidence to reveal',
         inputSchema: {
             type: 'object',
             properties: {
                 reveal_id: {
                     type: 'integer',
-                    description: 'Information reveal ID'
+                    description: 'Reveal ID'
                 },
                 evidence_type: {
                     type: 'string',
                     enum: ['physical', 'witness', 'circumstantial', 'digital', 'forensic'],
-                    description: 'Type of evidence'
+                    description: 'Evidence type'
                 },
                 evidence_description: {
                     type: 'string',
-                    description: 'Description of the evidence'
+                    description: 'Description'
                 },
                 discovered_by: {
                     type: 'integer',
-                    description: 'Character ID who discovered this (optional)'
+                    description: 'Discoverer character ID'
                 },
                 discovery_chapter: {
                     type: 'integer',
-                    description: 'Chapter where discovered (optional)'
+                    description: 'Discovery chapter ID'
                 },
                 significance: {
                     type: 'string',
                     enum: ['critical', 'important', 'supporting', 'red_herring'],
-                    description: 'Significance of this evidence'
+                    description: 'Significance'
                 }
             },
             required: ['reveal_id', 'evidence_type', 'evidence_description']
@@ -268,7 +268,7 @@ export const genreExtensionToolsSchema = [
     },
     {
         name: 'track_system_progression',
-        description: 'Track character progression within a world system',
+        description: 'Track character system progression',
         inputSchema: {
             type: 'object',
             properties: {
@@ -278,29 +278,29 @@ export const genreExtensionToolsSchema = [
                 },
                 system_id: {
                     type: 'integer',
-                    description: 'World system ID'
+                    description: 'System ID'
                 },
                 book_id: {
                     type: 'integer',
-                    description: 'Book where progression occurs'
+                    description: 'Book ID'
                 },
                 chapter_id: {
                     type: 'integer',
-                    description: 'Chapter where progression occurs (optional)'
+                    description: 'Chapter ID'
                 },
                 current_power_level: {
                     type: 'integer',
                     minimum: 1,
                     maximum: 10,
-                    description: 'Current power level'
+                    description: 'Power level'
                 },
                 progression_method: {
                     type: 'string',
-                    description: 'How they gained this power'
+                    description: 'Progression method'
                 },
                 cost_or_sacrifice: {
                     type: 'string',
-                    description: 'What they sacrificed to gain this power (optional)'
+                    description: 'Cost/sacrifice'
                 }
             },
             required: ['character_id', 'system_id', 'book_id', 'current_power_level']

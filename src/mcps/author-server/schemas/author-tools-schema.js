@@ -8,7 +8,7 @@
 export const authorToolsSchema = [
     {
         name: 'list_authors',
-        description: 'List all authors in the database',
+        description: 'List all authors',
         inputSchema: {
             type: 'object',
             properties: {},
@@ -17,39 +17,39 @@ export const authorToolsSchema = [
     },
     {
         name: 'get_author',
-        description: 'Get detailed information about a specific author',
+        description: 'Get author details',
         inputSchema: {
             type: 'object',
             properties: {
-                author_id: { type: 'integer', description: 'The ID of the author' }
+                author_id: { type: 'integer', description: 'Author ID' }
             },
             required: ['author_id']
         }
     },
     {
         name: 'create_author',
-        description: 'Create a new author',
+        description: 'Create author',
         inputSchema: {
             type: 'object',
             properties: {
-                name: { type: 'string', description: 'Full name of the author' },
-                email: { type: 'string', description: 'Author\'s email address' },
-                bio: { type: 'string', description: 'Author biography' },
-                birth_year: { type: 'integer', description: 'Year of birth' }
+                name: { type: 'string', description: 'Author name' },
+                email: { type: 'string', description: 'Email' },
+                bio: { type: 'string', description: 'Bio' },
+                birth_year: { type: 'integer', description: 'Birth year' }
             },
             required: ['name']
         }
     },
     {
         name: 'update_author',
-        description: 'Update an existing author',
+        description: 'Update author',
         inputSchema: {
             type: 'object',
             properties: {
-                author_id: { type: 'integer', description: 'The ID of the author to update' },
-                name: { type: 'string', description: 'Full name of the author' },
-                bio: { type: 'string', description: 'Author biography' },
-                birth_year: { type: 'integer', description: 'Year of birth' }
+                author_id: { type: 'integer', description: 'Author ID' },
+                name: { type: 'string', description: 'Author name' },
+                bio: { type: 'string', description: 'Bio' },
+                birth_year: { type: 'integer', description: 'Birth year' }
             },
             required: ['author_id']
         }

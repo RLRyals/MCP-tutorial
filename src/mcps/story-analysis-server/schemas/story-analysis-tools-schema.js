@@ -8,37 +8,37 @@
 export const storyAnalysisToolsSchema = [
     {
         name: 'analyze_story_dynamics',
-        description: 'Analyze story dynamics using narrative elements',
+        description: 'Analyze story dynamics',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: { type: 'integer', description: 'Book ID' },
                 story_concern: {
                     type: 'string',
-                    description: 'What the overall story is about (use metadata-server\'s get_available_options with option_type="story_concerns" to see valid values)'
+                    description: 'Overall story focus (use metadata-server get_available_options w/ option_type="story_concerns")'
                 },
-                main_character_problem: { type: 'string', description: 'Personal issues driving the protagonist' },
-                influence_character_impact: { type: 'string', description: 'How other characters challenge the MC' },
+                main_character_problem: { type: 'string', description: 'Protagonist issues' },
+                influence_character_impact: { type: 'string', description: 'How others challenge MC' },
                 story_outcome: {
                     type: 'string',
-                    description: 'Whether the story goal is achieved (use metadata-server\'s get_available_options with option_type="story_outcomes" to see valid values)'
+                    description: 'Goal achieved? (use metadata-server get_available_options w/ option_type="story_outcomes")'
                 },
                 story_judgment: {
                     type: 'string',
-                    description: 'Whether the outcome feels satisfying (use metadata-server\'s get_available_options with option_type="story_judgments" to see valid values)'
+                    description: 'Outcome satisfaction (use metadata-server get_available_options w/ option_type="story_judgments")'
                 },
                 thematic_elements: {
                     type: 'object',
-                    description: 'Values and themes in conflict'
+                    description: 'Conflicting themes/values'
                 },
-                analysis_notes: { type: 'string', description: 'Additional analysis notes' }
+                analysis_notes: { type: 'string', description: 'Additional notes' }
             },
             required: ['book_id']
         }
     },
     {
         name: 'track_character_throughlines',
-        description: 'Track character development throughlines',
+        description: 'Track character throughlines',
         inputSchema: {
             type: 'object',
             properties: {
@@ -47,30 +47,30 @@ export const storyAnalysisToolsSchema = [
                 throughline_type: {
                     type: 'string',
                     enum: ['main_character', 'influence_character', 'relationship', 'objective_story'],
-                    description: 'Type of character throughline'
+                    description: 'Throughline type'
                 },
-                character_problem: { type: 'string', description: 'Character\'s core problem' },
-                character_solution: { type: 'string', description: 'How character addresses the problem' },
-                character_arc: { type: 'string', description: 'Character development arc' }
+                character_problem: { type: 'string', description: 'Core problem' },
+                character_solution: { type: 'string', description: 'Problem approach' },
+                character_arc: { type: 'string', description: 'Development arc' }
             },
             required: ['book_id', 'character_id', 'throughline_type']
         }
     },
     {
         name: 'identify_story_appreciations',
-        description: 'Identify and track story appreciations that emerge organically',
+        description: 'Track story appreciations',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: { type: 'integer', description: 'Book ID' },
-                appreciation_type: { type: 'string', description: 'Type of story appreciation' },
-                appreciation_value: { type: 'string', description: 'The appreciation value' },
-                supporting_evidence: { type: 'string', description: 'Evidence from the story' },
+                appreciation_type: { type: 'string', description: 'Appreciation type' },
+                appreciation_value: { type: 'string', description: 'Appreciation value' },
+                supporting_evidence: { type: 'string', description: 'Story evidence' },
                 confidence_level: {
                     type: 'integer',
                     minimum: 1,
                     maximum: 10,
-                    description: 'Confidence in this appreciation (1-10)'
+                    description: 'Confidence (1-10)'
                 }
             },
             required: ['book_id', 'appreciation_type', 'appreciation_value']
@@ -78,22 +78,22 @@ export const storyAnalysisToolsSchema = [
     },
     {
         name: 'map_problem_solutions',
-        description: 'Map problem/solution dynamics in the story',
+        description: 'Map problem/solution dynamics',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: { type: 'integer', description: 'Book ID' },
-                problem: { type: 'string', description: 'The problem being addressed' },
-                solution: { type: 'string', description: 'The solution being attempted' },
+                problem: { type: 'string', description: 'Problem addressed' },
+                solution: { type: 'string', description: 'Solution attempted' },
                 problem_level: {
                     type: 'string',
                     enum: ['overall_story', 'main_character', 'influence_character', 'relationship'],
-                    description: 'Level where the problem exists'
+                    description: 'Problem level'
                 },
                 effectiveness: {
                     type: 'string',
                     enum: ['solves', 'complicates', 'redirects', 'unknown'],
-                    description: 'How effective the solution is'
+                    description: 'Solution effectiveness'
                 }
             },
             required: ['book_id', 'problem', 'solution', 'problem_level']

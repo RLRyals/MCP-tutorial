@@ -4,7 +4,7 @@
 export const seriesToolsSchema = [
     {
         name: 'list_series',
-        description: 'List all book series in the database',
+        description: 'List all series',
         inputSchema: {
             type: 'object',
             properties: {},
@@ -13,43 +13,43 @@ export const seriesToolsSchema = [
     },
     {
         name: 'create_series',
-        description: 'Create a new book series',
+        description: 'Create series',
         inputSchema: {
             type: 'object',
             properties: {
-                title: { type: 'string', description: 'Series title' },
-                author_id: { type: 'integer', description: 'ID of the series author' },
-                description: { type: 'string', description: 'Series description' },
-                genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Array of genre IDs for this series' },
-                start_year: { type: 'integer', description: 'Year the series began' },
-                status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Series status' }
+                title: { type: 'string', description: 'Title' },
+                author_id: { type: 'integer', description: 'Author ID' },
+                description: { type: 'string', description: 'Description' },
+                genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Genre IDs' },
+                start_year: { type: 'integer', description: 'Start year' },
+                status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Status' }
             },
             required: ['title', 'author_id']
         }
     },
     {
         name: 'get_series',
-        description: 'Get detailed information about a specific series',
+        description: 'Get series details',
         inputSchema: {
             type: 'object',
             properties: {
-                series_id: { type: 'integer', description: 'The ID of the series' }
+                series_id: { type: 'integer', description: 'Series ID' }
             },
             required: ['series_id']
         }
     },
     {
         name: 'update_series',
-        description: 'Update an existing series',
+        description: 'Update series',
         inputSchema: {
             type: 'object',
             properties: {
-                series_id: { type: 'integer', description: 'The ID of the series to update' },
-                title: { type: 'string', description: 'Series title' },
-                description: { type: 'string', description: 'Series description' },
-                genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Array of genre IDs for this series (replaces all existing genres)' },
-                start_year: { type: 'integer', description: 'Year the series began' },
-                status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Series status' }
+                series_id: { type: 'integer', description: 'Series ID' },
+                title: { type: 'string', description: 'Title' },
+                description: { type: 'string', description: 'Description' },
+                genre_ids: { type: 'array', items: { type: 'integer' }, description: 'Genre IDs (replaces all)' },
+                start_year: { type: 'integer', description: 'Start year' },
+                status: { type: 'string', enum: ['ongoing', 'completed', 'hiatus'], description: 'Status' }
             },
             required: ['series_id']
         }

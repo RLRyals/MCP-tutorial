@@ -4,21 +4,21 @@
 export const worldManagementSchemas = [
     {
         name: 'check_world_consistency',
-        description: 'Validate world logic and consistency across all world elements',
+        description: 'Validate world logic and consistency',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to check for consistency'
+                    description: 'Series ID'
                 },
                 check_type: {
                     type: 'string',
-                    description: 'Type of consistency check: all, locations, elements, organizations, relationships'
+                    description: 'Check type: all, locations, elements, organizations, relationships'
                 },
                 severity_threshold: {
                     type: 'string',
-                    description: 'Minimum severity to report: info, warning, error'
+                    description: 'Min severity: info, warning, error'
                 }
             },
             required: ['series_id']
@@ -26,25 +26,25 @@ export const worldManagementSchemas = [
     },
     {
         name: 'generate_world_guide',
-        description: 'Create comprehensive world reference guide',
+        description: 'Generate world reference guide',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to generate guide for'
+                    description: 'Series ID'
                 },
                 guide_type: {
                     type: 'string',
-                    description: 'Type of guide: complete, locations_only, elements_only, organizations_only, summary'
+                    description: 'Guide type: complete, locations_only, elements_only, organizations_only, summary'
                 },
                 include_usage_stats: {
                     type: 'boolean',
-                    description: 'Include story usage statistics'
+                    description: 'Include usage stats'
                 },
                 format: {
                     type: 'string',
-                    description: 'Output format: text, structured, reference_sheet'
+                    description: 'Format: text, structured, reference_sheet'
                 }
             },
             required: ['series_id']
@@ -52,17 +52,17 @@ export const worldManagementSchemas = [
     },
     {
         name: 'analyze_world_complexity',
-        description: 'Analyze the complexity and depth of world-building',
+        description: 'Analyze world-building complexity',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to analyze'
+                    description: 'Series ID'
                 },
                 analysis_focus: {
                     type: 'string',
-                    description: 'Focus area: overall, power_structures, magic_systems, geography, relationships'
+                    description: 'Focus: overall, power_structures, magic_systems, geography, relationships'
                 }
             },
             required: ['series_id']
@@ -70,17 +70,17 @@ export const worldManagementSchemas = [
     },
     {
         name: 'find_world_gaps',
-        description: 'Identify gaps or underutilized areas in world-building',
+        description: 'Find gaps in world-building',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to analyze for gaps'
+                    description: 'Series ID'
                 },
                 gap_type: {
                     type: 'string',
-                    description: 'Type of gaps to find: unused_locations, weak_organizations, underused_elements, missing_connections'
+                    description: 'Gap type: unused_locations, weak_organizations, underused_elements, missing_connections'
                 }
             },
             required: ['series_id']
@@ -88,17 +88,17 @@ export const worldManagementSchemas = [
     },
     {
         name: 'validate_world_relationships',
-        description: 'Check relationships and connections between world elements',
+        description: 'Validate world element relationships',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to validate'
+                    description: 'Series ID'
                 },
                 relationship_type: {
                     type: 'string',
-                    description: 'Type to validate: all, location_hierarchies, org_alliances, element_interactions'
+                    description: 'Type: all, location_hierarchies, org_alliances, element_interactions'
                 }
             },
             required: ['series_id']
@@ -106,17 +106,17 @@ export const worldManagementSchemas = [
     },
     {
         name: 'get_world_overview',
-        description: 'Get comprehensive overview of world elements',
+        description: 'Get world elements overview',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to get overview for'
+                    description: 'Series ID'
                 },
                 include_stats: {
                     type: 'boolean',
-                    description: 'Include usage statistics',
+                    description: 'Include stats',
                     default: true
                 }
             },
@@ -125,17 +125,17 @@ export const worldManagementSchemas = [
     },
     {
         name: 'analyze_world_usage',
-        description: 'Analyze how world elements are used in the story',
+        description: 'Analyze world element usage in story',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Series ID to analyze'
+                    description: 'Series ID'
                 },
                 element_type: {
                     type: 'string',
-                    description: 'Filter by element type: location, world_element, organization, all',
+                    description: 'Element type: location, world_element, organization, all',
                     default: 'all'
                 }
             },

@@ -9,24 +9,24 @@ export class ValidationHandlers {
         return [
             {
                 name: 'validate_chapter_structure',
-                description: 'Validate chapter structure and consistency - AI team checks automatically',
+                description: 'Validate chapter structure - AI checks auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to validate' 
+                            description: 'Book ID'
                         },
                         chapter_ids: {
                             type: 'array',
                             items: { type: 'integer' },
-                            description: 'Specific chapters to validate (optional - validates all if not provided)'
+                            description: 'Chapter IDs (validates all if omitted)'
                         },
                         validation_level: {
                             type: 'string',
                             enum: ['basic', 'detailed', 'comprehensive'],
                             default: 'detailed',
-                            description: 'Depth of validation checks'
+                            description: 'Check depth'
                         }
                     },
                     required: ['book_id']
@@ -34,24 +34,24 @@ export class ValidationHandlers {
             },
             {
                 name: 'validate_beat_placement',
-                description: 'Validate story beats and pacing - AI team checks flow automatically',
+                description: 'Validate beats/pacing - AI checks flow auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to analyze for beats' 
+                            description: 'Book ID'
                         },
                         beat_analysis_type: {
                             type: 'string',
                             enum: ['pacing', 'character_arcs', 'plot_threads', 'emotional_beats'],
                             default: 'pacing',
-                            description: 'Type of beat analysis to perform'
+                            description: 'Analysis type'
                         },
                         flexible_guidelines: {
                             type: 'boolean',
                             default: true,
-                            description: 'Use flexible guidelines rather than rigid rules'
+                            description: 'Flexible vs rigid rules'
                         }
                     },
                     required: ['book_id']
@@ -59,13 +59,13 @@ export class ValidationHandlers {
             },
             {
                 name: 'check_structure_violations',
-                description: 'Check for structural inconsistencies - AI team identifies issues',
+                description: 'Check structural issues - AI identifies auto',
                 inputSchema: {
                     type: 'object',
                     properties: {
-                        book_id: { 
+                        book_id: {
                             type: 'integer',
-                            description: 'Book to check' 
+                            description: 'Book ID'
                         },
                         violation_types: {
                             type: 'array',
@@ -74,13 +74,13 @@ export class ValidationHandlers {
                                 enum: ['character_continuity', 'timeline_consistency', 'pov_consistency', 'location_consistency', 'plot_holes']
                             },
                             default: ['character_continuity', 'timeline_consistency', 'pov_consistency'],
-                            description: 'Types of violations to check for'
+                            description: 'Violation types'
                         },
                         severity_threshold: {
                             type: 'string',
                             enum: ['info', 'warning', 'error'],
                             default: 'warning',
-                            description: 'Minimum severity level to report'
+                            description: 'Min severity'
                         }
                     },
                     required: ['book_id']

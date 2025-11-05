@@ -10,61 +10,61 @@ export const bookPlanningSchemas = {
     // Book structure tools
     create_book: {
         name: 'create_book',
-        description: 'Create a new book in a series',
+        description: 'Create book',
         inputSchema: {
             type: 'object',
             properties: {
                 title: {
                     type: 'string',
-                    description: 'Book title'
+                    description: 'Title'
                 },
                 series_id: {
                     type: 'integer',
-                    description: 'ID of the series this book belongs to'
+                    description: 'Series ID'
                 },
                 book_number: {
                     type: 'integer',
-                    description: 'Position in the series'
+                    description: 'Series position'
                 },
                 status: {
                     type: 'string',
                     enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
                     default: 'planned',
-                    description: 'Book status'
+                    description: 'Status'
                 },
                 target_word_count: {
                     type: 'integer',
-                    description: 'Target word count for the book'
+                    description: 'Target word count'
                 },
                 actual_word_count: {
                     type: 'integer',
                     default: 0,
-                    description: 'Current word count of the book'
+                    description: 'Current word count'
                 },
                 publication_year: {
                     type: 'integer',
-                    description: 'Year of publication'
+                    description: 'Pub year'
                 },
                 description: {
                     type: 'string',
-                    description: 'Book description/summary'
+                    description: 'Description'
                 },
                 isbn: {
                     type: 'string',
-                    description: 'ISBN number'
+                    description: 'ISBN'
                 },
                 page_count: {
                     type: 'integer',
-                    description: 'Number of pages'
+                    description: 'Pages'
                 },
                 cover_image_url: {
                     type: 'string',
-                    description: 'URL to book cover image'
+                    description: 'Cover URL'
                 },
                 genre_names: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Genre names for this specific book'
+                    description: 'Genre names'
                 }
             },
             required: ['title', 'series_id', 'book_number']
@@ -73,59 +73,59 @@ export const bookPlanningSchemas = {
 
     update_book: {
         name: 'update_book',
-        description: 'Update an existing book',
+        description: 'Update book',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'The ID of the book to update'
+                    description: 'Book ID'
                 },
                 title: {
                     type: 'string',
-                    description: 'Book title'
+                    description: 'Title'
                 },
                 book_number: {
                     type: 'integer',
-                    description: 'Position in the series'
+                    description: 'Series position'
                 },
                 status: {
                     type: 'string',
                     enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                    description: 'Book status'
+                    description: 'Status'
                 },
                 target_word_count: {
                     type: 'integer',
-                    description: 'Target word count for the book'
+                    description: 'Target word count'
                 },
                 actual_word_count: {
                     type: 'integer',
-                    description: 'Current word count of the book'
+                    description: 'Current word count'
                 },
                 publication_year: {
                     type: 'integer',
-                    description: 'Year of publication'
+                    description: 'Pub year'
                 },
                 isbn: {
                     type: 'string',
-                    description: 'ISBN number'
+                    description: 'ISBN'
                 },
                 page_count: {
                     type: 'integer',
-                    description: 'Number of pages'
+                    description: 'Pages'
                 },
                 description: {
                     type: 'string',
-                    description: 'Book description/summary'
+                    description: 'Description'
                 },
                 cover_image_url: {
                     type: 'string',
-                    description: 'URL to book cover image'
+                    description: 'Cover URL'
                 },
                 genre_names: {
                     type: 'array',
                     items: { type: 'string' },
-                    description: 'Genre names for this specific book'
+                    description: 'Genre names'
                 }
             },
             required: ['book_id']
@@ -134,18 +134,18 @@ export const bookPlanningSchemas = {
 
     get_book: {
         name: 'get_book',
-        description: 'Get detailed information about a specific book',
+        description: 'Get book details',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'The ID of the book'
+                    description: 'Book ID'
                 },
                 include_chapters: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include chapter summary information'
+                    description: 'Include chapters'
                 }
             },
             required: ['book_id']
@@ -154,23 +154,23 @@ export const bookPlanningSchemas = {
 
     list_books: {
         name: 'list_books',
-        description: 'List all books, optionally filtered by series',
+        description: 'List books',
         inputSchema: {
             type: 'object',
             properties: {
                 series_id: {
                     type: 'integer',
-                    description: 'Filter by series ID (optional)'
+                    description: 'Series ID filter'
                 },
                 status: {
                     type: 'string',
                     enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                    description: 'Filter by book status (optional)'
+                    description: 'Status filter'
                 },
                 include_stats: {
                     type: 'boolean',
                     default: false,
-                    description: 'Include chapter and word count statistics'
+                    description: 'Include stats'
                 }
             },
             required: []

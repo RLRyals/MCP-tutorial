@@ -10,18 +10,18 @@ export const revisionSchemas = {
     // Book-level tools for final checks
     get_book: {
         name: 'get_book',
-        description: 'Get detailed information about a specific book',
+        description: 'Get book details',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'The ID of the book'
+                    description: 'Book ID'
                 },
                 include_chapters: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include chapter summary information'
+                    description: 'Include chapters'
                 }
             },
             required: ['book_id']
@@ -30,26 +30,26 @@ export const revisionSchemas = {
 
     update_book: {
         name: 'update_book',
-        description: 'Update book status and metadata after revision',
+        description: 'Update book post-revision',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'The ID of the book to update'
+                    description: 'Book ID'
                 },
                 status: {
                     type: 'string',
                     enum: ['planned', 'in_progress', 'draft', 'editing', 'final', 'published'],
-                    description: 'Book status'
+                    description: 'Status'
                 },
                 actual_word_count: {
                     type: 'integer',
-                    description: 'Current word count of the book'
+                    description: 'Current word count'
                 },
                 description: {
                     type: 'string',
-                    description: 'Book description/summary'
+                    description: 'Description'
                 }
             },
             required: ['book_id']
@@ -59,23 +59,23 @@ export const revisionSchemas = {
     // Chapter tools for revision
     get_chapter: {
         name: 'get_chapter',
-        description: 'Get detailed information about a specific chapter',
+        description: 'Get chapter details',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter'
+                    description: 'Chapter ID'
                 },
                 include_scenes: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include scene information'
+                    description: 'Include scenes'
                 },
                 include_characters: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include character presence information'
+                    description: 'Include character presence'
                 }
             },
             required: ['chapter_id']
@@ -84,21 +84,21 @@ export const revisionSchemas = {
 
     update_chapter: {
         name: 'update_chapter',
-        description: 'Update chapter after revision',
+        description: 'Update chapter post-revision',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter to update'
+                    description: 'Chapter ID'
                 },
                 title: {
                     type: 'string',
-                    description: 'Chapter title'
+                    description: 'Title'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Chapter summary'
+                    description: 'Summary'
                 },
                 word_count: {
                     type: 'integer',
@@ -107,11 +107,11 @@ export const revisionSchemas = {
                 status: {
                     type: 'string',
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Chapter writing status'
+                    description: 'Writing status'
                 },
                 writing_notes: {
                     type: 'string',
-                    description: 'Writing process notes'
+                    description: 'Writing notes'
                 }
             },
             required: ['chapter_id']
@@ -120,23 +120,23 @@ export const revisionSchemas = {
 
     list_chapters: {
         name: 'list_chapters',
-        description: 'List all chapters in a book',
+        description: 'List chapters',
         inputSchema: {
             type: 'object',
             properties: {
                 book_id: {
                     type: 'integer',
-                    description: 'ID of the book'
+                    description: 'Book ID'
                 },
                 status: {
                     type: 'string',
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Filter by chapter status (optional)'
+                    description: 'Status filter'
                 },
                 include_stats: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include word count and scene statistics'
+                    description: 'Include stats'
                 }
             },
             required: ['book_id']
@@ -146,18 +146,18 @@ export const revisionSchemas = {
     // Scene tools for revision
     get_scene: {
         name: 'get_scene',
-        description: 'Get detailed information about a specific scene',
+        description: 'Get scene details',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene'
+                    description: 'Scene ID'
                 },
                 include_characters: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include character participant details'
+                    description: 'Include character details'
                 }
             },
             required: ['scene_id']
@@ -166,21 +166,21 @@ export const revisionSchemas = {
 
     update_scene: {
         name: 'update_scene',
-        description: 'Update scene after revision',
+        description: 'Update scene post-revision',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene to update'
+                    description: 'Scene ID'
                 },
                 summary: {
                     type: 'string',
-                    description: 'Scene summary'
+                    description: 'Summary'
                 },
                 word_count: {
                     type: 'integer',
-                    description: 'Current word count for this scene'
+                    description: 'Current word count'
                 },
                 writing_status: {
                     type: 'string',
@@ -189,7 +189,7 @@ export const revisionSchemas = {
                 },
                 notes: {
                     type: 'string',
-                    description: 'General scene notes'
+                    description: 'Scene notes'
                 }
             },
             required: ['scene_id']
@@ -198,23 +198,23 @@ export const revisionSchemas = {
 
     list_scenes: {
         name: 'list_scenes',
-        description: 'List all scenes in a chapter',
+        description: 'List scenes',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter'
+                    description: 'Chapter ID'
                 },
                 writing_status: {
                     type: 'string',
                     enum: ['planned', 'outlined', 'drafted', 'revised', 'final'],
-                    description: 'Filter by writing status (optional)'
+                    description: 'Status filter'
                 },
                 include_stats: {
                     type: 'boolean',
                     default: true,  // Changed default to true for revision phase
-                    description: 'Include word count statistics'
+                    description: 'Include stats'
                 }
             },
             required: ['chapter_id']
@@ -223,17 +223,17 @@ export const revisionSchemas = {
 
     delete_scene: {
         name: 'delete_scene',
-        description: 'Delete a scene during revision',
+        description: 'Delete scene',
         inputSchema: {
             type: 'object',
             properties: {
                 scene_id: {
                     type: 'integer',
-                    description: 'ID of the scene to delete'
+                    description: 'Scene ID'
                 },
                 confirm_deletion: {
                     type: 'boolean',
-                    description: 'Must be true to confirm deletion'
+                    description: 'Confirm (must be true)'
                 }
             },
             required: ['scene_id', 'confirm_deletion']
@@ -242,24 +242,24 @@ export const revisionSchemas = {
 
     analyze_scene_flow: {
         name: 'analyze_scene_flow',
-        description: 'Analyze the flow and pacing between scenes in a chapter',
+        description: 'Analyze scene flow & pacing',
         inputSchema: {
             type: 'object',
             properties: {
                 chapter_id: {
                     type: 'integer',
-                    description: 'ID of the chapter to analyze'
+                    description: 'Chapter ID'
                 },
                 analysis_type: {
                     type: 'string',
                     enum: ['intensity_flow', 'element_distribution', 'character_presence', 'scene_balance'],
                     default: 'intensity_flow',
-                    description: 'Type of analysis to perform'
+                    description: 'Analysis type'
                 },
                 include_suggestions: {
                     type: 'boolean',
                     default: true,
-                    description: 'Include improvement suggestions'
+                    description: 'Include suggestions'
                 }
             },
             required: ['chapter_id']
