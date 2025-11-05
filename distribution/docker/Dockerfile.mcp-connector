@@ -1,0 +1,47 @@
+# MCP Connector Dockerfile
+# Builds a container that runs the Typing Mind MCP Connector
+# with all MCP writing servers
+
+FROM node:18-alpine
+
+# Install system dependencies
+RUN apk add --no-cache \
+    wget \
+    postgresql-client \
+    bash
+
+# Set working directory
+WORKDIR /app
+
+# Install Typing Mind MCP Connector globally
+RUN npm install -g @typingmind/mcp@latest
+
+# Copy package.json and install MCP server dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --only=production
+
+# Copy MCP server source code
+COPY src/ ./src/
+COPY migrations/ ./migrations/
+
+# Copy entrypoint script
+COPY distribution/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S mcp -u 1001 -G nodejs && \
+    chown -R mcp:nodejs /app
+
+# Switch to non-root user
+USER mcp
+
+# Expose MCP Connector port
+EXPOSE 50880
+
+# Health check endpoint
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:50880/health || exit 1
+
+# Use entrypoint script to handle startup
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

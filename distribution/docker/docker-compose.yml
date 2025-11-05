@@ -1,0 +1,112 @@
+services:
+  # ========================================
+  # PostgreSQL Database for MCP Writing System
+  # ========================================
+  postgres:
+    image: postgres:15
+    container_name: ${POSTGRES_CONTAINER_NAME:-mcp-distribution-db}
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_USER: ${POSTGRES_USER:-writer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Performance tuning
+      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-256MB}
+      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
+      POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM:-128MB}
+      POSTGRES_CHECKPOINT_COMPLETION_TARGET: ${POSTGRES_CHECKPOINT_COMPLETION_TARGET:-0.9}
+      POSTGRES_WAL_BUFFERS: ${POSTGRES_WAL_BUFFERS:-16MB}
+      POSTGRES_MAX_WORKER_PROCESSES: ${POSTGRES_MAX_WORKER_PROCESSES:-4}
+      POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER: ${POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER:-2}
+      POSTGRES_EFFECTIVE_IO_CONCURRENCY: ${POSTGRES_EFFECTIVE_IO_CONCURRENCY:-200}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - mcp-writing-data:/var/lib/postgresql/data
+      - ../../migrations:/docker-entrypoint-initdb.d/migrations:ro
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-writer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ========================================
+  # MCP Connector (runs all MCP servers)
+  # ========================================
+  mcp-connector:
+    build:
+      context: ../..
+      dockerfile: distribution/docker/Dockerfile.mcp-connector
+    image: mcp-writing-connector:latest
+    container_name: mcp-connector
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # MCP Connector authentication
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
+      PORT: ${MCP_CONNECTOR_PORT:-50880}
+
+      # Database connection (uses container name for internal DNS)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_USER: ${POSTGRES_USER:-writer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # MCP server configuration
+      NODE_ENV: ${NODE_ENV:-development}
+      INCLUDE_AUTHOR_SERVER: ${INCLUDE_AUTHOR_SERVER:-true}
+      MCP_STDIO_MODE: 'false'
+    ports:
+      - "${MCP_CONNECTOR_PORT:-50880}:50880"
+    volumes:
+      # Mount source as read-only for development
+      - ../../src:/app/src:ro
+      - ../../migrations:/app/migrations:ro
+      # Preserve node_modules in container
+      - /app/node_modules
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:50880/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 15s
+
+  # ========================================
+  # Typing Mind Static Web Server (Optional)
+  # Uncomment to enable built-in web server
+  # ========================================
+  # typing-mind-web:
+  #   image: nginx:alpine
+  #   container_name: typing-mind-web
+  #   restart: unless-stopped
+  #   ports:
+  #     - "${TYPING_MIND_PORT:-3000}:80"
+  #   volumes:
+  #     - ${TYPING_MIND_DIR:-./typing-mind-static}:/usr/share/nginx/html:ro
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   networks:
+  #     - mcp-network
+  #   healthcheck:
+  #     test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+  #     interval: 30s
+  #     timeout: 3s
+  #     retries: 3
+
+volumes:
+  mcp-writing-data:
+    name: mcp-writing-data
+
+networks:
+  mcp-network:
+    name: mcp-series-network
+    external: true

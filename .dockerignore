@@ -1,0 +1,58 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+docs/
+README*
+
+# Node modules (will be installed in container)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files (use .env.example instead)
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Test files
+test/
+tests/
+**/*.test.js
+**/*.spec.js
+coverage/
+
+# Build artifacts
+dist/
+build/
+*.log
+
+# Distribution artifacts (but keep docker files)
+distribution/test-docker-stack.ps1
+distribution/generate-env.ps1
+distribution/*.md
+scripts/
+
+# Typing Mind files (managed separately)
+typing-mind-static/
+
+# Docker files (avoid recursion)
+Dockerfile
+docker-compose*.yml
+
+# Claude and config files
+.claude/
+config/
+claude_skills/
