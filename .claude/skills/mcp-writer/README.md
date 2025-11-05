@@ -2,6 +2,15 @@
 
 A Claude Code skill for interacting with MCP (Model Context Protocol) servers through **code execution** instead of traditional configuration files.
 
+## 🚀 Quick Start
+
+**No configuration needed!** This skill is automatically discovered by Claude Desktop/Code.
+
+Just ask Claude:
+> "Use the mcp-writer skill to help me set up worldbuilding for my new fantasy series"
+
+See [HOW_TO_USE.md](HOW_TO_USE.md) for details on how skills work.
+
 ## What This Skill Does
 
 This skill enables you to:
@@ -171,12 +180,39 @@ console.log('Batch results:', results);
 await helper.close();
 ```
 
+## 📚 Practical Use Case: Series Planning with Worldbuilding
+
+This skill shines when you need to add lots of worldbuilding data during series planning:
+
+```javascript
+// What you tell Claude:
+"I'm planning a fantasy series with 5 kingdoms, 7 magic schools,
+3 religions, and 20 key locations. Help me import all this data."
+
+// Claude uses the skill to:
+1. Create the series plan
+2. Batch import all kingdoms with cultures
+3. Set up the complete magic system
+4. Add all religions and beliefs
+5. Create location database
+6. Link everything together
+
+// You get:
+✅ All data validated and imported
+✅ Relationships automatically created
+✅ Ready to start character and plot development
+```
+
+See [worldbuilding-workflow.js](worldbuilding-workflow.js) for a complete working example!
+
 ## Files in This Skill
 
 - **mcp-writer.md** - Main skill definition with full documentation
 - **mcp-helper.js** - JavaScript helper library for MCP interactions
 - **examples.js** - Comprehensive usage examples
 - **test-discovery.js** - Test suite for server discovery
+- **worldbuilding-workflow.js** - Practical worldbuilding import example
+- **HOW_TO_USE.md** - How to use skills in Claude Desktop/Code
 - **README.md** - This file
 
 ## Benefits
