@@ -1,5 +1,13 @@
 # MCP Writer Skill
 
+⚠️ **IMPORTANT:** This skill is for **Claude Code** (CLI/VS Code), NOT **Claude Desktop** (chat app).
+
+👉 **See [CLAUDE_DESKTOP_VS_CODE.md](CLAUDE_DESKTOP_VS_CODE.md) for the critical distinction.**
+
+For Claude Desktop users: Use traditional MCP configuration in `claude_desktop_config.json` instead.
+
+---
+
 A Claude Code skill for interacting with MCP (Model Context Protocol) servers through **code execution** instead of traditional configuration files.
 
 ## What This Skill Does
