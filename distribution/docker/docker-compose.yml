@@ -1,41 +1,7 @@
 services:
   # ========================================
-  # PostgreSQL Database for MCP Writing System
-  # ========================================
-  postgres:
-    image: postgres:15
-    container_name: ${POSTGRES_CONTAINER_NAME:-mcp-distribution-db}
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
-      POSTGRES_USER: ${POSTGRES_USER:-writer}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      # Performance tuning
-      POSTGRES_SHARED_BUFFERS: ${POSTGRES_SHARED_BUFFERS:-256MB}
-      POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
-      POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM:-128MB}
-      POSTGRES_CHECKPOINT_COMPLETION_TARGET: ${POSTGRES_CHECKPOINT_COMPLETION_TARGET:-0.9}
-      POSTGRES_WAL_BUFFERS: ${POSTGRES_WAL_BUFFERS:-16MB}
-      POSTGRES_MAX_WORKER_PROCESSES: ${POSTGRES_MAX_WORKER_PROCESSES:-4}
-      POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER: ${POSTGRES_MAX_PARALLEL_WORKERS_PER_GATHER:-2}
-      POSTGRES_EFFECTIVE_IO_CONCURRENCY: ${POSTGRES_EFFECTIVE_IO_CONCURRENCY:-200}
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
-    volumes:
-      - mcp-writing-data:/var/lib/postgresql/data
-      - ../../migrations:/docker-entrypoint-initdb.d/migrations:ro
-      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
-    networks:
-      - mcp-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-writer}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
-  # ========================================
   # MCP Connector (runs all MCP servers)
+  # Connects to existing database: mcp-series-db-2
   # ========================================
   mcp-connector:
     build:
@@ -44,19 +10,16 @@ services:
     image: mcp-writing-connector:latest
     container_name: mcp-connector
     restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
     environment:
       # MCP Connector authentication
       MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
       PORT: ${MCP_CONNECTOR_PORT:-50880}
 
-      # Database connection (uses container name for internal DNS)
-      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-mcp_writing_db}
-      POSTGRES_HOST: postgres
+      # Database connection (uses existing container name)
+      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME:-mcp-series-db-2}:5432/${POSTGRES_DB:-mcp_series}
+      POSTGRES_HOST: ${POSTGRES_CONTAINER_NAME:-mcp-series-db-2}
       POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_DB: ${POSTGRES_DB:-mcp_series}
       POSTGRES_USER: ${POSTGRES_USER:-writer}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
 
@@ -101,10 +64,6 @@ services:
   #     interval: 30s
   #     timeout: 3s
   #     retries: 3
-
-volumes:
-  mcp-writing-data:
-    name: mcp-writing-data
 
 networks:
   mcp-network:

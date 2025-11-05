@@ -85,19 +85,18 @@ Push-Location $dockerDir
             $attempt++
             Write-Host "  Attempt $attempt/$maxAttempts..." -NoNewline
 
-            $postgresHealth = docker inspect --format='{{.State.Health.Status}}' mcp-writing-db 2>$null
             $connectorHealth = docker inspect --format='{{.State.Health.Status}}' mcp-connector 2>$null
 
-            if ($postgresHealth -eq "healthy" -and $connectorHealth -eq "healthy") {
-                Write-Host " " -ForegroundColor Green
+            if ($connectorHealth -eq "healthy") {
+                Write-Host " [OK]" -ForegroundColor Green
                 return $true
             }
 
-            Write-Host " PostgreSQL: $postgresHealth, MCP Connector: $connectorHealth" -ForegroundColor Gray
+            Write-Host " MCP Connector: $connectorHealth" -ForegroundColor Gray
             Start-Sleep -Seconds 2
         }
 
-        Write-Host "`n Services did not become healthy in time" -ForegroundColor Red
+        Write-Host "`n[FAIL] MCP Connector did not become healthy in time" -ForegroundColor Red
         return $false
     }
 
