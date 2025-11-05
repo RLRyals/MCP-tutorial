@@ -1,54 +1,55 @@
-# Quick Start - MCP Connector with Existing Database
+# Quick Start - MCP Writing System
 
-This distribution connects the MCP Connector to your **existing database** (`mcp-series-db-2`).
+This distribution provides a **complete standalone setup** with PostgreSQL database and MCP Connector.
 
 ## ✅ What This Does
 
-- Builds and runs **MCP Connector only** (no new PostgreSQL container)
-- Connects to your existing `mcp-series-db-2` database
-- Runs all 9 MCP servers on port 50880
-- Uses your existing data and migrations
+- Builds and runs **PostgreSQL database** (`mcp-writing-db`)
+- Builds and runs **MCP Connector** with all 9 MCP servers
+- Runs MCP Connector on port 50880
+- Automatically applies all database migrations
+- Ready for Typing Mind integration
 
 ## 🚀 Quick Start (3 Steps)
 
-### Step 1: Make sure your existing database is running
-
-```powershell
-# Check if your database container is running
-docker ps | findstr mcp-series-db-2
-
-# If not running, start it with your existing script
-.\scripts\start-database.ps1
-```
-
-### Step 2: Copy your existing .env file
+### Step 1: Generate environment configuration
 
 ```powershell
 cd distribution
 
-# Copy your current .env (which has the right credentials)
-copy ..\.env .env
+# Generate .env file with secure random credentials
+.\generate-env.ps1
 
-# Or use the example
-copy .env.example .env
-# Then edit to match your existing database password
+# This creates .env with auto-generated secure passwords
 ```
 
-### Step 3: Start the MCP Connector
+### Step 2: Start the complete stack
 
 ```powershell
 cd docker
 docker-compose --env-file ../.env up -d --build
 
 # Watch the logs
-docker-compose --env-file ../.env logs -f mcp-connector
+docker-compose --env-file ../.env logs -f
+```
+
+### Step 3: Verify it's working
+
+```powershell
+# From the distribution folder
+cd ..
+.\test-docker-stack.ps1 -Verbose
+
+# Or check manually
+docker ps
+# You should see: mcp-writing-db and mcp-connector
 ```
 
 ## 🧪 Test It
 
 ```powershell
 # From the distribution folder
-.\test-docker-stack.ps1 -Build -Verbose
+.\test-docker-stack.ps1 -Verbose
 ```
 
 ## ✅ Success Looks Like
@@ -108,21 +109,26 @@ After successful start:
 ### Container won't start?
 
 ```powershell
-# Check if existing database is running
-docker ps | findstr mcp-series-db-2
+# Check if database is running
+docker ps | findstr mcp-writing-db
 
 # Check logs
+docker logs mcp-writing-db
 docker logs mcp-connector
 
-# Common fix: Restart database first
-docker restart mcp-series-db-2
+# Restart both containers
+cd docker
+docker-compose --env-file ../.env restart
 ```
 
 ### Can't connect to database?
 
 ```powershell
 # Test database connection from MCP Connector
-docker exec mcp-connector psql -h mcp-series-db-2 -U writer -d mcp_series -c "SELECT 1;"
+docker exec mcp-connector psql -h mcp-writing-db -U writer -d mcp_writing_db -c "SELECT 1;"
+
+# Test directly from database container
+docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT 1;"
 
 # If fails, check .env has correct password
 cat ../.env | findstr POSTGRES_PASSWORD
@@ -147,19 +153,24 @@ After start:
 
 ```
 ┌─────────────────────────────────────┐
-│  Existing Database (already running)│
-│  Container: mcp-series-db-2         │
+│  PostgreSQL Database                │
+│  Container: mcp-writing-db          │
 │  Port: 5432                         │
-│  Database: mcp_series               │
+│  Database: mcp_writing_db           │
+│  User: writer                       │
 └──────────────┬──────────────────────┘
                │
                │ (connects to)
                │
 ┌──────────────▼──────────────────────┐
-│  NEW: MCP Connector                 │
+│  MCP Connector                      │
 │  Container: mcp-connector           │
 │  Port: 50880                        │
 │  9 MCP Servers inside               │
+│  - book-planning-server             │
+│  - chapter-planning-server          │
+│  - character-planning-server        │
+│  - and 6 more...                    │
 └─────────────────────────────────────┘
 ```
 
@@ -187,11 +198,12 @@ docker-compose --env-file ../.env logs -f mcp-connector
 ## 🎯 Next Steps
 
 Once working:
-1. ✅ Test with Typing Mind
+1. ✅ Test with Typing Mind (see connection info above)
 2. ✅ Verify all 9 MCP servers work
-3. ✅ Ready to build Electron app wrapper!
+3. ✅ Create some test data (books, chapters, characters)
+4. ✅ Ready to build Electron app wrapper!
 
 ---
 
-**Need the full setup with standalone PostgreSQL?**
-See `README-distribution.md` for the full 2-container stack.
+**For detailed documentation and advanced configuration:**
+See `README-distribution.md` for comprehensive setup guide.

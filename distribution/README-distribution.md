@@ -35,22 +35,22 @@ distribution/
 ### Step 1: Configure Environment
 
 ```powershell
-# Copy example environment file
-cp .env.example .env
+# Use the automated script to generate secure credentials
+.\generate-env.ps1
 
-# Edit .env and set secure passwords
-# REQUIRED:
-#   - POSTGRES_PASSWORD (database password)
-#   - MCP_AUTH_TOKEN (random secure token)
+# This creates .env with auto-generated secure passwords
+# - POSTGRES_PASSWORD (database password)
+# - MCP_AUTH_TOKEN (random secure token)
 ```
 
-**Generate secure token:**
+**Or generate manually:**
 ```powershell
-# PowerShell
+# PowerShell - generate secure token
 -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 32 | ForEach-Object {[char]$_})
 
-# Or use OpenSSL
-openssl rand -hex 32
+# Copy example and edit
+cp .env.example .env
+notepad .env
 ```
 
 ### Step 2: Start Docker Stack
@@ -96,16 +96,20 @@ docker ps
 ## What's Running?
 
 ### Container 1: PostgreSQL Database
+- **Container Name:** mcp-writing-db
 - **Port:** 5432
 - **Database:** mcp_writing_db
+- **User:** writer
 - **Purpose:** Stores all your writing data
-- **Migrations:** 21 SQL migrations applied automatically
+- **Migrations:** 21 SQL migrations applied automatically on first run
 
 ### Container 2: MCP Connector
+- **Container Name:** mcp-connector
 - **Port:** 50880
 - **Purpose:** Runs all MCP servers and exposes REST API
 - **Servers:** 9 MCP servers for writing (book planning, character planning, etc.)
 - **Auth:** Bearer token authentication
+- **Health Check:** http://localhost:50880/health
 
 ## Available MCP Servers
 
