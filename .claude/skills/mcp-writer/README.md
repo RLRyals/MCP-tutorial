@@ -4,7 +4,20 @@ A Claude Code skill for interacting with MCP (Model Context Protocol) servers th
 
 ## 🚀 Quick Start
 
-**No configuration needed!** This skill is automatically discovered by Claude Desktop/Code.
+### Step 1: Install Globally
+
+```bash
+# From the MCP-tutorial directory
+node .claude/skills/mcp-writer/install-global.js
+```
+
+This makes the skill available in Claude Desktop from ANY directory.
+
+See [INSTALL_GLOBAL.md](INSTALL_GLOBAL.md) for manual installation or [QUICK_START.md](QUICK_START.md) for the fastest path.
+
+### Step 2: Restart Claude Desktop
+
+### Step 3: Use It!
 
 Just ask Claude:
 > "Use the mcp-writer skill to help me set up worldbuilding for my new fantasy series"
