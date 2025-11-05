@@ -28,17 +28,15 @@ distribution/
 
 ```powershell
 # Navigate to distribution folder
-cd c:\github\MCP-Tutorial-New\MCP-tutorial\distribution
+cd distribution
 
-# Create .env file
-cp .env.example .env
+# Generate .env file with secure credentials
+.\generate-env.ps1
 
-# IMPORTANT: Edit .env and set:
-#   - POSTGRES_PASSWORD (secure password)
-#   - MCP_AUTH_TOKEN (random 32+ character token)
+# This creates .env with auto-generated secure passwords
 
 # Run test script
-.\test-docker-stack.ps1 -Build -Verbose
+.\test-docker-stack.ps1 -Verbose
 ```
 
 ### 2. What Gets Tested
@@ -81,28 +79,31 @@ Auth Token: [your-token-here]
 ```
 ┌─────────────────────────────────────────┐
 │         Docker Network                  │
-│      (mcp-series-network)               │
+│         (mcp-network)                   │
 │                                         │
 │  ┌───────────────────────────────────┐ │
 │  │ PostgreSQL 15                     │ │
+│  │ Container: mcp-writing-db         │ │
 │  │ Port: 5432                        │ │
 │  │ Database: mcp_writing_db          │ │
+│  │ User: writer                      │ │
 │  │ Volume: mcp-writing-data          │ │
 │  └───────────────┬───────────────────┘ │
 │                  │                       │
 │  ┌───────────────▼───────────────────┐ │
 │  │ MCP Connector                     │ │
+│  │ Container: mcp-connector          │ │
 │  │ Port: 50880                       │ │
 │  │ 9 MCP Servers:                    │ │
-│  │ • book-planning                   │ │
-│  │ • chapter-planning                │ │
-│  │ • character-planning              │ │
-│  │ • core-continuity                 │ │
-│  │ • reporting                       │ │
-│  │ • review                          │ │
-│  │ • scene                           │ │
-│  │ • series-planning                 │ │
-│  │ • author (optional)               │ │
+│  │ • book-planning-server            │ │
+│  │ • chapter-planning-server         │ │
+│  │ • character-planning-server       │ │
+│  │ • core-continuity-server          │ │
+│  │ • reporting-server                │ │
+│  │ • review-server                   │ │
+│  │ • scene-server                    │ │
+│  │ • series-planning-server          │ │
+│  │ • author-server (optional)        │ │
 │  └───────────────────────────────────┘ │
 │                                         │
 └─────────────────────────────────────────┘
