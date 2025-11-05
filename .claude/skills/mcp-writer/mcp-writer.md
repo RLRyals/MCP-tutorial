@@ -18,31 +18,43 @@ Instead of connecting MCPs directly in Claude Desktop or Typing Mind config file
 - **Save intermediate results** and develop reusable functions
 - **Reduce token usage** by up to 98.7% (150K → 2K tokens)
 
-## Available MCP Servers
+## MCP Server Architecture
 
-### Core Writing MCPs (`src/mcps/`)
-- **author-server** - Manage author profiles and metadata
-- **series-server** - Organize book series and collections
-- **book-server** - Track individual books and volumes
-- **character-server** - Character profiles, attributes, knowledge
-- **plot-server** - Plot structures and story arcs
-- **world-server** - Worldbuilding and setting management
-- **timeline-server** - Event timelines and chronology
-- **trope-server** - Literary tropes and patterns
-- **relationship-server** - Character relationships
-- **writing-server** - Writing sessions and productivity
-- **metadata-server** - Flexible metadata storage
-- **story-analysis-server** - Story analysis tools
+This project has two types of MCP servers:
 
-### Configuration MCPs (`src/config-mcps/`)
-- **series-planning-server** - Series planning tools
-- **book-planning-server** - Book structure planning
-- **chapter-planning-server** - Chapter organization
-- **character-planning-server** - Character development planning
-- **scene-server** - Scene management
-- **review-server** - Review and feedback tools
-- **core-continuity-server** - Continuity tracking
-- **reporting-server** - Analytics and reporting
+### 🔷 Database-Organized MCPs (`src/mcps/`)
+These servers are organized by **database structure** (series, books, characters, plots, etc.).
+
+⚠️ **Note:** Only **author-server** from this directory is actively used. The other servers here serve as reference implementations. Using them alongside config-mcps would cause duplication.
+
+**Available (Reference Only - Except Author):**
+- **author-server** ✅ **ACTIVELY USED** - Manage author profiles and metadata
+- series-server, book-server, character-server, plot-server (reference only)
+- world-server, timeline-server, trope-server, relationship-server (reference only)
+- writing-server, metadata-server, story-analysis-server (reference only)
+
+### 🔶 Writing Phase MCPs (`src/config-mcps/`)
+These servers **reorganize the database tools by writing phases** and workflow. These are the primary servers to use for writing workflows.
+
+✅ **ACTIVELY USED - These are the main servers for your writing workflow:**
+- **series-planning-server** - Series planning and structure
+- **book-planning-server** - Book structure and planning
+- **chapter-planning-server** - Chapter organization and flow
+- **character-planning-server** - Character development through writing phases
+- **scene-server** - Scene management across the writing process
+- **review-server** - Review and feedback workflows
+- **core-continuity-server** - Continuity tracking throughout writing
+- **reporting-server** - Analytics and reporting on writing progress
+
+### 💡 Which Servers to Use?
+
+**For actual writing workflows, use:**
+- ✅ `author-server` (from `src/mcps/`)
+- ✅ All 8 servers in `src/config-mcps/` (organized by writing phases)
+
+**Avoid using both:**
+- ❌ Don't mix `src/mcps/*` and `src/config-mcps/*` (except author) - causes duplication
+- The config-mcps already include the functionality from mcps, just reorganized by workflow
 
 ## How to Use This Skill
 
@@ -51,20 +63,20 @@ Instead of connecting MCPs directly in Claude Desktop or Typing Mind config file
 Write JavaScript code that imports and calls MCP server classes directly:
 
 ```javascript
-// Import the MCP server
-import { SeriesMCPServer } from './src/mcps/series-server/index.js';
+// Import a writing phase MCP server
+import { SeriesPlanningServer } from './src/config-mcps/series-planning-server/index.js';
 
 // Create an instance
-const server = new SeriesMCPServer();
+const server = new SeriesPlanningServer();
 
 // Get available tools
 const tools = server.getTools();
 console.log('Available tools:', tools.map(t => t.name));
 
 // Call a tool handler directly
-const handler = server.getToolHandler('list_series');
-const result = await handler({ limit: 10 });
-console.log('Series:', result);
+const handler = server.getToolHandler('plan_series_structure');
+const result = await handler({ title: 'My New Series', genre: 'Fantasy' });
+console.log('Series plan:', result);
 
 // Clean up
 await server.db.close();
@@ -122,17 +134,17 @@ const helper = new MCPHelper();
 const servers = await helper.discoverServers();
 console.log('Available servers:', servers);
 
-// Connect to a specific server
-await helper.connectToServer('series-server');
+// Connect to a writing phase server
+await helper.connectToServer('series-planning-server');
 
 // Call a tool
-const series = await helper.callTool('series-server', 'list_series', { limit: 10 });
-console.log('Series:', series);
+const seriesPlans = await helper.callTool('series-planning-server', 'list_series_plans', {});
+console.log('Series plans:', seriesPlans);
 
-// Batch operations
-const results = await helper.batchCall('series-server', [
-  { tool: 'list_series', args: {} },
-  { tool: 'get_series', args: { series_id: 1 } }
+// Batch operations with author-server
+const results = await helper.batchCall('author-server', [
+  { tool: 'list_authors', args: {} },
+  { tool: 'get_author', args: { author_id: 1 } }
 ]);
 
 // Cleanup
@@ -141,71 +153,71 @@ await helper.close();
 
 ## Usage Examples
 
-### Example 1: List All Series
+### Example 1: Manage Authors
 
 ```javascript
-import { SeriesMCPServer } from './src/mcps/series-server/index.js';
+import { AuthorMCPServer } from './src/mcps/author-server/index.js';
 
-const server = new SeriesMCPServer();
-const handler = server.getToolHandler('list_series');
-const series = await handler({});
+const server = new AuthorMCPServer();
+const handler = server.getToolHandler('list_authors');
+const authors = await handler({});
 
-console.log(`Found ${series.length} series:`);
-series.forEach(s => {
-  console.log(`- ${s.title} (ID: ${s.series_id})`);
+console.log(`Found ${authors.length} authors:`);
+authors.forEach(a => {
+  console.log(`- ${a.name} (ID: ${a.author_id})`);
 });
 
 await server.db.close();
 ```
 
-### Example 2: Create a New Character
+### Example 2: Plan a New Series
 
 ```javascript
-import { CharacterMCPServer } from './src/mcps/character-server/index.js';
+import { SeriesPlanningServer } from './src/config-mcps/series-planning-server/index.js';
 
-const server = new CharacterMCPServer();
-const handler = server.getToolHandler('create_character');
+const server = new SeriesPlanningServer();
+const handler = server.getToolHandler('create_series_plan');
 
-const newCharacter = await handler({
-  series_id: 1,
-  name: 'Elena Nightshade',
-  role: 'protagonist',
-  description: 'A skilled mage with a mysterious past'
+const seriesPlan = await handler({
+  title: 'The Shadow Chronicles',
+  genre: 'Fantasy',
+  planned_books: 3,
+  target_audience: 'Young Adult'
 });
 
-console.log('Created character:', newCharacter);
+console.log('Created series plan:', seriesPlan);
 await server.db.close();
 ```
 
-### Example 3: Multi-Server Workflow
+### Example 3: Multi-Phase Writing Workflow
 
 ```javascript
-import { SeriesMCPServer } from './src/mcps/series-server/index.js';
-import { CharacterMCPServer } from './src/mcps/character-server/index.js';
-import { PlotMCPServer } from './src/mcps/plot-server/index.js';
+import { SeriesPlanningServer } from './src/config-mcps/series-planning-server/index.js';
+import { CharacterPlanningServer } from './src/config-mcps/character-planning-server/index.js';
+import { BookPlanningServer } from './src/config-mcps/book-planning-server/index.js';
 
-// Initialize servers
-const seriesServer = new SeriesMCPServer();
-const charServer = new CharacterMCPServer();
-const plotServer = new PlotMCPServer();
+// Initialize writing phase servers
+const seriesServer = new SeriesPlanningServer();
+const charServer = new CharacterPlanningServer();
+const bookServer = new BookPlanningServer();
 
-// Get series
-const series = await seriesServer.getToolHandler('get_series')({ series_id: 1 });
-console.log('Working with series:', series.title);
+// Plan the series
+const series = await seriesServer.getToolHandler('get_series_plan')({ series_id: 1 });
+console.log('Working on series:', series.title);
 
-// Get characters in series
-const characters = await charServer.getToolHandler('list_characters')({ series_id: 1 });
-console.log(`Found ${characters.length} characters`);
+// Plan characters for this phase
+const charPlans = await charServer.getToolHandler('list_character_plans')({ series_id: 1 });
+console.log(`Found ${charPlans.length} character plans`);
 
-// Get plot arcs
-const plots = await plotServer.getToolHandler('list_plot_arcs')({ series_id: 1 });
-console.log(`Found ${plots.length} plot arcs`);
+// Plan books in the series
+const bookPlans = await bookServer.getToolHandler('list_book_plans')({ series_id: 1 });
+console.log(`Found ${bookPlans.length} book plans`);
 
 // Cleanup
 await Promise.all([
   seriesServer.db.close(),
   charServer.db.close(),
-  plotServer.db.close()
+  bookServer.db.close()
 ]);
 ```
 

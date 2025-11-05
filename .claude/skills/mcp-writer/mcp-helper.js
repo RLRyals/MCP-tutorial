@@ -25,35 +25,50 @@ export class MCPHelper {
 
     /**
      * Discover all available MCP servers in the project
+     * @param {Object} options - Discovery options
+     * @param {boolean} options.includeReference - Include reference-only servers (default: true)
      * @returns {Promise<Array>} List of available MCP servers with metadata
      */
-    async discoverServers() {
+    async discoverServers({ includeReference = true } = {}) {
         const servers = [];
 
-        // Scan main MCPs
+        // Scan main MCPs (database-organized)
         try {
             const mainServers = readdirSync(this.mcpPaths.main, { withFileTypes: true })
                 .filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('.'))
                 .map(dirent => ({
                     name: dirent.name,
                     path: join(this.mcpPaths.main, dirent.name, 'index.js'),
-                    type: 'main',
-                    category: 'writing-tool'
+                    type: 'database-organized',
+                    category: 'database-structure',
+                    // Only author-server is actively used from this directory
+                    recommended: dirent.name === 'author-server',
+                    usage: dirent.name === 'author-server' ? 'active' : 'reference',
+                    description: this.getServerDescription(dirent.name, 'main')
                 }));
-            servers.push(...mainServers);
+
+            if (includeReference) {
+                servers.push(...mainServers);
+            } else {
+                // Only include author-server when reference servers are excluded
+                servers.push(...mainServers.filter(s => s.usage === 'active'));
+            }
         } catch (error) {
             console.error('Error scanning main MCPs:', error.message);
         }
 
-        // Scan config MCPs
+        // Scan config MCPs (writing-phase organized) - all are actively used
         try {
             const configServers = readdirSync(this.mcpPaths.config, { withFileTypes: true })
                 .filter(dirent => dirent.isDirectory() && !dirent.name.startsWith('.'))
                 .map(dirent => ({
                     name: dirent.name,
                     path: join(this.mcpPaths.config, dirent.name, 'index.js'),
-                    type: 'config',
-                    category: 'configuration'
+                    type: 'writing-phase',
+                    category: 'workflow-organized',
+                    recommended: true, // All config-mcps are recommended
+                    usage: 'active',
+                    description: this.getServerDescription(dirent.name, 'config')
                 }));
             servers.push(...configServers);
         } catch (error) {
@@ -61,6 +76,51 @@ export class MCPHelper {
         }
 
         return servers;
+    }
+
+    /**
+     * Get recommended servers only (author-server + all config-mcps)
+     * @returns {Promise<Array>} List of recommended servers
+     */
+    async discoverRecommendedServers() {
+        const allServers = await this.discoverServers({ includeReference: false });
+        return allServers.filter(s => s.recommended);
+    }
+
+    /**
+     * Get server description based on name
+     * @param {string} name - Server name
+     * @param {string} type - Server type (main or config)
+     * @returns {string} Description
+     */
+    getServerDescription(name, type) {
+        const descriptions = {
+            // Main (database-organized)
+            'author-server': 'Manage author profiles and metadata',
+            'series-server': 'Database-organized series management (reference)',
+            'book-server': 'Database-organized book tracking (reference)',
+            'character-server': 'Database-organized character data (reference)',
+            'plot-server': 'Database-organized plot structures (reference)',
+            'world-server': 'Database-organized worldbuilding (reference)',
+            'timeline-server': 'Database-organized timeline data (reference)',
+            'trope-server': 'Database-organized trope tracking (reference)',
+            'relationship-server': 'Database-organized relationships (reference)',
+            'writing-server': 'Database-organized writing sessions (reference)',
+            'metadata-server': 'Database-organized metadata storage (reference)',
+            'story-analysis-server': 'Database-organized story analysis (reference)',
+
+            // Config (writing-phase organized)
+            'series-planning-server': 'Series planning and structure workflows',
+            'book-planning-server': 'Book structure planning workflows',
+            'chapter-planning-server': 'Chapter organization workflows',
+            'charater-planning-server': 'Character development planning workflows',
+            'scene-server': 'Scene management across writing phases',
+            'review-server': 'Review and feedback workflows',
+            'core-continuity-server': 'Continuity tracking throughout writing',
+            'reporting-server': 'Analytics and reporting on writing progress'
+        };
+
+        return descriptions[name] || `${name} - No description available`;
     }
 
     /**
