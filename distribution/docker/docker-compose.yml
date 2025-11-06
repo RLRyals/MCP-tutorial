@@ -19,7 +19,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - ../migrations:/migrations:ro
     networks:
       - mcp-network
     healthcheck:
