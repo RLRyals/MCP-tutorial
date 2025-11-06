@@ -2264,43 +2264,10 @@ BEGIN
 
     -- Re-add with SET NULL - preserve knowledge but remove book reference
     ALTER TABLE character_knowledge
-        ADD CONSTRAINT character_knowledge_learned_book_id_fkey 
-        FOREIGN KEY (learned_book_id) 
-        REFERENCES books(id) 
+        ADD CONSTRAINT character_knowledge_learned_book_id_fkey
+        FOREIGN KEY (learned_book_id)
+        REFERENCES books(id)
         ON DELETE SET NULL;
-
-    -- Update character_throughlines table
-    ALTER TABLE character_throughlines
-        DROP CONSTRAINT IF EXISTS character_throughlines_book_id_fkey;
-
-    -- Re-add with CASCADE - throughlines are specific to a book
-    ALTER TABLE character_throughlines
-        ADD CONSTRAINT character_throughlines_book_id_fkey 
-        FOREIGN KEY (book_id) 
-        REFERENCES books(id) 
-        ON DELETE CASCADE;
-
-    -- Update story_appreciations table
-    ALTER TABLE story_appreciations
-        DROP CONSTRAINT IF EXISTS story_appreciations_book_id_fkey;
-
-    -- Re-add with CASCADE - appreciations are specific to a book
-    ALTER TABLE story_appreciations
-        ADD CONSTRAINT story_appreciations_book_id_fkey 
-        FOREIGN KEY (book_id) 
-        REFERENCES books(id) 
-        ON DELETE CASCADE;
-
-    -- Update problem_solutions table
-    ALTER TABLE problem_solutions
-        DROP CONSTRAINT IF EXISTS problem_solutions_book_id_fkey;
-
-    -- Re-add with CASCADE - problem solutions are specific to a book
-    ALTER TABLE problem_solutions
-        ADD CONSTRAINT problem_solutions_book_id_fkey 
-        FOREIGN KEY (book_id) 
-        REFERENCES books(id) 
-        ON DELETE CASCADE;
 
     -- Update relationship_arcs table
     ALTER TABLE relationship_arcs
