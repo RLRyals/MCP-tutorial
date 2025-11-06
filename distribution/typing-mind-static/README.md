@@ -1,57 +1,107 @@
 # Typing Mind Static Files
 
-This directory should contain the Typing Mind static files for local hosting.
+This directory contains the self-hosted version of Typing Mind from the official GitHub repository.
 
-## Setup Required
+## Source
 
-**This directory is currently empty.** You need to:
+These files are from: https://github.com/TypingMind/typingmind
 
-1. **Purchase Typing Mind** (if you haven't already)
-   - Visit: https://www.typingmind.com/pricing
-   - Get the Community License for self-hosting
+**License:** Proprietary - You may use and deploy the compiled code, but you may not modify or redistribute it.
 
-2. **Download the static files** from your Typing Mind account
+## Contents
 
-3. **Extract the files here** so the structure looks like:
+- **729 files** (~63MB)
+- Compiled static web application
+- Includes: HTML, CSS, JavaScript, images, fonts, and icons
+
+## Setup
+
+These files are already in place and ready to use!
+
+1. **Start Docker stack:**
+   ```bash
+   cd docker
+   docker-compose up -d
    ```
-   typing-mind-static/
-   ├── index.html          ← Must be here!
-   ├── assets/
-   │   ├── css/
-   │   ├── js/
-   │   └── images/
-   ├── favicon.ico
-   └── (other files)
-   ```
 
-## Full Instructions
+2. **Access Typing Mind:**
+   - Open browser to: http://localhost:3000
 
-See **`TYPING-MIND-SETUP.md`** in the parent directory for complete setup instructions.
+3. **First-time setup:**
+   - Enter your API keys for AI models (ChatGPT, Claude, etc.)
+   - Enter your Typing Mind license key (if you have one)
+   - Configure MCP Connector:
+     - URL: `http://localhost:50880`
+     - Token: (from `.env` file - `MCP_AUTH_TOKEN`)
 
-## Quick Start
+## Requirements
+
+- **License Key:** Required for full features (get from https://www.typingmind.com)
+- **API Keys:** OpenAI, Anthropic, or other AI provider API keys
+- **MCP Connector:** Already configured in docker-compose.yml
+
+## Community License
+
+With the **Community License**, you get:
+- Self-hosted version (these files)
+- Full access to Typing Mind features
+- Local deployment
+- MCP integration support
+
+## Updating
+
+To update to the latest version:
 
 ```bash
-# After downloading Typing Mind ZIP file:
-
-# Windows PowerShell
-Expand-Archive -Path "$env:USERPROFILE\Downloads\typingmind-static.zip" -DestinationPath "."
-
-# Mac/Linux
-unzip ~/Downloads/typingmind-static.zip -d .
-
-# Verify
-ls index.html
-# Should exist!
+cd /tmp
+git clone https://github.com/TypingMind/typingmind.git
+cp -r typingmind/src/* /path/to/distribution/typing-mind-static/
+cd /path/to/distribution/docker
+docker-compose restart typing-mind-web
 ```
 
-## Access After Setup
+## Structure
 
-Once files are in place and Docker is running:
+```
+typing-mind-static/
+├── index.html           # Main entry point
+├── 404.html            # Error page
+├── _next/              # Next.js build artifacts
+├── app/                # Application pages
+├── assets/             # Fonts, images, CSS, JS
+├── *.png              # Various icons and images
+└── *.ico              # Favicons
+```
 
-**Access Typing Mind at:** http://localhost:3000
+## Served By
 
-The MCP Connector will be pre-configured at `http://localhost:50880`
+The `typing-mind-web` service in docker-compose.yml serves these files using nginx:
+- **Port:** 3000
+- **Image:** nginx:alpine
+- **Config:** ../docker/nginx.conf
+- **Mode:** Read-only
+
+## Troubleshooting
+
+### Blank page or 404
+
+Make sure index.html exists:
+```bash
+ls -la distribution/typing-mind-static/index.html
+```
+
+### "License key required" error
+
+This is normal. You need to enter your license key in the Typing Mind UI on first use.
+
+### Can't connect to MCP Connector
+
+Check that MCP Connector is running:
+```bash
+curl http://localhost:50880/ping
+# Should return: {"status":"ok"}
+```
 
 ---
 
-**Note:** This directory is intentionally empty in the repository. Each user must download their own Typing Mind files based on their license.
+**Full Documentation:** See `TYPING-MIND-SETUP.md` in parent directory

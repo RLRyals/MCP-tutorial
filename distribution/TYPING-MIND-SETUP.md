@@ -1,150 +1,154 @@
 # Typing Mind Community Edition - Setup Guide
 
-This guide helps you set up Typing Mind Community Edition to work with your MCP servers via the local web interface.
+## ✅ Good News - Files Already Included!
 
-## Overview
+The Typing Mind static files are **already included** in this distribution! You don't need to download anything.
 
-Since you have the **Typing Mind Community License** (not Teams), you'll need to:
-1. Download the Typing Mind static files
-2. Place them in the `typing-mind-static` folder
-3. Access Typing Mind at `http://localhost:3000`
+**Source:** https://github.com/TypingMind/typingmind (Official self-hosted version)
 
-The MCP Connector will already be pre-configured to connect!
+## Quick Start (Just 3 Steps!)
 
-## Step 1: Download Typing Mind Static Files
-
-### Option A: If You Already Purchased Typing Mind
-
-1. **Log into your Typing Mind account** at https://www.typingmind.com
-
-2. **Download the static files:**
-   - Go to your account/downloads page
-   - Download the "Self-hosted" or "Static files" package
-   - You should get a ZIP file with HTML/CSS/JS files
-
-3. **Extract the files** to a temporary location
-
-### Option B: If You Haven't Purchased Yet
-
-1. **Visit:** https://www.typingmind.com/pricing
-
-2. **Choose Community License:**
-   - One-time payment (not subscription)
-   - Includes self-hosted option
-   - Download link provided after purchase
-
-3. **After purchase, download the static files**
-
-## Step 2: Set Up the Static Files
-
-### Create Directory and Copy Files
+### Step 1: Verify Files Are Present
 
 ```bash
-# From the distribution folder
 cd distribution
 
-# Create the directory
-mkdir typing-mind-static
-
-# Extract your downloaded Typing Mind ZIP into this folder
-# The folder should contain:
-#   typing-mind-static/
-#   ├── index.html
-#   ├── assets/
-#   │   ├── css/
-#   │   ├── js/
-#   │   └── images/
-#   └── (other files)
+# Check if Typing Mind files exist
+ls typing-mind-static/index.html
+# Should show: typing-mind-static/index.html
 ```
 
-### On Windows PowerShell:
+✅ If you see the file, you're ready to go!
 
-```powershell
-# Create directory
-New-Item -ItemType Directory -Path "typing-mind-static" -Force
-
-# Extract ZIP (replace path with your actual download)
-Expand-Archive -Path "$env:USERPROFILE\Downloads\typingmind-static.zip" -DestinationPath ".\typing-mind-static"
-```
-
-### On Mac/Linux:
-
-```bash
-# Create directory
-mkdir -p typing-mind-static
-
-# Extract ZIP (replace path with your actual download)
-unzip ~/Downloads/typingmind-static.zip -d typing-mind-static/
-```
-
-## Step 3: Verify File Structure
-
-Your directory should look like this:
-
-```
-distribution/
-├── docker/
-│   ├── docker-compose.yml
-│   ├── nginx.conf
-│   └── ...
-├── typing-mind-static/          ← NEW!
-│   ├── index.html              ← Main entry point
-│   ├── assets/
-│   │   ├── css/
-│   │   ├── js/
-│   │   └── ...
-│   ├── favicon.ico
-│   └── (other Typing Mind files)
-├── .env
-└── ...
-```
-
-**Important:** Make sure `index.html` is directly in the `typing-mind-static/` folder!
-
-## Step 4: Start the Docker Stack
-
-The docker-compose.yml is already configured with the Typing Mind web service enabled.
+### Step 2: Start Docker
 
 ```bash
 cd docker
-docker-compose down
-docker-compose up -d --build
+docker-compose up -d
 
 # Watch the logs
 docker-compose logs -f
 ```
 
 You should see **3 containers** starting:
-- `mcp-writing-db` (PostgreSQL database)
-- `mcp-connector` (MCP Connector with all servers)
-- `typing-mind-web` (Nginx serving Typing Mind)
+- `mcp-writing-db` (PostgreSQL)
+- `mcp-connector` (MCP Connector)
+- `typing-mind-web` (Typing Mind) ⭐
 
-## Step 5: Access Typing Mind
+### Step 3: Access Typing Mind
 
-1. **Open your browser** to: http://localhost:3000
+1. **Open your browser to:** http://localhost:3000
 
-2. **Configure MCP Connection:**
+2. **First-time setup in Typing Mind:**
+   - Enter your AI provider API keys (OpenAI, Anthropic, etc.)
+   - Enter your Typing Mind license key (optional - trial available)
+
+3. **Configure MCP Connector:**
    - Go to **Settings → Advanced Settings → Model Context Protocol**
    - Click **"Add MCP Connector"**
    - Enter:
      - **URL:** `http://localhost:50880`
      - **Auth Token:** (from `.env` file - look for `MCP_AUTH_TOKEN`)
+   - Click **"Connect"**
 
-3. **Click "Connect"**
-   - All 9 MCP servers will become available!
+4. **Start using your 9 MCP servers!** 🎉
 
-4. **Start using your MCPs!**
-   - Create a new chat
-   - The MCP tools will be available in your prompts
+---
 
-## Step 6: Verify Everything Works
+## What's Included
+
+The `typing-mind-static/` folder contains:
+
+- **729 files** (~63MB)
+- Self-hosted Typing Mind from official GitHub repository
+- Pre-configured to work with the MCP Connector
+- No additional downloads needed!
+
+**License:** Proprietary - You may use and deploy the compiled code per Typing Mind's license terms.
+
+---
+
+## If Files Are Missing
+
+If for some reason the `typing-mind-static/` folder is empty, you can download the files using the provided scripts:
+
+### Windows (PowerShell):
+```powershell
+cd distribution
+.\download-typingmind.ps1
+```
+
+### Mac/Linux (Bash):
+```bash
+cd distribution
+./download-typingmind.sh
+```
+
+These scripts will automatically:
+- Clone the official Typing Mind repository
+- Copy the static files to the right location
+- Clean up temporary files
+
+---
+
+## Updating Typing Mind
+
+To update to the latest version:
+
+### Option 1: Use the Download Script
+```bash
+cd distribution
+./download-typingmind.sh  # Mac/Linux
+# or
+.\download-typingmind.ps1  # Windows
+```
+
+### Option 2: Manual Update
+```bash
+cd /tmp
+git clone https://github.com/TypingMind/typingmind.git
+cp -r typingmind/src/* /path/to/distribution/typing-mind-static/
+cd /path/to/distribution/docker
+docker-compose restart typing-mind-web
+```
+
+---
+
+## Configuration
+
+### Environment Variables
+
+You can customize these in your `.env` file:
+
+```bash
+# Typing Mind web server settings
+TYPING_MIND_PORT=3000                      # Port to access Typing Mind
+TYPING_MIND_DIR=./typing-mind-static       # Path to static files
+TYPING_MIND_CONTAINER_NAME=typing-mind-web # Container name
+```
+
+### Getting Your Auth Token
+
+Your MCP auth token is in the `.env` file:
+
+```bash
+# View your token
+cat .env | grep MCP_AUTH_TOKEN
+
+# Or on Windows PowerShell
+Get-Content .env | Select-String "MCP_AUTH_TOKEN"
+```
+
+---
+
+## Verifying Setup
 
 ### Check All Containers Are Running
 
 ```bash
 docker ps
 
-# Should show:
+# Should show 3 containers:
 # - mcp-writing-db
 # - mcp-connector
 # - typing-mind-web
@@ -165,21 +169,23 @@ curl http://localhost:3000
 # Should return HTML content
 ```
 
+---
+
 ## Troubleshooting
 
 ### "Cannot GET /" or blank page at localhost:3000
 
-**Problem:** Typing Mind files aren't in the right place
+**Problem:** Typing Mind files aren't in the right place or are missing
 
 **Solution:**
 ```bash
 # Check if files exist
-ls -la typing-mind-static/
+ls -la typing-mind-static/index.html
 
-# Make sure index.html is there
-ls typing-mind-static/index.html
-
-# If not, verify extraction path and try again
+# If missing, run download script
+./download-typingmind.sh  # Mac/Linux
+# or
+.\download-typingmind.ps1  # Windows
 ```
 
 ### "Connection Failed" in Typing Mind
@@ -194,11 +200,30 @@ docker ps
 # Check connector logs
 docker-compose logs mcp-connector
 
-# Verify auth token
+# Verify auth token matches
 cat .env | grep MCP_AUTH_TOKEN
 
 # Test health endpoint
 curl http://localhost:50880/ping
+```
+
+### typing-mind-web Container Keeps Restarting
+
+**Problem:** Missing index.html or nginx configuration issue
+
+**Solution:**
+```bash
+# Check nginx logs
+docker-compose logs typing-mind-web
+
+# Verify folder structure
+ls -la typing-mind-static/
+
+# Verify index.html exists
+ls typing-mind-static/index.html
+
+# If files are corrupted, re-download
+./download-typingmind.sh
 ```
 
 ### Port 3000 Already in Use
@@ -218,20 +243,36 @@ docker-compose up -d
 # Access at http://localhost:3001 instead
 ```
 
-### Container Keeps Restarting
+### "License key required" Error
 
-**Problem:** typing-mind-static folder is empty or missing index.html
+**Problem:** Typing Mind requires a license for full features
 
 **Solution:**
-```bash
-# Check nginx logs
-docker-compose logs typing-mind-web
+- **Trial mode:** Typing Mind includes a trial period
+- **Purchase license:** Visit https://www.typingmind.com/pricing
+- **Community License:** One-time payment for self-hosted version
+- You can still test MCPs in trial mode!
 
-# Verify folder structure
-ls -la typing-mind-static/
+---
 
-# If empty, re-extract the Typing Mind files
-```
+## License Information
+
+### Typing Mind License
+
+**Source:** https://github.com/TypingMind/typingmind
+
+**License Type:** Proprietary
+- ✅ You may use and deploy the compiled code
+- ❌ You may not modify the code
+- ❌ You may not redistribute the code
+
+**Usage:** Requires a Typing Mind license key for full features. Trial mode available.
+
+### Your MCP Servers
+
+Your custom MCP servers in this repository are separate from Typing Mind and follow your own license terms.
+
+---
 
 ## What's Pre-Configured
 
@@ -243,62 +284,55 @@ The docker setup includes:
 ✅ **Health checks** - Monitors container status
 ✅ **Auto-restart** - Restarts if crashes
 ✅ **MCP Connector dependency** - Waits for connector to be healthy
+✅ **Static files included** - No download needed!
 
-## Environment Variables (Optional)
+---
 
-You can customize these in your `.env` file:
+## Available MCP Servers
 
-```bash
-# Typing Mind web server settings
-TYPING_MIND_PORT=3000                                    # Port to access Typing Mind
-TYPING_MIND_DIR=./typing-mind-static                     # Path to static files
-TYPING_MIND_CONTAINER_NAME=typing-mind-web               # Container name
-```
+Once connected, you'll have access to:
 
-## Updating Typing Mind
+1. **book-planning-server** - Plan and structure books
+2. **chapter-planning-server** - Chapter organization
+3. **character-planning-server** - Character development
+4. **core-continuity-server** - Series continuity management
+5. **reporting-server** - Analytics and reports
+6. **review-server** - Review and revision tools
+7. **scene-server** - Scene management
+8. **series-planning-server** - Multi-book series planning
+9. **author-server** - Author information
 
-When a new version of Typing Mind is released:
-
-```bash
-# 1. Stop the web container
-cd docker
-docker-compose stop typing-mind-web
-
-# 2. Backup current version (optional)
-mv ../typing-mind-static ../typing-mind-static.backup
-
-# 3. Extract new version
-mkdir ../typing-mind-static
-# (extract new files here)
-
-# 4. Restart
-docker-compose up -d typing-mind-web
-```
+---
 
 ## Alternative: Browser-Based Access
 
-If you prefer NOT to host locally, you can still use Typing Mind in your browser:
+If you prefer NOT to host locally, you can use Typing Mind in your browser:
 
 1. Go to https://custom.typingmind.com (or your Typing Mind URL)
 2. Configure MCP Connector:
    - URL: `http://localhost:50880`
    - Token: (from `.env`)
-3. Use online without hosting locally
+3. Use online without local hosting
 
-**Note:** The browser-based approach works with Community license too, but local hosting gives you more control.
+**Note:** Local hosting gives you more control and privacy.
+
+---
 
 ## Next Steps
 
 Once Typing Mind is accessible:
 
-1. ✅ Test each MCP server tool
-2. ✅ Create sample data (books, characters, scenes)
-3. ✅ Verify database persistence
-4. ✅ Ready for Electron app development!
+1. ✅ Configure your AI provider API keys
+2. ✅ Connect to MCP Connector
+3. ✅ Test each MCP server tool
+4. ✅ Create sample data (books, characters, scenes)
+5. ✅ Verify database persistence
+6. ✅ Ready for Electron app development!
 
 ---
 
 **Need Help?**
 - Check `README-distribution.md` for full Docker documentation
-- Check `TYPING-MIND-ACCESS.md` for connection troubleshooting
+- Check `TYPING-MIND-ACCESS.md` for connection options
 - Check `QUICK-START.md` for basic setup steps
+- Visit: https://github.com/TypingMind/typingmind for Typing Mind documentation
