@@ -1,0 +1,6 @@
+# Prevent Git from converting line endings on shell scripts
+*.sh text eol=lf
+
+# Ensure Docker files use LF
+Dockerfile* text eol=lf
+docker-entrypoint.sh text eol=lf
