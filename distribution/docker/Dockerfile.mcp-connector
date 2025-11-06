@@ -6,7 +6,7 @@ FROM node:18-alpine
 
 # Install system dependencies
 RUN apk add --no-cache \
-    wget \
+    curl \
     postgresql-client \
     bash
 
@@ -40,8 +40,8 @@ USER mcp
 EXPOSE 50880
 
 # Health check endpoint (uses /ping endpoint)
-HEALTHCHECK --interval=10s --timeout=5s --start-period=45s --retries=5 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:50880/ping || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://127.0.0.1:50880/ping || exit 1
 
 # Use entrypoint script to handle startup
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
