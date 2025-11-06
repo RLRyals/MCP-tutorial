@@ -1,8 +1,6 @@
 ---
 name: mcp-db-tools
 description: Direct database access tools for MCP writing system using executable scripts
-tags: [database, postgres, mcp, writing, authors, books]
-version: 1.0.0
 ---
 
 # MCP Database Tools Skill
