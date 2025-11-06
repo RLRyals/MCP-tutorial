@@ -1,0 +1,8 @@
+book_create_book
+book_update_book
+book_get_book
+book_list_books
+plot_create_plot_thread
+plot_update_plot_thread
+timeline_create_timeline_event
+assign_book_genres

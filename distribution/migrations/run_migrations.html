@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Tutorial - Migration Commands</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .migration-section {
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+        .command-block {
+            background-color: #fff;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .command-header {
+            background-color: #f1f8ff;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e1e4e8;
+        }
+        .command-title {
+            font-weight: bold;
+            color: #0366d6;
+        }
+        .terminal-tab {
+            background-color: #24292e;
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 0.8em;
+        }
+        .copy-btn {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+        .copy-btn:hover {
+            background-color: #27ae60;
+        }
+        .copy-btn.copied {
+            background-color: #3498db !important;
+        }
+        .command-text {
+            padding: 15px;
+            background-color: #1e1e1e;
+            color: #fff;
+            font-family: 'Consolas', 'Courier New', monospace;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .note {
+            background-color: #fffde7;
+            border-left: 4px solid #ffd600;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .warning {
+            background-color: #fff3e0;
+            border-left: 4px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            padding: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>MCP Tutorial - Database Migration Commands</h1>
+    
+    <div class="note">
+        <strong>Migration Order:</strong> Run these commands in numerical order to properly set up your database schema. Each migration builds on the previous ones.
+    </div>
+
+    <div class="warning">
+        <strong>IMPORTANT:</strong> Make sure your database is running before executing these commands. Start your database with:<br>
+        <code>docker-compose up -d</code> (Mac/Linux) or <code>.\scripts\start-database.ps1</code> (Windows)
+    </div>
+    
+    <div class="command-block" style="background-color: #e8f5e9; border-left-color: #4caf50;">
+        <div class="command-header" style="background-color: #c8e6c9;">
+            <span class="command-title" style="color: #2e7d32;">Run All Migrations (PowerShell Script)</span>
+            <span class="terminal-tab" style="background-color: #2e7d32;">VS Code Terminal</span>
+            <button class="copy-btn" style="background-color: #4caf50;" onclick="copyCommand(this, '.\scripts\reset-and-rebuild-database.ps1')">Copy</button>
+        </div>
+        <div class="command-text">.\scripts\reset-and-rebuild-database.ps1</div>
+    </div>
+
+    <div class="migration-section">
+        <h2>All Migration Files</h2>
+        <p>Below are all the migration files in the recommended execution order:</p>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 1: Core Schema</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 001_create_core_schema.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 001_create_core_schema.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 2: Series Schema</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 002_update_series_schema.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 002_update_series_schema.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 3: Character Schema</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 003_add_character_schema.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 003_add_character_schema.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 4: Plot Structure</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 004_plot_structure_and_universal_framework.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 5: Author Email</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 005_update_author_email_constraint.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 005_update_author_email_constraint.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 6: Book Metadata</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 006_add_book_metadata_plot_thread_and_tropes_tables.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 006_add_book_metadata_plot_thread_and_tropes_tables.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 7: Event-Chapter Mapping</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 007_add_event_chapter_mapping.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 007_add_event_chapter_mapping.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 8: World Schema</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 008_add_world_schema.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 008_add_world_schema.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 9: Writing Features</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 009_writing_migration.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 009_writing_migration.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 10: Table Schema Updates</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 010_update_table_schema.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 010_update_table_schema.sql</div>
+        </div>
+
+        <div class="command-block">
+            <div class="command-header">
+                <span class="command-title">Migration 11: Universal Schema</span>
+                <span class="terminal-tab">VS Code Terminal</span>
+                <button class="copy-btn" onclick="copyCommand(this, 'node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql')">Copy</button>
+            </div>
+            <div class="command-text">node src/shared/run-migration.js 011_Universal_Schema_Migrations.sql</div>
+        </div>
+
+
+    </div>
+
+    <div class="success">
+        <strong>Note:</strong> If you see a message saying "Migration already applied", that's perfectly normal - it means that particular schema change has already been made to your database. The system keeps track of which migrations have been run to avoid duplicating changes.
+    </div>
+
+    <div class="note">
+        <strong>After Migrations:</strong> With all migrations complete, your database is now ready to use with your MCP tools. You can verify the database schema by checking the tables via a database client like pgAdmin or using SQL queries.
+    </div>
+
+    <script>
+        function copyCommand(button, command) {
+            navigator.clipboard.writeText(command).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                button.textContent = 'Failed';
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                }, 2000);
+            });
+        }
+    </script>
+
+    <footer>
+        MCP Tutorial - Database Migration Tool &copy; 2025
+    </footer>
+</body>
+</html>

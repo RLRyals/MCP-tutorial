@@ -1,0 +1,8 @@
+character_get_character
+character_get_character_details
+character_check_character_knowledge
+plot_get_plot_threads
+character_check_character_continuity
+relationship_get_relationship_arc
+relationship_get_relationship_timeline
+timeline_get_event_mappings
