@@ -1,77 +1,50 @@
 # Quick Start - MCP Writing System
 
-This distribution provides a **complete standalone setup** with PostgreSQL database and MCP Connector.
+This distribution provides a **complete automated setup** with PostgreSQL database, MCP Connector, and Typing Mind.
 
 ## ✅ What This Does
 
 - Builds and runs **PostgreSQL database** (`mcp-writing-db`)
 - Builds and runs **MCP Connector** with all 9 MCP servers
 - Runs MCP Connector on port 50880
-- Runs **Typing Mind web server** on port 3000 (requires setup - see below)
+- Runs **Typing Mind web server** on port 3000
 - Automatically applies all database migrations
 - Ready for Typing Mind integration
 
-## 🚀 Quick Start (4 Steps)
+## 🚀 Automated Setup
 
-### Step 0: Download Typing Mind Static Files (First Time Only)
+### First Time Setup (Run Once)
 
 ```powershell
 cd distribution
-
-# Windows PowerShell:
-.\download-typingmind.ps1
-
-# Mac/Linux:
-./download-typingmind.sh
+.\setup-all.ps1
 ```
 
 **What this does:**
-- Downloads 730 files (~63MB) from https://github.com/TypingMind/typingmind
-- Places them in `typing-mind-static/` folder
-- These files are NOT in the repository due to size
+1. Downloads Typing Mind static files (730 files, ~63MB) from https://github.com/TypingMind/typingmind
+2. Generates secure `.env` file with random passwords (persists between runs)
+3. Builds Docker images
+4. Starts all containers
+5. Waits for services to be healthy
+6. Runs health checks
+7. Displays connection information
 
-**Skip this step if you've already downloaded the files.**
+**Total time:** ~2-3 minutes
 
-### Step 1: Generate environment configuration
+### Every Subsequent Run
 
 ```powershell
 cd distribution
-
-# Generate .env file with secure random credentials
-.\generate-env.ps1
-
-# This creates .env with auto-generated secure passwords
+.\run.ps1
 ```
 
-### Step 2: Start the complete stack
+**What this does:**
+1. Checks Docker is running
+2. Uses existing `.env` file (does NOT regenerate)
+3. Starts containers (if not already running)
+4. Returns connection info
 
-```powershell
-cd docker
-docker-compose --env-file ../.env up -d --build
-
-# Watch the logs
-docker-compose --env-file ../.env logs -f
-```
-
-### Step 3: Verify it's working
-
-```powershell
-# From the distribution folder
-cd ..
-.\test-docker-stack.ps1 -Verbose
-
-# Or check manually
-docker ps
-# You should see: mcp-writing-db, mcp-connector, and typing-mind-web
-# (typing-mind-web requires setup first - see Step 4 below)
-```
-
-## 🧪 Test It
-
-```powershell
-# From the distribution folder
-.\test-docker-stack.ps1 -Verbose
-```
+**Total time:** ~10-30 seconds
 
 ## ✅ Success Looks Like
 
@@ -110,35 +83,20 @@ SUCCESS: All tests passed!
 
 ## 📋 Accessing Typing Mind
 
-The Docker stack automatically starts Typing Mind on port 3000 (if you downloaded the static files in Step 0).
+After setup completes, Typing Mind is automatically running on port 3000.
 
 **Access:** http://localhost:3000
 
-👉 **See `TYPING-MIND-SETUP.md` for complete setup instructions**
-
-### If typing-mind-web Container Not Running
-
-If you skipped Step 0, the `typing-mind-web` container won't start (missing static files).
-
-**To add it:**
-1. Download files: `.\download-typingmind.ps1` (Windows) or `./download-typingmind.sh` (Linux/Mac)
-2. Restart Docker: `cd docker && docker-compose down && docker-compose up -d`
-3. Access at: **http://localhost:3000**
-
-### Option 2: Browser-Based (Any License)
-
-**MCP Connector Endpoint:**
-- URL: `http://localhost:50880`
-- Auth Token: (from your `.env` file - look for `MCP_AUTH_TOKEN`)
-
-**To configure Typing Mind:**
-1. Open Typing Mind in browser (https://custom.typingmind.com)
+**MCP Connector Configuration:**
+1. Open Typing Mind at http://localhost:3000
 2. Go to Settings → Advanced → Model Context Protocol
 3. Click "Add MCP Connector"
 4. Enter:
    - URL: `http://localhost:50880`
-   - Token: (your `MCP_AUTH_TOKEN`)
+   - Token: (displayed in setup output, or check `.env` file for `MCP_AUTH_TOKEN`)
 5. Click Connect
+
+All 9 MCP servers will now be available in Typing Mind!
 
 ## 🔍 Troubleshooting
 

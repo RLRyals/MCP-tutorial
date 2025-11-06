@@ -2,73 +2,52 @@
 
 Complete standalone Docker-based setup for the MCP Writing System with Typing Mind integration.
 
-## 🚀 Automated Setup (Recommended)
+## 🎯 For Electron App Integration
 
-Run the complete automated setup script:
+This distribution is designed to be completely automated for Electron app integration.
+
+### First-Time Setup (Run Once)
 
 ```powershell
 cd distribution
-
-# Complete setup with Typing Mind
 .\setup-all.ps1
-
-# Or skip Typing Mind download
-.\setup-all.ps1 -SkipTypingMind
-
-# Force rebuild/regenerate everything
-.\setup-all.ps1 -Force
-
-# Verbose output
-.\setup-all.ps1 -Verbose
 ```
 
 **What this does:**
 1. Downloads Typing Mind static files from GitHub (730 files, ~63MB)
-2. Generates secure `.env` configuration with random passwords
-3. Starts Docker containers (PostgreSQL, MCP Connector, Typing Mind)
-4. Waits for services to be healthy
-5. Runs health checks
-6. Displays connection information
+2. Generates secure `.env` configuration with random passwords (persists between runs)
+3. Builds Docker images
+4. Starts Docker containers (PostgreSQL, MCP Connector, Typing Mind)
+5. Waits for services to be healthy
+6. Runs health checks
+7. Displays connection information
 
 **Total time:** ~2-3 minutes on first run
 
----
-
-## 📋 Manual Setup (Step-by-Step)
-
-If you prefer to run each step manually:
-
-### Step 1: Download Typing Mind Files
+### Every Time the App Runs
 
 ```powershell
-# Windows
-.\download-typingmind.ps1
-
-# Mac/Linux
-./download-typingmind.sh
+cd distribution
+.\run.ps1
 ```
 
-### Step 2: Generate Environment Configuration
+**What this does:**
+1. Checks if Docker is running
+2. Uses existing `.env` file (does NOT regenerate)
+3. Starts Docker containers (if not already running)
+4. Waits for services to be healthy
+5. Returns connection info for the app
 
-```powershell
-.\generate-env.ps1
-```
+**Total time:** ~10-30 seconds
 
-### Step 3: Start Docker Stack
+### Available Scripts
 
-```powershell
-cd docker
-docker-compose --env-file ../.env up -d
-```
-
-### Step 4: Verify Setup
-
-```powershell
-cd ..
-.\test-docker-stack.ps1 -Verbose
-```
-
-**See `QUICK-START.md` for detailed manual instructions.**
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `setup-all.ps1` | First-time setup | First launch of Electron app |
+| `run.ps1` | Start services | Every time Electron app opens |
+| `test-docker-stack.ps1` | Verify/diagnose | Troubleshooting |
+| `download-typingmind.ps1` | Update Typing Mind | Check for updates |
 
 ---
 
@@ -130,19 +109,18 @@ Get-Content .env | Select-String "MCP_AUTH_TOKEN"
 
 ---
 
-## 🛠️ Common Commands
+## 🛠️ Automation Scripts
 
-### View Services Status
-```powershell
-docker ps
-```
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `setup-all.ps1` | First-time setup | `.\setup-all.ps1` |
+| `run.ps1` | Start services (every time) | `.\run.ps1` |
+| `test-docker-stack.ps1` | Verify/diagnose | `.\test-docker-stack.ps1 -Verbose` |
+| `download-typingmind.ps1` | Update Typing Mind | `.\download-typingmind.ps1 -Force` |
 
 ### View Logs
 ```powershell
 cd docker
-docker-compose --env-file ../.env logs -f
-
-# Or specific service
 docker-compose --env-file ../.env logs -f mcp-connector
 ```
 
@@ -152,84 +130,42 @@ cd docker
 docker-compose --env-file ../.env down
 ```
 
-### Restart Services
-```powershell
-cd docker
-docker-compose --env-file ../.env restart
-```
-
-### Rebuild Everything
-```powershell
-cd docker
-docker-compose --env-file ../.env down
-docker-compose --env-file ../.env build --no-cache
-docker-compose --env-file ../.env up -d
-```
-
 ---
 
 ## 🔍 Troubleshooting
 
-### Docker Not Running
-```powershell
-# Check Docker status
-docker ps
+All troubleshooting starts with the diagnostic script:
 
-# Start Docker Desktop
-# Windows: Start Menu → Docker Desktop
-# Mac: Applications → Docker.app
+```powershell
+.\test-docker-stack.ps1 -Verbose
 ```
 
-### Services Not Healthy
-```powershell
-# Check container status
-docker ps
+This will automatically check:
+- Docker is running
+- .env file exists
+- All containers are healthy
+- Database is accessible
+- MCP Connector is responding
 
+### If Issues Found
+
+**Docker Not Running:**
+- Start Docker Desktop and run `.\run.ps1` again
+
+**Services Not Healthy:**
+```powershell
 # View logs
 cd docker
 docker-compose --env-file ../.env logs mcp-connector
-docker-compose --env-file ../.env logs postgres
 
 # Restart services
 docker-compose --env-file ../.env restart
 ```
 
-### Can't Access Typing Mind (localhost:3000)
+**First-Time Setup Failed:**
 ```powershell
-# Check if static files were downloaded
-ls typing-mind-static/index.html
-
-# If missing, download them
-.\download-typingmind.ps1
-
-# Restart typing-mind-web container
-cd docker
-docker-compose --env-file ../.env restart typing-mind-web
-```
-
-### MCP Connector Not Responding
-```powershell
-# Test health endpoint
-curl http://localhost:50880/ping
-# Should return: {"status":"ok"}
-
-# Check connector logs
-docker logs mcp-connector
-
-# Verify environment variables
-docker exec mcp-connector env | grep DATABASE_URL
-```
-
-### Database Connection Failed
-```powershell
-# Test database connection
-docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT 1;"
-
-# Check password in .env
-Get-Content .env | Select-String "POSTGRES_PASSWORD"
-
-# Check migrations
-docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT * FROM migrations;"
+# Re-run complete setup
+.\setup-all.ps1 -Force
 ```
 
 ---
@@ -257,38 +193,18 @@ docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT * FROM mi
 
 ## 🔄 Updating
 
-### Update Typing Mind
+Your Electron app should check for updates on startup. Use these scripts:
+
+### Check for Typing Mind Updates
 ```powershell
 .\download-typingmind.ps1 -Force
 cd docker
 docker-compose --env-file ../.env restart typing-mind-web
 ```
 
-### Update MCP Connector
+### Update MCP Connector (when new version released)
 ```powershell
-cd docker
-docker-compose --env-file ../.env down
-docker-compose --env-file ../.env build --no-cache
-docker-compose --env-file ../.env up -d
-```
-
----
-
-## 📦 Backup & Restore
-
-### Backup Database
-```powershell
-docker exec mcp-writing-db pg_dump -U writer mcp_writing_db > backup.sql
-```
-
-### Restore Database
-```powershell
-Get-Content backup.sql | docker exec -i mcp-writing-db psql -U writer -d mcp_writing_db
-```
-
-### Backup Volume
-```powershell
-docker run --rm -v mcp-writing-data:/data -v ${PWD}:/backup alpine tar czf /backup/data-backup.tar.gz /data
+.\setup-all.ps1 -Force
 ```
 
 ---
@@ -307,13 +223,35 @@ After setup is complete:
 
 ---
 
-## 💡 Tips
+## 💡 For Electron App Developers
 
-- **First time?** Use `.\setup-all.ps1` for automated setup
-- **Already setup?** Use `cd docker && docker-compose up -d` to start
-- **Problems?** Run `.\test-docker-stack.ps1 -Verbose` for diagnostics
-- **Clean slate?** Use `docker-compose down -v` to remove all data
-- **Save credentials!** Check `.env` and `credentials-backup.txt`
+### Recommended Workflow
+
+1. **On First Launch:** Run `.\setup-all.ps1`
+   - Downloads everything
+   - Creates `.env` (user can edit if needed)
+   - Builds images
+   - ~2-3 minutes
+
+2. **Every Launch:** Run `.\run.ps1`
+   - Uses existing `.env`
+   - Starts containers (if not running)
+   - ~10-30 seconds
+
+3. **Check for Updates:** Periodically run `.\download-typingmind.ps1 -Force`
+   - Downloads latest Typing Mind
+   - Restarts web container
+
+4. **Diagnostics:** Run `.\test-docker-stack.ps1 -Verbose`
+   - Checks all services
+   - Shows detailed status
+
+### Important Notes
+
+- `.env` file persists between runs (user credentials saved)
+- Docker images persist (no rebuild needed)
+- Only Typing Mind static files update frequently
+- Database data stored in Docker volume (persists)
 
 ---
 

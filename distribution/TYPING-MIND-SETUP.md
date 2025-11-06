@@ -1,67 +1,30 @@
-# Typing Mind Community Edition - Setup Guide
+# Typing Mind - Automated Setup Guide
 
-## 📥 Download Typing Mind Static Files First!
+## 🎯 Completely Automated Setup
 
-The Typing Mind static files are **NOT included** in the repository (due to size - 63MB). You need to download them first using the provided script.
+The Typing Mind setup is **fully automated** - no manual steps required.
 
 **Source:** https://github.com/TypingMind/typingmind (Official self-hosted version)
 
-## Quick Start (Just 4 Steps!)
+## 🚀 Quick Start
 
-### Step 1: Download Typing Mind Files
-
-```bash
-cd distribution
-
-# Windows PowerShell:
-.\download-typingmind.ps1
-
-# Mac/Linux:
-./download-typingmind.sh
-```
-
-This will automatically:
-- Clone the official Typing Mind repository
-- Copy static files to `typing-mind-static/` folder
-- Report statistics (730 files, ~63MB)
-- Clean up temporary files
-
-### Step 1b: Verify Files Are Present
-
-```bash
-# Check if Typing Mind files exist
-ls typing-mind-static/index.html
-# Should show: typing-mind-static/index.html
-```
-
-✅ If you see the file, you're ready to go!
-
-### Step 2: Generate Environment Configuration
+### Run Automated Setup
 
 ```bash
 cd distribution
-
-# Generate .env file with secure random credentials
-.\generate-env.ps1  # Windows
-# Script creates .env with secure passwords
+.\setup-all.ps1
 ```
 
-### Step 3: Start Docker
+**What this automatically does:**
+1. Downloads Typing Mind static files (730 files, ~63MB) from GitHub
+2. Generates secure `.env` configuration with random passwords
+3. Builds and starts all Docker containers
+4. Waits for services to be healthy
+5. Displays connection information
 
-```bash
-cd docker
-docker-compose up -d
+**Total time:** ~2-3 minutes
 
-# Watch the logs
-docker-compose logs -f
-```
-
-You should see **3 containers** starting:
-- `mcp-writing-db` (PostgreSQL)
-- `mcp-connector` (MCP Connector)
-- `typing-mind-web` (Typing Mind) ⭐
-
-### Step 4: Access Typing Mind
+### Access Typing Mind
 
 1. **Open your browser to:** http://localhost:3000
 
@@ -81,63 +44,34 @@ You should see **3 containers** starting:
 
 ---
 
-## What's Included
+## 📦 What Gets Installed
 
-The `typing-mind-static/` folder contains:
+After setup completes, you'll have:
 
-- **729 files** (~63MB)
+- **729 files** (~63MB) in `typing-mind-static/` folder
 - Self-hosted Typing Mind from official GitHub repository
 - Pre-configured to work with the MCP Connector
-- No additional downloads needed!
+- 3 Docker containers running (PostgreSQL, MCP Connector, Typing Mind)
 
 **License:** Proprietary - You may use and deploy the compiled code per Typing Mind's license terms.
 
 ---
 
-## Re-downloading Files
+## 🔄 Updating Typing Mind
 
-If you need to update or re-download the Typing Mind files:
+To check for and download Typing Mind updates:
 
-### Windows (PowerShell):
 ```powershell
 cd distribution
 .\download-typingmind.ps1 -Force
+cd docker
+docker-compose --env-file ../.env restart typing-mind-web
 ```
 
-### Mac/Linux (Bash):
-```bash
-cd distribution
-./download-typingmind.sh
-# Answer 'y' when prompted to overwrite
-```
-
-These scripts will automatically:
-- Clone the latest version from GitHub
-- Replace existing files while preserving README.md
-- Clean up temporary files
-
----
-
-## Updating Typing Mind
-
-To update to the latest version:
-
-### Option 1: Use the Download Script
-```bash
-cd distribution
-./download-typingmind.sh  # Mac/Linux
-# or
-.\download-typingmind.ps1  # Windows
-```
-
-### Option 2: Manual Update
-```bash
-cd /tmp
-git clone https://github.com/TypingMind/typingmind.git
-cp -r typingmind/src/* /path/to/distribution/typing-mind-static/
-cd /path/to/distribution/docker
-docker-compose restart typing-mind-web
-```
+This will:
+- Download the latest version from GitHub
+- Replace existing files (preserving README.md)
+- Restart the Typing Mind container
 
 ---
 
