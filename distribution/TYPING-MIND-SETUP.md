@@ -1,18 +1,34 @@
 # Typing Mind Community Edition - Setup Guide
 
-## ✅ Good News - Files Already Included!
+## 📥 Download Typing Mind Static Files First!
 
-The Typing Mind static files are **already included** in this distribution! You don't need to download anything.
+The Typing Mind static files are **NOT included** in the repository (due to size - 63MB). You need to download them first using the provided script.
 
 **Source:** https://github.com/TypingMind/typingmind (Official self-hosted version)
 
-## Quick Start (Just 3 Steps!)
+## Quick Start (Just 4 Steps!)
 
-### Step 1: Verify Files Are Present
+### Step 1: Download Typing Mind Files
 
 ```bash
 cd distribution
 
+# Windows PowerShell:
+.\download-typingmind.ps1
+
+# Mac/Linux:
+./download-typingmind.sh
+```
+
+This will automatically:
+- Clone the official Typing Mind repository
+- Copy static files to `typing-mind-static/` folder
+- Report statistics (730 files, ~63MB)
+- Clean up temporary files
+
+### Step 1b: Verify Files Are Present
+
+```bash
 # Check if Typing Mind files exist
 ls typing-mind-static/index.html
 # Should show: typing-mind-static/index.html
@@ -20,7 +36,17 @@ ls typing-mind-static/index.html
 
 ✅ If you see the file, you're ready to go!
 
-### Step 2: Start Docker
+### Step 2: Generate Environment Configuration
+
+```bash
+cd distribution
+
+# Generate .env file with secure random credentials
+.\generate-env.ps1  # Windows
+# Script creates .env with secure passwords
+```
+
+### Step 3: Start Docker
 
 ```bash
 cd docker
@@ -35,7 +61,7 @@ You should see **3 containers** starting:
 - `mcp-connector` (MCP Connector)
 - `typing-mind-web` (Typing Mind) ⭐
 
-### Step 3: Access Typing Mind
+### Step 4: Access Typing Mind
 
 1. **Open your browser to:** http://localhost:3000
 
@@ -68,25 +94,26 @@ The `typing-mind-static/` folder contains:
 
 ---
 
-## If Files Are Missing
+## Re-downloading Files
 
-If for some reason the `typing-mind-static/` folder is empty, you can download the files using the provided scripts:
+If you need to update or re-download the Typing Mind files:
 
 ### Windows (PowerShell):
 ```powershell
 cd distribution
-.\download-typingmind.ps1
+.\download-typingmind.ps1 -Force
 ```
 
 ### Mac/Linux (Bash):
 ```bash
 cd distribution
 ./download-typingmind.sh
+# Answer 'y' when prompted to overwrite
 ```
 
 These scripts will automatically:
-- Clone the official Typing Mind repository
-- Copy the static files to the right location
+- Clone the latest version from GitHub
+- Replace existing files while preserving README.md
 - Clean up temporary files
 
 ---

@@ -11,7 +11,26 @@ This distribution provides a **complete standalone setup** with PostgreSQL datab
 - Automatically applies all database migrations
 - Ready for Typing Mind integration
 
-## 🚀 Quick Start (3 Steps)
+## 🚀 Quick Start (4 Steps)
+
+### Step 0: Download Typing Mind Static Files (First Time Only)
+
+```powershell
+cd distribution
+
+# Windows PowerShell:
+.\download-typingmind.ps1
+
+# Mac/Linux:
+./download-typingmind.sh
+```
+
+**What this does:**
+- Downloads 730 files (~63MB) from https://github.com/TypingMind/typingmind
+- Places them in `typing-mind-static/` folder
+- These files are NOT in the repository due to size
+
+**Skip this step if you've already downloaded the files.**
 
 ### Step 1: Generate environment configuration
 
@@ -89,22 +108,22 @@ SUCCESS: All tests passed!
 ========================================
 ```
 
-## 📋 Step 4: Set Up Typing Mind (Optional but Recommended)
+## 📋 Accessing Typing Mind
 
-You have two options for accessing Typing Mind:
+The Docker stack automatically starts Typing Mind on port 3000 (if you downloaded the static files in Step 0).
 
-### Option 1: Local Typing Mind (Community License) - RECOMMENDED ⭐
+**Access:** http://localhost:3000
 
-**Best for:** Community license holders who want the full integrated experience
+👉 **See `TYPING-MIND-SETUP.md` for complete setup instructions**
 
-👉 **See `TYPING-MIND-SETUP.md` for complete instructions**
+### If typing-mind-web Container Not Running
 
-Quick version:
-1. Download Typing Mind static files from your account
-2. Extract into `distribution/typing-mind-static/` folder
-3. Restart Docker: `docker-compose down && docker-compose up -d`
-4. Access at: **http://localhost:3000**
-5. MCP Connector is pre-configured!
+If you skipped Step 0, the `typing-mind-web` container won't start (missing static files).
+
+**To add it:**
+1. Download files: `.\download-typingmind.ps1` (Windows) or `./download-typingmind.sh` (Linux/Mac)
+2. Restart Docker: `cd docker && docker-compose down && docker-compose up -d`
+3. Access at: **http://localhost:3000**
 
 ### Option 2: Browser-Based (Any License)
 
