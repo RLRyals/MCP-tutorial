@@ -152,3 +152,5 @@ config/claude-desktop-phase.json
 config/claude-desktop-phase.json
 config/claude-desktop.json
 .gitignore
+distribution/credentials-backup.txt
+.gitignore
