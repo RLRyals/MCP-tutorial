@@ -279,9 +279,11 @@ fi
 
 # Wait for MCP Connector
 echo "  Checking MCP Connector..."
-echo "  (Initial startup may take 45-60 seconds)"
-MAX_CONNECTOR_ATTEMPTS=60  # Increased from 30 to allow more time
+echo "  (This may take up to 2 minutes on first startup)"
+MAX_CONNECTOR_ATTEMPTS=60
 ATTEMPT=0
+SHOWED_STARTING=false
+
 while [ $ATTEMPT -lt $MAX_CONNECTOR_ATTEMPTS ]; do
     ATTEMPT=$((ATTEMPT + 1))
 
@@ -292,18 +294,38 @@ while [ $ATTEMPT -lt $MAX_CONNECTOR_ATTEMPTS ]; do
         break
     fi
 
-    # Show progress every 10 attempts or if verbose
-    if [ "$VERBOSE" = true ] || [ $((ATTEMPT % 10)) -eq 0 ]; then
-        echo "  Attempt $ATTEMPT/$MAX_CONNECTOR_ATTEMPTS - MCP Connector: $CONNECTOR_HEALTH"
+    # Show starting message once
+    if [ "$CONNECTOR_HEALTH" = "starting" ] && [ "$SHOWED_STARTING" = false ]; then
+        echo "  MCP Connector is starting..."
+        SHOWED_STARTING=true
+    fi
+
+    # Show progress every 15 attempts or if verbose
+    if [ "$VERBOSE" = true ] || [ $((ATTEMPT % 15)) -eq 0 ]; then
+        echo "  Attempt $ATTEMPT/$MAX_CONNECTOR_ATTEMPTS - Status: $CONNECTOR_HEALTH"
     fi
 
     sleep 2
 done
 
 if [ "$CONNECTOR_HEALTH" != "healthy" ]; then
-    echo "✗ MCP Connector did not become healthy in time"
-    echo "  Check logs with: cd docker && docker-compose logs mcp-connector"
-    exit 1
+    echo "⚠ WARNING: MCP Connector health check did not pass"
+    echo "  Attempting to verify connector is actually running..."
+
+    # Try to connect to the endpoint directly
+    if command -v curl &> /dev/null; then
+        RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:50880/ping 2>/dev/null)
+        if [ "$RESPONSE" = "200" ]; then
+            echo "✓ MCP Connector IS responding (health check may be misconfigured)"
+        else
+            echo "✗ ERROR: MCP Connector is not responding to requests (HTTP $RESPONSE)"
+            echo "  Check logs with: cd docker && docker-compose logs mcp-connector"
+            exit 1
+        fi
+    else
+        echo "⚠ WARNING: Cannot verify connector (curl not available)"
+        echo "  Check logs with: cd docker && docker-compose logs mcp-connector"
+    fi
 fi
 
 echo ""

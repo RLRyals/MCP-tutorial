@@ -163,11 +163,31 @@ If you're still experiencing issues:
 
 ## Recent Changes
 
-### Health Check Configuration Update
-The health check timing was updated to allow more time for the MCP connector to start:
-- Increased `start_period` from 30s to 45s
-- Increased `interval` from 30s to 10s (more frequent checks)
-- Increased `retries` from 3 to 5
-- Setup script now waits up to 120 seconds (60 attempts × 2s)
+### Health Check Configuration Update (Latest)
+The health check has been significantly improved to be more robust and handle edge cases:
 
-This resolves issues where the connector was marked unhealthy during initial startup even though it was functioning correctly.
+**Docker Compose Changes:**
+- **Removed strict health dependency** - `typing-mind-web` no longer requires `mcp-connector` to be "healthy" before starting
+  - This prevents "dependency failed to start: container mcp-connector is unhealthy" errors
+  - Services can start independently, improving reliability
+- **Updated health check timing:**
+  - `start_period`: 60s (grace period before health checks begin)
+  - `interval`: 5s (check every 5 seconds once started)
+  - `retries`: 10 (allow 10 failures)
+  - `timeout`: 3s
+  - Total grace period: up to 110 seconds before marking unhealthy
+
+**Setup Script Improvements:**
+- Scripts now wait up to 120 seconds for health check to pass
+- **Fallback verification**: If health check doesn't pass, scripts attempt direct connection to `/ping` endpoint
+- Only fail if the endpoint truly doesn't respond
+- Better progress messages and user feedback
+
+**Why These Changes:**
+The MCP connector needs time to:
+1. Wait for PostgreSQL to become healthy (up to 30s)
+2. Discover MCP servers (a few seconds)
+3. Install and start @typingmind/mcp package (30-60s on first run)
+4. Listen on port and make /ping endpoint available
+
+The previous configuration was too strict and would fail during normal startup, even when the service was functioning correctly.

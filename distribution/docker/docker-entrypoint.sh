@@ -65,6 +65,9 @@ start_mcp_connector() {
     echo "   Port: ${PORT:-50880}"
     echo "   Auth Token: ${MCP_AUTH_TOKEN:0:8}****"
     echo "   Database: $POSTGRES_DB @ $POSTGRES_HOST"
+    echo "   Node Environment: ${NODE_ENV:-development}"
+    echo ""
+    echo "📝 Running: npx @typingmind/mcp@latest"
     echo ""
 
     # Start the MCP Connector with the auth token
