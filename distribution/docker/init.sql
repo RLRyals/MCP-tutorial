@@ -1,14 +1,21 @@
 -- Idempotent Database Initialization Script
 -- This script safely initializes the database and can be run multiple times
-DO $$
-BEGIN
 
--- Migrations table to track applied migrations
+-- Migrations table to track applied migrations (must exist before any DO blocks)
 CREATE TABLE IF NOT EXISTS migrations (
     id SERIAL PRIMARY KEY,
-    filename VARCHAR(255) NOT NULL,
+    filename VARCHAR(255) NOT NULL UNIQUE,
     applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- First migration block
+DO $$
+BEGIN
+    -- Check if migration was already applied
+    IF EXISTS (SELECT 1 FROM migrations WHERE filename = '001_create_core_schema.sql') THEN
+        RAISE NOTICE 'Migration 001_create_core_schema.sql already applied, skipping.';
+        RETURN;
+    END IF;
 
 -- Authors table
 CREATE TABLE IF NOT EXISTS authors (
@@ -88,28 +95,38 @@ END;
 $function$ language 'plpgsql';
 
 -- Create triggers for automatic timestamp updates
-CREATE OR REPLACE TRIGGER update_authors_timestamp
+DROP TRIGGER IF EXISTS update_authors_timestamp ON authors;
+DROP TRIGGER IF EXISTS update_authors_timestamp ON authors;
+CREATE TRIGGER update_authors_timestamp
     BEFORE UPDATE ON authors
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-CREATE OR REPLACE TRIGGER update_series_timestamp
+DROP TRIGGER IF EXISTS update_series_timestamp ON series;
+DROP TRIGGER IF EXISTS update_series_timestamp ON series;
+CREATE TRIGGER update_series_timestamp
     BEFORE UPDATE ON series
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-CREATE OR REPLACE TRIGGER update_books_timestamp
+DROP TRIGGER IF EXISTS update_books_timestamp ON books;
+DROP TRIGGER IF EXISTS update_books_timestamp ON books;
+CREATE TRIGGER update_books_timestamp
     BEFORE UPDATE ON books
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-CREATE OR REPLACE TRIGGER update_series_timeline_timestamp
+DROP TRIGGER IF EXISTS update_series_timeline_timestamp ON series_timeline;
+DROP TRIGGER IF EXISTS update_series_timeline_timestamp ON series_timeline;
+CREATE TRIGGER update_series_timeline_timestamp
     BEFORE UPDATE ON series_timeline
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
 -- Add trigger for automatic timestamp updates
-CREATE OR REPLACE TRIGGER metadata_update_timestamp
+DROP TRIGGER IF EXISTS metadata_update_timestamp ON metadata;
+DROP TRIGGER IF EXISTS metadata_update_timestamp ON metadata;
+CREATE TRIGGER metadata_update_timestamp
     BEFORE UPDATE ON metadata
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
@@ -131,7 +148,7 @@ CREATE INDEX IF NOT EXISTS idx_books_status ON books(status);
 CREATE INDEX IF NOT EXISTS idx_series_timeline_series_id ON series_timeline(series_id);
 
 -- Optimize metadata lookups
---CREATE INDEX idx_series_metadata_series_id_key ON series_metadata(series_id, key);
+--CREATE INDEX IF NOT EXISTS idx_series_metadata_series_id_key ON series_metadata(series_id, key);
 
    -- Create indexes for better query performance
     CREATE INDEX IF NOT EXISTS idx_metadata_series_id ON metadata(series_id) WHERE series_id IS NOT NULL;
@@ -140,9 +157,10 @@ CREATE INDEX IF NOT EXISTS idx_series_timeline_series_id ON series_timeline(seri
     CREATE INDEX IF NOT EXISTS idx_metadata_type ON metadata(metadata_type);
 
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('001_create_core_schema.sql');
+INSERT INTO migrations (filename) VALUES ('001_create_core_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
-COMMIT;
+END $$;
 
 BEGIN;
 
@@ -163,20 +181,11 @@ BEGIN
     --ALTER TABLE series RENAME COLUMN series_id TO id;
 
     -- Update foreign key constraints to point to new column name
-    ALTER TABLE books ADD CONSTRAINT books_series_id_fkey 
+    ALTER TABLE books ADD CONSTRAINT books_series_id_fkey
         FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    ALTER TABLE series_timeline ADD CONSTRAINT series_timeline_series_id_fkey 
+    ALTER TABLE series_timeline ADD CONSTRAINT series_timeline_series_id_fkey
         FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    -- ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey 
-    --     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-
-
-    -- Update foreign key constraints to point to new column name
-    ALTER TABLE books ADD CONSTRAINT books_series_id_fkey 
-        FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    ALTER TABLE series_timeline ADD CONSTRAINT series_timeline_series_id_fkey 
-        FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
-    -- ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey 
+    -- ALTER TABLE series_metadata ADD CONSTRAINT series_metadata_series_id_fkey
     --     FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE;
 
     -- Add new columns
@@ -192,8 +201,8 @@ BEGIN
     ALTER TABLE books ADD COLUMN IF NOT EXISTS page_count INTEGER;
 
     -- Update indices to use new column name
-    DROP INDEX idx_series_author_id;
-    CREATE INDEX idx_series_author_id ON series(author_id);
+    DROP INDEX IF EXISTS idx_series_author_id;
+    CREATE INDEX IF NOT EXISTS idx_series_author_id ON series(author_id);
 
     -- Add new indices for new columns
 
@@ -201,11 +210,10 @@ BEGIN
     CREATE INDEX IF NOT EXISTS idx_series_start_year ON series(start_year);
 
     -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('002_update_series_schema.sql');
+    INSERT INTO migrations (filename) VALUES ('002_update_series_schema.sql')
+        ON CONFLICT (filename) DO NOTHING;
 END
 $$;
-
-COMMIT;
 -- Migration: 003_add_character_and_chapter_schema
 -- Description: Adds comprehensive character and chapter tracking tables for the MCP system
 -- Date: 2025-09-09
@@ -474,42 +482,50 @@ CREATE TABLE IF NOT EXISTS chapter_plot_points (
 -- =============================================
 
 -- Character table triggers
+DROP TRIGGER IF EXISTS update_characters_timestamp ON characters;
 CREATE TRIGGER update_characters_timestamp
     BEFORE UPDATE ON characters
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_character_details_timestamp ON character_details;
 CREATE TRIGGER update_character_details_timestamp
     BEFORE UPDATE ON character_details
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_character_arcs_timestamp ON character_arcs;
 CREATE TRIGGER update_character_arcs_timestamp
     BEFORE UPDATE ON character_arcs
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_character_knowledge_timestamp ON character_knowledge;
 CREATE TRIGGER update_character_knowledge_timestamp
     BEFORE UPDATE ON character_knowledge
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
 -- Chapter table triggers
+DROP TRIGGER IF EXISTS update_chapters_timestamp ON chapters;
 CREATE TRIGGER update_chapters_timestamp
     BEFORE UPDATE ON chapters
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_chapter_scenes_timestamp ON chapter_scenes;
 CREATE TRIGGER update_chapter_scenes_timestamp
     BEFORE UPDATE ON chapter_scenes
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_character_chapter_presence_timestamp ON character_chapter_presence;
 CREATE TRIGGER update_character_chapter_presence_timestamp
     BEFORE UPDATE ON character_chapter_presence
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_chapter_plot_points_timestamp ON chapter_plot_points;
 CREATE TRIGGER update_chapter_plot_points_timestamp
     BEFORE UPDATE ON chapter_plot_points
     FOR EACH ROW
@@ -520,40 +536,41 @@ CREATE TRIGGER update_chapter_plot_points_timestamp
 -- =============================================
 
 -- Character indices
-CREATE INDEX idx_characters_series_id ON characters(series_id);
-CREATE INDEX idx_characters_name ON characters(name);
-CREATE INDEX idx_characters_type ON characters(character_type);
-CREATE INDEX idx_characters_status ON characters(status);
+CREATE INDEX IF NOT EXISTS idx_characters_series_id ON characters(series_id);
+CREATE INDEX IF NOT EXISTS idx_characters_name ON characters(name);
+CREATE INDEX IF NOT EXISTS idx_characters_type ON characters(character_type);
+CREATE INDEX IF NOT EXISTS idx_characters_status ON characters(status);
 
-CREATE INDEX idx_character_details_character_id ON character_details(character_id);
-CREATE INDEX idx_character_details_category ON character_details(category);
-CREATE INDEX idx_character_details_category_attribute ON character_details(character_id, category, attribute);
+CREATE INDEX IF NOT EXISTS idx_character_details_character_id ON character_details(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_details_category ON character_details(category);
+CREATE INDEX IF NOT EXISTS idx_character_details_category_attribute ON character_details(character_id, category, attribute);
 
-CREATE INDEX idx_character_arcs_character_id ON character_arcs(character_id);
-CREATE INDEX idx_character_arcs_book_id ON character_arcs(book_id);
+CREATE INDEX IF NOT EXISTS idx_character_arcs_character_id ON character_arcs(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_arcs_book_id ON character_arcs(book_id);
 
-CREATE INDEX idx_character_knowledge_character_id ON character_knowledge(character_id);
-CREATE INDEX idx_character_knowledge_category ON character_knowledge(knowledge_category);
+CREATE INDEX IF NOT EXISTS idx_character_knowledge_character_id ON character_knowledge(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_knowledge_category ON character_knowledge(knowledge_category);
 
 -- Chapter indices
-CREATE INDEX idx_chapters_book_id ON chapters(book_id);
-CREATE INDEX idx_chapters_book_chapter ON chapters(book_id, chapter_number);
-CREATE INDEX idx_chapters_status ON chapters(status);
-CREATE INDEX idx_chapters_pov_character ON chapters(pov_character_id);
+CREATE INDEX IF NOT EXISTS idx_chapters_book_id ON chapters(book_id);
+CREATE INDEX IF NOT EXISTS idx_chapters_book_chapter ON chapters(book_id, chapter_number);
+CREATE INDEX IF NOT EXISTS idx_chapters_status ON chapters(status);
+CREATE INDEX IF NOT EXISTS idx_chapters_pov_character ON chapters(pov_character_id);
 
-CREATE INDEX idx_chapter_scenes_chapter_id ON chapter_scenes(chapter_id);
-CREATE INDEX idx_chapter_scenes_chapter_scene ON chapter_scenes(chapter_id, scene_number);
+CREATE INDEX IF NOT EXISTS idx_chapter_scenes_chapter_id ON chapter_scenes(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_chapter_scenes_chapter_scene ON chapter_scenes(chapter_id, scene_number);
 
-CREATE INDEX idx_character_chapter_presence_character ON character_chapter_presence(character_id);
-CREATE INDEX idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
-CREATE INDEX idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
+CREATE INDEX IF NOT EXISTS idx_character_chapter_presence_character ON character_chapter_presence(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_chapter_presence_chapter ON character_chapter_presence(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_character_chapter_presence_type ON character_chapter_presence(presence_type);
 
-CREATE INDEX idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
-CREATE INDEX idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);
-CREATE INDEX idx_chapter_plot_points_scene ON chapter_plot_points(scene_id);
+CREATE INDEX IF NOT EXISTS idx_chapter_plot_points_chapter ON chapter_plot_points(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_chapter_plot_points_type ON chapter_plot_points(plot_point_type);
+CREATE INDEX IF NOT EXISTS idx_chapter_plot_points_scene ON chapter_plot_points(scene_id);
 
     -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('003_add_character_schema.sql');
+    INSERT INTO migrations (filename) VALUES ('003_add_character_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -723,8 +740,8 @@ CREATE TABLE IF NOT EXISTS plot_thread_relationships (
 --     FOR EACH ROW
 --     EXECUTE FUNCTION update_timestamp();
 -- -- Analysis indices
--- CREATE INDEX idx_story_analysis_book_id ON story_analysis(book_id);
--- CREATE INDEX idx_story_analysis_concern ON story_analysis(story_concern_id);
+-- CREATE INDEX IF NOT EXISTS idx_story_analysis_book_id ON story_analysis(book_id);
+-- CREATE INDEX IF NOT EXISTS idx_story_analysis_concern ON story_analysis(story_concern_id);
 
 
 -- =============================================
@@ -732,11 +749,13 @@ CREATE TABLE IF NOT EXISTS plot_thread_relationships (
 -- =============================================
 
 -- Plot thread triggers
+DROP TRIGGER IF EXISTS update_plot_threads_timestamp ON plot_threads;
 CREATE TRIGGER update_plot_threads_timestamp
     BEFORE UPDATE ON plot_threads
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_plot_thread_relationships_timestamp ON plot_thread_relationships;
 CREATE TRIGGER update_plot_thread_relationships_timestamp
     BEFORE UPDATE ON plot_thread_relationships
     FOR EACH ROW
@@ -748,21 +767,21 @@ CREATE TRIGGER update_plot_thread_relationships_timestamp
 -- =============================================
 
 -- Genre and lookup indices
-CREATE INDEX idx_genres_name ON genres(genre_name);
-CREATE INDEX idx_plot_thread_types_name ON plot_thread_types(type_name);
-CREATE INDEX idx_plot_thread_statuses_name ON plot_thread_statuses(status_name);
-CREATE INDEX idx_relationship_types_name ON relationship_types(type_name);
+CREATE INDEX IF NOT EXISTS idx_genres_name ON genres(genre_name);
+CREATE INDEX IF NOT EXISTS idx_plot_thread_types_name ON plot_thread_types(type_name);
+CREATE INDEX IF NOT EXISTS idx_plot_thread_statuses_name ON plot_thread_statuses(status_name);
+CREATE INDEX IF NOT EXISTS idx_relationship_types_name ON relationship_types(type_name);
 
 -- Plot thread indices
-CREATE INDEX idx_plot_threads_series_id ON plot_threads(id);
-CREATE INDEX idx_plot_threads_type_status ON plot_threads(thread_type_id, current_status_id);
-CREATE INDEX idx_plot_threads_books ON plot_threads(start_book, end_book);
-CREATE INDEX idx_plot_threads_parent ON plot_threads(parent_thread_id);
+CREATE INDEX IF NOT EXISTS idx_plot_threads_series_id ON plot_threads(id);
+CREATE INDEX IF NOT EXISTS idx_plot_threads_type_status ON plot_threads(thread_type_id, current_status_id);
+CREATE INDEX IF NOT EXISTS idx_plot_threads_books ON plot_threads(start_book, end_book);
+CREATE INDEX IF NOT EXISTS idx_plot_threads_parent ON plot_threads(parent_thread_id);
 
 -- Relationship indices
-CREATE INDEX idx_plot_thread_relationships_thread_a ON plot_thread_relationships(thread_a_id);
-CREATE INDEX idx_plot_thread_relationships_thread_b ON plot_thread_relationships(thread_b_id);
-CREATE INDEX idx_plot_thread_relationships_type ON plot_thread_relationships(relationship_type_id);
+CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_thread_a ON plot_thread_relationships(thread_a_id);
+CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_thread_b ON plot_thread_relationships(thread_b_id);
+CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_type ON plot_thread_relationships(relationship_type_id);
 
 
 -- =============================================
@@ -841,7 +860,8 @@ INSERT INTO story_judgments (judgment_name, judgment_description) VALUES
 
 
     -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('004_plot_structure_and_universal_framework_fixed.sql');
+    INSERT INTO migrations (filename) VALUES ('004_plot_structure_and_universal_framework_fixed.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -866,7 +886,8 @@ ALTER TABLE authors
     DROP CONSTRAINT IF EXISTS authors_email_key;
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('005_update_author_email_constraint.sql');
+    INSERT INTO migrations (filename) VALUES ('005_update_author_email_constraint.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -990,7 +1011,8 @@ CREATE TABLE trope_scenes (
 
 -- Create appropriate triggers for timestamp updates
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('006_add_book_metadata_plot_thread_and_tropes_tables.sql');
+INSERT INTO migrations (filename) VALUES ('006_add_book_metadata_plot_thread_and_tropes_tables.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -1069,6 +1091,7 @@ CREATE TABLE event_chapter_mappings (
 -- TRIGGER FOR AUTOMATIC TIMESTAMP UPDATES
 -- =============================================
 
+DROP TRIGGER IF EXISTS update_event_chapter_mappings_timestamp ON event_chapter_mappings;
 CREATE TRIGGER update_event_chapter_mappings_timestamp
     BEFORE UPDATE ON event_chapter_mappings
     FOR EACH ROW
@@ -1079,10 +1102,10 @@ CREATE TRIGGER update_event_chapter_mappings_timestamp
 -- =============================================
 
 -- Event mapping indices
-CREATE INDEX idx_event_chapter_mappings_event_id ON event_chapter_mappings(event_id);
-CREATE INDEX idx_event_chapter_mappings_chapter_id ON event_chapter_mappings(chapter_id);
-CREATE INDEX idx_event_chapter_mappings_presentation ON event_chapter_mappings(presentation_type);
-CREATE INDEX idx_event_chapter_mappings_pov ON event_chapter_mappings(pov_character_id);
+CREATE INDEX IF NOT EXISTS idx_event_chapter_mappings_event_id ON event_chapter_mappings(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_chapter_mappings_chapter_id ON event_chapter_mappings(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_event_chapter_mappings_presentation ON event_chapter_mappings(presentation_type);
+CREATE INDEX IF NOT EXISTS idx_event_chapter_mappings_pov ON event_chapter_mappings(pov_character_id);
 
 -- Add indices for new columns and relationships
 CREATE INDEX IF NOT EXISTS idx_timeline_events_time_period ON timeline_events(time_period);
@@ -1119,7 +1142,8 @@ GROUP BY
 
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('007_add_event_chapter_mapping.sql');
+    INSERT INTO migrations (filename) VALUES ('007_add_event_chapter_mapping.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -1233,48 +1257,52 @@ CREATE TABLE world_element_usage (
 -- ========================================
 
 -- Location indices
-CREATE INDEX idx_locations_series_id ON locations(series_id);
-CREATE INDEX idx_locations_name ON locations(name);
-CREATE INDEX idx_locations_type ON locations(location_type);
-CREATE INDEX idx_locations_parent ON locations(parent_location_id);
+CREATE INDEX IF NOT EXISTS idx_locations_series_id ON locations(series_id);
+CREATE INDEX IF NOT EXISTS idx_locations_name ON locations(name);
+CREATE INDEX IF NOT EXISTS idx_locations_type ON locations(location_type);
+CREATE INDEX IF NOT EXISTS idx_locations_parent ON locations(parent_location_id);
 
 -- World element indices
-CREATE INDEX idx_world_elements_series_id ON world_elements(series_id);
-CREATE INDEX idx_world_elements_name ON world_elements(name);
-CREATE INDEX idx_world_elements_type ON world_elements(element_type);
+CREATE INDEX IF NOT EXISTS idx_world_elements_series_id ON world_elements(series_id);
+CREATE INDEX IF NOT EXISTS idx_world_elements_name ON world_elements(name);
+CREATE INDEX IF NOT EXISTS idx_world_elements_type ON world_elements(element_type);
 
 -- Organization indices
-CREATE INDEX idx_organizations_series_id ON organizations(series_id);
-CREATE INDEX idx_organizations_name ON organizations(name);
-CREATE INDEX idx_organizations_type ON organizations(organization_type);
-CREATE INDEX idx_organizations_headquarters ON organizations(headquarters_location_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_series_id ON organizations(series_id);
+CREATE INDEX IF NOT EXISTS idx_organizations_name ON organizations(name);
+CREATE INDEX IF NOT EXISTS idx_organizations_type ON organizations(organization_type);
+CREATE INDEX IF NOT EXISTS idx_organizations_headquarters ON organizations(headquarters_location_id);
 
 -- Usage tracking indices
-CREATE INDEX idx_world_usage_element ON world_element_usage(element_type, element_id);
-CREATE INDEX idx_world_usage_book ON world_element_usage(book_id);
-CREATE INDEX idx_world_usage_chapter ON world_element_usage(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_world_usage_element ON world_element_usage(element_type, element_id);
+CREATE INDEX IF NOT EXISTS idx_world_usage_book ON world_element_usage(book_id);
+CREATE INDEX IF NOT EXISTS idx_world_usage_chapter ON world_element_usage(chapter_id);
 
 -- ========================================
 -- UPDATE TRIGGERS FOR AUTOMATIC TIMESTAMPS
 -- ========================================
 
+DROP TRIGGER IF EXISTS update_locations_timestamp ON locations;
 CREATE TRIGGER update_locations_timestamp
     BEFORE UPDATE ON locations
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_world_elements_timestamp ON world_elements;
 CREATE TRIGGER update_world_elements_timestamp
     BEFORE UPDATE ON world_elements
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_organizations_timestamp ON organizations;
 CREATE TRIGGER update_organizations_timestamp
     BEFORE UPDATE ON organizations
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
 -- Record this migration     
-INSERT INTO migrations (filename) VALUES ('008_add_world_schema.sql');  
+INSERT INTO migrations (filename) VALUES ('008_add_world_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;  
 
 END $$;  
 
@@ -1519,16 +1547,19 @@ CREATE TABLE word_count_snapshots (
 -- TRIGGERS FOR AUTOMATIC TIMESTAMP UPDATES
 -- =============================================
 
+DROP TRIGGER IF EXISTS update_writing_sessions_timestamp ON writing_sessions;
 CREATE TRIGGER update_writing_sessions_timestamp
     BEFORE UPDATE ON writing_sessions
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_writing_goals_timestamp ON writing_goals;
 CREATE TRIGGER update_writing_goals_timestamp
     BEFORE UPDATE ON writing_goals
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_validation_rules_timestamp ON validation_rules;
 CREATE TRIGGER update_validation_rules_timestamp
     BEFORE UPDATE ON validation_rules
     FOR EACH ROW
@@ -1540,37 +1571,37 @@ CREATE TRIGGER update_validation_rules_timestamp
 -- =============================================
 
 -- Writing sessions indices for AI team queries
-CREATE INDEX idx_writing_sessions_book_date ON writing_sessions(book_id, session_date DESC);
-CREATE INDEX idx_writing_sessions_chapter ON writing_sessions(chapter_id);
-CREATE INDEX idx_writing_sessions_productivity ON writing_sessions(book_id, words_written DESC, session_date DESC);
+CREATE INDEX IF NOT EXISTS idx_writing_sessions_book_date ON writing_sessions(book_id, session_date DESC);
+CREATE INDEX IF NOT EXISTS idx_writing_sessions_chapter ON writing_sessions(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_writing_sessions_productivity ON writing_sessions(book_id, words_written DESC, session_date DESC);
 
 -- Writing goals indices
-CREATE INDEX idx_writing_goals_book_active ON writing_goals(book_id, active) WHERE active = true;
-CREATE INDEX idx_writing_goals_target_date ON writing_goals(target_date, completed);
-CREATE INDEX idx_writing_goals_type ON writing_goals(goal_type, active);
+CREATE INDEX IF NOT EXISTS idx_writing_goals_book_active ON writing_goals(book_id, active) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_writing_goals_target_date ON writing_goals(target_date, completed);
+CREATE INDEX IF NOT EXISTS idx_writing_goals_type ON writing_goals(goal_type, active);
 
 -- Manuscript exports indices
-CREATE INDEX idx_manuscript_exports_book ON manuscript_exports(book_id, export_date DESC);
-CREATE INDEX idx_manuscript_exports_format ON manuscript_exports(export_format, intended_use);
+CREATE INDEX IF NOT EXISTS idx_manuscript_exports_book ON manuscript_exports(book_id, export_date DESC);
+CREATE INDEX IF NOT EXISTS idx_manuscript_exports_format ON manuscript_exports(export_format, intended_use);
 
 -- Validation rules and results indices
-CREATE INDEX idx_validation_rules_book_active ON validation_rules(book_id, active) WHERE active = true;
-CREATE INDEX idx_validation_rules_series_active ON validation_rules(series_id, active) WHERE active = true;
-CREATE INDEX idx_validation_rules_auto ON validation_rules(auto_check, active) WHERE auto_check = true AND active = true;
+CREATE INDEX IF NOT EXISTS idx_validation_rules_book_active ON validation_rules(book_id, active) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_validation_rules_series_active ON validation_rules(series_id, active) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_validation_rules_auto ON validation_rules(auto_check, active) WHERE auto_check = true AND active = true;
 
-CREATE INDEX idx_validation_results_book ON validation_results(book_id, validation_date DESC);
-CREATE INDEX idx_validation_results_unresolved ON validation_results(resolved, acknowledged) WHERE resolved = false;
-CREATE INDEX idx_validation_results_chapter ON validation_results(chapter_id, result_status);
+CREATE INDEX IF NOT EXISTS idx_validation_results_book ON validation_results(book_id, validation_date DESC);
+CREATE INDEX IF NOT EXISTS idx_validation_results_unresolved ON validation_results(resolved, acknowledged) WHERE resolved = false;
+CREATE INDEX IF NOT EXISTS idx_validation_results_chapter ON validation_results(chapter_id, result_status);
 
 
 
 -- Word count tracking indices
-CREATE INDEX idx_word_count_snapshots_book_date ON word_count_snapshots(book_id, snapshot_date DESC);
-CREATE INDEX idx_word_count_snapshots_chapter ON word_count_snapshots(chapter_id, snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_word_count_snapshots_book_date ON word_count_snapshots(book_id, snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_word_count_snapshots_chapter ON word_count_snapshots(chapter_id, snapshot_date DESC);
 
 -- Session chapters link indices
-CREATE INDEX idx_session_chapters_session ON session_chapters(session_id);
-CREATE INDEX idx_session_chapters_chapter ON session_chapters(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_session_chapters_session ON session_chapters(session_id);
+CREATE INDEX IF NOT EXISTS idx_session_chapters_chapter ON session_chapters(chapter_id);
 
 -- =============================================
 -- DEFAULT VALIDATION RULES
@@ -1606,7 +1637,8 @@ CREATE INDEX idx_session_chapters_chapter ON session_chapters(chapter_id);
 
 
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('009_writing_migration.sql');
+INSERT INTO migrations (filename) VALUES ('009_writing_migration.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 
 END $$;  
@@ -1632,7 +1664,8 @@ ALTER TABLE books
 
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('010_update_table_schema.sql');
+    INSERT INTO migrations (filename) VALUES ('010_update_table_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -1793,43 +1826,51 @@ CREATE TABLE character_system_progression (
 -- Create the update_timestamp function if it doesn't exist
 
 -- Information reveal triggers
+DROP TRIGGER IF EXISTS update_information_reveals_timestamp ON information_reveals;
 CREATE TRIGGER update_information_reveals_timestamp
     BEFORE UPDATE ON information_reveals
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_reveal_evidence_timestamp ON reveal_evidence;
 CREATE TRIGGER update_reveal_evidence_timestamp
     BEFORE UPDATE ON reveal_evidence
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_information_flow_timestamp ON information_flow;
 CREATE TRIGGER update_information_flow_timestamp
     BEFORE UPDATE ON information_flow
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
 -- Relationship triggers
+DROP TRIGGER IF EXISTS update_relationship_arcs_timestamp ON relationship_arcs;
 CREATE TRIGGER update_relationship_arcs_timestamp
     BEFORE UPDATE ON relationship_arcs
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_relationship_dynamics_timestamp ON relationship_dynamics;
 CREATE TRIGGER update_relationship_dynamics_timestamp
     BEFORE UPDATE ON relationship_dynamics
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
 -- World system triggers
+DROP TRIGGER IF EXISTS update_world_systems_timestamp ON world_systems;
 CREATE TRIGGER update_world_systems_timestamp
     BEFORE UPDATE ON world_systems
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_system_abilities_timestamp ON system_abilities;
 CREATE TRIGGER update_system_abilities_timestamp
     BEFORE UPDATE ON system_abilities
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
+DROP TRIGGER IF EXISTS update_character_system_progression_timestamp ON character_system_progression;
 CREATE TRIGGER update_character_system_progression_timestamp
     BEFORE UPDATE ON character_system_progression
     FOR EACH ROW
@@ -1840,27 +1881,28 @@ CREATE TRIGGER update_character_system_progression_timestamp
 -- =============================================
 
 -- Information reveals indexes
-CREATE INDEX idx_information_reveals_plot_thread ON information_reveals(plot_thread_id);
-CREATE INDEX idx_information_reveals_type ON information_reveals(reveal_type);
-CREATE INDEX idx_information_reveals_significance ON information_reveals(significance_level);
-CREATE INDEX idx_reveal_evidence_reveal_id ON reveal_evidence(reveal_id);
+CREATE INDEX IF NOT EXISTS idx_information_reveals_plot_thread ON information_reveals(plot_thread_id);
+CREATE INDEX IF NOT EXISTS idx_information_reveals_type ON information_reveals(reveal_type);
+CREATE INDEX IF NOT EXISTS idx_information_reveals_significance ON information_reveals(significance_level);
+CREATE INDEX IF NOT EXISTS idx_reveal_evidence_reveal_id ON reveal_evidence(reveal_id);
 
 -- Relationship indexes
-CREATE INDEX idx_relationship_arcs_plot_thread ON relationship_arcs(plot_thread_id);
-CREATE INDEX idx_relationship_arcs_type ON relationship_arcs(relationship_type);
-CREATE INDEX idx_relationship_dynamics_arc_id ON relationship_dynamics(arc_id);
-CREATE INDEX idx_relationship_dynamics_chapter_id ON relationship_dynamics(chapter_id);
+CREATE INDEX IF NOT EXISTS idx_relationship_arcs_plot_thread ON relationship_arcs(plot_thread_id);
+CREATE INDEX IF NOT EXISTS idx_relationship_arcs_type ON relationship_arcs(relationship_type);
+CREATE INDEX IF NOT EXISTS idx_relationship_dynamics_arc_id ON relationship_dynamics(arc_id);
+CREATE INDEX IF NOT EXISTS idx_relationship_dynamics_chapter_id ON relationship_dynamics(chapter_id);
 
 -- World system indexes
-CREATE INDEX idx_world_systems_series_id ON world_systems(series_id);
-CREATE INDEX idx_world_systems_type ON world_systems(system_type);
-CREATE INDEX idx_system_abilities_system_id ON system_abilities(system_id);
-CREATE INDEX idx_character_system_progression_character ON character_system_progression(character_id);
-CREATE INDEX idx_character_system_progression_system ON character_system_progression(system_id);
+CREATE INDEX IF NOT EXISTS idx_world_systems_series_id ON world_systems(series_id);
+CREATE INDEX IF NOT EXISTS idx_world_systems_type ON world_systems(system_type);
+CREATE INDEX IF NOT EXISTS idx_system_abilities_system_id ON system_abilities(system_id);
+CREATE INDEX IF NOT EXISTS idx_character_system_progression_character ON character_system_progression(character_id);
+CREATE INDEX IF NOT EXISTS idx_character_system_progression_system ON character_system_progression(system_id);
 
 
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('011_Universal_Schema_Migrations.sql');
+INSERT INTO migrations (filename) VALUES ('011_Universal_Schema_Migrations.sql')
+    ON CONFLICT (filename) DO NOTHING;
 END
 $$;
 COMMIT;-- Scene Implementation: Essential Fields for Book Writing
@@ -1897,7 +1939,8 @@ CREATE INDEX IF NOT EXISTS idx_trope_scenes_scene_id ON trope_scenes(id);
 CREATE INDEX IF NOT EXISTS idx_trope_scenes_elements ON trope_scenes USING GIN(scene_elements);
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('013_alter_scene_tracking_schema.sql');
+    INSERT INTO migrations (filename) VALUES ('013_alter_scene_tracking_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -1934,7 +1977,8 @@ COMMENT ON COLUMN chapter_scenes.scene_revisions IS 'Array of previous versions 
 
 
 -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('014_Scene_Schema_updates.sql');
+    INSERT INTO migrations (filename) VALUES ('014_Scene_Schema_updates.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -1980,10 +2024,10 @@ CREATE TABLE series_genres (
 -- CREATE INDICES FOR PERFORMANCE
 -- =============================================
 
-CREATE INDEX idx_book_genres_book_id ON book_genres(book_id);
-CREATE INDEX idx_book_genres_genre_id ON book_genres(genre_id);
-CREATE INDEX idx_series_genres_series_id ON series_genres(series_id);
-CREATE INDEX idx_series_genres_genre_id ON series_genres(genre_id);
+CREATE INDEX IF NOT EXISTS idx_book_genres_book_id ON book_genres(book_id);
+CREATE INDEX IF NOT EXISTS idx_book_genres_genre_id ON book_genres(genre_id);
+CREATE INDEX IF NOT EXISTS idx_series_genres_series_id ON series_genres(series_id);
+CREATE INDEX IF NOT EXISTS idx_series_genres_genre_id ON series_genres(genre_id);
 
 -- =============================================
 -- MIGRATE EXISTING DATA
@@ -2095,7 +2139,8 @@ LEFT JOIN genres g ON sg.genre_id = g.id
 GROUP BY s.id;
 
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('015_normalize_genre_relationships.sql');
+INSERT INTO migrations (filename) VALUES ('015_normalize_genre_relationships.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -2183,7 +2228,8 @@ CREATE INDEX IF NOT EXISTS idx_world_elements_element_type ON world_elements(ele
 CREATE INDEX IF NOT EXISTS idx_world_elements_series_id ON world_elements(series_id);
 
 -- Record this migration
-INSERT INTO migrations (filename) VALUES ('016_fix_world_elements_schema.sql');
+INSERT INTO migrations (filename) VALUES ('016_fix_world_elements_schema.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END $$;
 
@@ -2220,7 +2266,8 @@ COMMENT ON COLUMN organizations.enemies IS 'Array of enemy organization IDs';
 
 
 -- Record this migration     
-INSERT INTO migrations (filename) VALUES ('017_add_missing_feature_columns.sql');  
+INSERT INTO migrations (filename) VALUES ('017_add_missing_feature_columns.sql')
+    ON CONFLICT (filename) DO NOTHING;  
 
 END $$;  
 
@@ -2342,7 +2389,8 @@ BEGIN
         ON DELETE CASCADE;
 
     -- Record this migration
-    INSERT INTO migrations (filename) VALUES ('018_update_cascade_constraints.sql');
+    INSERT INTO migrations (filename) VALUES ('018_update_cascade_constraints.sql')
+    ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
@@ -2367,7 +2415,7 @@ ALTER TABLE world_elements
 ADD COLUMN system_id INTEGER REFERENCES world_systems(id) ON DELETE SET NULL;
 
 -- Add index for better query performance when filtering by system
-CREATE INDEX idx_world_elements_system_id ON world_elements(system_id);
+CREATE INDEX IF NOT EXISTS idx_world_elements_system_id ON world_elements(system_id);
 
 -- Add comment explaining the relationship
 COMMENT ON COLUMN world_elements.system_id IS 'Optional foreign key to world_systems table. Links a specific world element (e.g., "Fire Blast Spell") to its parent system (e.g., "Elemental Magic System")';
