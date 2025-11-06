@@ -4,7 +4,7 @@ services:
   # ========================================
   postgres:
     image: postgres:15
-    container_name: mcp-writing-db
+    container_name: ${POSTGRES_CONTAINER_NAME:-mcp-writing-db}
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
@@ -15,9 +15,9 @@ services:
       POSTGRES_EFFECTIVE_CACHE_SIZE: ${POSTGRES_EFFECTIVE_CACHE_SIZE:-1GB}
       POSTGRES_MAINTENANCE_WORK_MEM: ${POSTGRES_MAINTENANCE_WORK_MEM:-128MB}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
     volumes:
-      - mcp-writing-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
       - ../../migrations:/migrations:ro
     networks:
@@ -37,7 +37,7 @@ services:
       context: ../..
       dockerfile: distribution/docker/Dockerfile.mcp-connector
     image: mcp-writing-connector:latest
-    container_name: mcp-connector
+    container_name: ${MCP_CONNECTOR_CONTAINER_NAME:-mcp-connector}
     restart: unless-stopped
     depends_on:
       postgres:
@@ -48,9 +48,9 @@ services:
       PORT: ${MCP_CONNECTOR_PORT:-50880}
 
       # Database connection
-      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME:-mcp-writing-db}:5432/${POSTGRES_DB:-mcp_writing_db}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME:-mcp-writing-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-mcp_writing_db}
       POSTGRES_HOST: ${POSTGRES_CONTAINER_NAME:-mcp-writing-db}
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
       POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
       POSTGRES_USER: ${POSTGRES_USER:-writer}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -58,9 +58,9 @@ services:
       # MCP server configuration
       NODE_ENV: ${NODE_ENV:-development}
       INCLUDE_AUTHOR_SERVER: ${INCLUDE_AUTHOR_SERVER:-true}
-      MCP_STDIO_MODE: 'false'
+      MCP_STDIO_MODE: ${MCP_STDIO_MODE:-false}
     ports:
-      - "${MCP_CONNECTOR_PORT:-50880}:50880"
+      - "${MCP_CONNECTOR_PORT:-50880}:${MCP_CONNECTOR_PORT:-50880}"
     volumes:
       # Mount source as read-only for development
       - ../../src:/app/src:ro
@@ -70,7 +70,7 @@ services:
     networks:
       - mcp-network
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:50880/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:${MCP_CONNECTOR_PORT:-50880}/health"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -82,7 +82,7 @@ services:
   # ========================================
   # typing-mind-web:
   #   image: nginx:alpine
-  #   container_name: typing-mind-web
+  #   container_name: ${TYPING_MIND_CONTAINER_NAME:-typing-mind-web}
   #   restart: unless-stopped
   #   ports:
   #     - "${TYPING_MIND_PORT:-3000}:80"
@@ -98,10 +98,10 @@ services:
   #     retries: 3
 
 volumes:
-  mcp-writing-data:
-    name: mcp-writing-data
+  postgres-data:
+    name: ${POSTGRES_VOLUME_NAME:-mcp-writing-data}
 
 networks:
   mcp-network:
-    name: mcp-network
+    name: ${MCP_NETWORK_NAME:-mcp-network}
     driver: bridge
