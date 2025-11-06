@@ -1,58 +1,50 @@
 # Quick Start - MCP Writing System
 
-This distribution provides a **complete standalone setup** with PostgreSQL database and MCP Connector.
+This distribution provides a **complete automated setup** with PostgreSQL database, MCP Connector, and Typing Mind.
 
 ## ✅ What This Does
 
 - Builds and runs **PostgreSQL database** (`mcp-writing-db`)
 - Builds and runs **MCP Connector** with all 9 MCP servers
 - Runs MCP Connector on port 50880
-- Runs **Typing Mind web server** on port 3000 (requires setup - see below)
+- Runs **Typing Mind web server** on port 3000
 - Automatically applies all database migrations
 - Ready for Typing Mind integration
 
-## 🚀 Quick Start (3 Steps)
+## 🚀 Automated Setup
 
-### Step 1: Generate environment configuration
+### First Time Setup (Run Once)
 
 ```powershell
 cd distribution
-
-# Generate .env file with secure random credentials
-.\generate-env.ps1
-
-# This creates .env with auto-generated secure passwords
+.\setup-all.ps1
 ```
 
-### Step 2: Start the complete stack
+**What this does:**
+1. Downloads Typing Mind static files (730 files, ~63MB) from https://github.com/TypingMind/typingmind
+2. Generates secure `.env` file with random passwords (persists between runs)
+3. Builds Docker images
+4. Starts all containers
+5. Waits for services to be healthy
+6. Runs health checks
+7. Displays connection information
+
+**Total time:** ~2-3 minutes
+
+### Every Subsequent Run
 
 ```powershell
-cd docker
-docker-compose --env-file ../.env up -d --build
-
-# Watch the logs
-docker-compose --env-file ../.env logs -f
+cd distribution
+.\run.ps1
 ```
 
-### Step 3: Verify it's working
+**What this does:**
+1. Checks Docker is running
+2. Uses existing `.env` file (does NOT regenerate)
+3. Starts containers (if not already running)
+4. Returns connection info
 
-```powershell
-# From the distribution folder
-cd ..
-.\test-docker-stack.ps1 -Verbose
-
-# Or check manually
-docker ps
-# You should see: mcp-writing-db, mcp-connector, and typing-mind-web
-# (typing-mind-web requires setup first - see Step 4 below)
-```
-
-## 🧪 Test It
-
-```powershell
-# From the distribution folder
-.\test-docker-stack.ps1 -Verbose
-```
+**Total time:** ~10-30 seconds
 
 ## ✅ Success Looks Like
 
@@ -89,37 +81,22 @@ SUCCESS: All tests passed!
 ========================================
 ```
 
-## 📋 Step 4: Set Up Typing Mind (Optional but Recommended)
+## 📋 Accessing Typing Mind
 
-You have two options for accessing Typing Mind:
+After setup completes, Typing Mind is automatically running on port 3000.
 
-### Option 1: Local Typing Mind (Community License) - RECOMMENDED ⭐
+**Access:** http://localhost:3000
 
-**Best for:** Community license holders who want the full integrated experience
-
-👉 **See `TYPING-MIND-SETUP.md` for complete instructions**
-
-Quick version:
-1. Download Typing Mind static files from your account
-2. Extract into `distribution/typing-mind-static/` folder
-3. Restart Docker: `docker-compose down && docker-compose up -d`
-4. Access at: **http://localhost:3000**
-5. MCP Connector is pre-configured!
-
-### Option 2: Browser-Based (Any License)
-
-**MCP Connector Endpoint:**
-- URL: `http://localhost:50880`
-- Auth Token: (from your `.env` file - look for `MCP_AUTH_TOKEN`)
-
-**To configure Typing Mind:**
-1. Open Typing Mind in browser (https://custom.typingmind.com)
+**MCP Connector Configuration:**
+1. Open Typing Mind at http://localhost:3000
 2. Go to Settings → Advanced → Model Context Protocol
 3. Click "Add MCP Connector"
 4. Enter:
    - URL: `http://localhost:50880`
-   - Token: (your `MCP_AUTH_TOKEN`)
+   - Token: (displayed in setup output, or check `.env` file for `MCP_AUTH_TOKEN`)
 5. Click Connect
+
+All 9 MCP servers will now be available in Typing Mind!
 
 ## 🔍 Troubleshooting
 
