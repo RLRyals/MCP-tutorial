@@ -75,14 +75,94 @@ Write-Host "--------" -ForegroundColor Gray
 
 $dockerDir = Join-Path $ScriptDir "docker"
 
-# Check if Docker is running
-try {
-    $null = docker ps 2>&1
+# Function to check if Docker Desktop is installed
+function Test-DockerInstalled {
+    $dockerPath = Get-Command docker -ErrorAction SilentlyContinue
+    if ($dockerPath) {
+        return $true
+    }
+    return $false
+}
+
+# Function to test if Docker is running
+function Test-DockerRunning {
+    try {
+        $null = docker ps 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            return $true
+        }
+    } catch {
+        return $false
+    }
+    return $false
+}
+
+# Function to start Docker Desktop on Windows
+function Start-DockerDesktop {
+    Write-Host "  Starting Docker Desktop..." -ForegroundColor Yellow
+
+    # Try multiple common Docker Desktop paths
+    $dockerPaths = @(
+        "${env:ProgramFiles}\Docker\Docker\Docker Desktop.exe",
+        "${env:ProgramFiles(x86)}\Docker\Docker\Docker Desktop.exe",
+        "$env:LOCALAPPDATA\Docker\Docker Desktop.exe"
+    )
+
+    $dockerExe = $null
+    foreach ($path in $dockerPaths) {
+        if (Test-Path $path) {
+            $dockerExe = $path
+            break
+        }
+    }
+
+    if (-not $dockerExe) {
+        Write-Host "  ERROR: Could not find Docker Desktop executable" -ForegroundColor Red
+        Write-Host "  Please start Docker Desktop manually and try again" -ForegroundColor Yellow
+        return $false
+    }
+
+    # Start Docker Desktop
+    Start-Process -FilePath $dockerExe -WindowStyle Hidden
+
+    # Wait for Docker to start (max 60 seconds)
+    Write-Host "  Waiting for Docker to start..." -ForegroundColor Gray
+    $maxWait = 60
+    $waited = 0
+
+    while ($waited -lt $maxWait) {
+        Start-Sleep -Seconds 2
+        $waited += 2
+
+        if (Test-DockerRunning) {
+            Write-Host "  Docker is ready" -ForegroundColor Green
+            return $true
+        }
+
+        if ($Verbose) {
+            Write-Host "  Waiting... ($waited/$maxWait seconds)" -ForegroundColor DarkGray
+        }
+    }
+
+    Write-Host "  ERROR: Docker did not start in time" -ForegroundColor Red
+    return $false
+}
+
+# Check if Docker is installed
+if (-not (Test-DockerInstalled)) {
+    Write-Host "  ERROR: Docker Desktop not installed!" -ForegroundColor Red
+    Write-Host "  Download from: https://www.docker.com/products/docker-desktop" -ForegroundColor Yellow
+    exit 2
+}
+
+# Check if Docker is running, start if not
+if (-not (Test-DockerRunning)) {
+    Write-Host "  Docker is not running" -ForegroundColor Yellow
+    if (-not (Start-DockerDesktop)) {
+        exit 3
+    }
+} else {
     Write-Host "  Docker is running" -ForegroundColor Green
-} catch {
-    Write-Host "  ERROR: Docker is not running!" -ForegroundColor Red
-    Write-Host "  Please start Docker Desktop and try again" -ForegroundColor Yellow
-    exit 1
 }
 
 # Start the stack

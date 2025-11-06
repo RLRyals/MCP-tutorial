@@ -4,7 +4,9 @@ Complete standalone Docker-based setup for the MCP Writing System with Typing Mi
 
 ## 🎯 For Electron App Integration
 
-This distribution is designed to be completely automated for Electron app integration.
+This distribution is designed to be **completely automated** and run by an Electron desktop application. Users **never run scripts manually** - the Electron app handles everything.
+
+**See `ELECTRON-INTEGRATION.md` for complete integration guide.**
 
 ### First-Time Setup (Run Once)
 
@@ -40,14 +42,23 @@ cd distribution
 
 **Total time:** ~10-30 seconds
 
-### Available Scripts
+### Available Scripts (Called by Electron App)
 
-| Script | Purpose | When to Use |
-|--------|---------|-------------|
-| `setup-all.ps1` | First-time setup | First launch of Electron app |
-| `run.ps1` | Start services | Every time Electron app opens |
-| `test-docker-stack.ps1` | Verify/diagnose | Troubleshooting |
-| `download-typingmind.ps1` | Update Typing Mind | Check for updates |
+| Script | Platform | Purpose | Exit Codes |
+|--------|----------|---------|------------|
+| `setup-all.ps1` | Windows | First-time setup | 0=success, 2=no Docker, 3=Docker won't start |
+| `setup-all.sh` | Mac/Linux | First-time setup | 0=success, 2=no Docker, 3/4=Docker won't start |
+| `run.ps1` | Windows | Every launch | 0=success, 2=no Docker, 3=Docker won't start |
+| `run.sh` | Mac/Linux | Every launch | 0=success, 2=no Docker, 3/4=Docker won't start |
+| `download-typingmind.ps1` | Windows | Update Typing Mind | 0=success, 1=error |
+| `download-typingmind.sh` | Mac/Linux | Update Typing Mind | 0=success, 1=error |
+| `test-docker-stack.ps1` | Windows | Diagnostics | 0=success, 1=error |
+
+**Exit Code Handling:**
+- `0`: Success - Continue normally
+- `1`: General error - Show error message
+- `2`: Docker not installed - Show download link
+- `3` or `4`: Docker won't start - Show manual start message
 
 ---
 
@@ -225,33 +236,53 @@ After setup is complete:
 
 ## 💡 For Electron App Developers
 
+### Automated Docker Handling
+
+**The scripts automatically:**
+1. Detect if Docker Desktop is installed
+2. Start Docker Desktop if not running
+3. Wait up to 60 seconds for Docker to be ready
+4. Exit with specific error codes if Docker is missing or won't start
+
+**Your Electron app should:**
+1. Catch exit code 2 (Docker not installed) → Show download dialog
+2. Catch exit code 3/4 (Docker won't start) → Show manual start message
+3. Handle all script output for progress display
+
 ### Recommended Workflow
 
-1. **On First Launch:** Run `.\setup-all.ps1`
-   - Downloads everything
-   - Creates `.env` (user can edit if needed)
-   - Builds images
+1. **On First Launch:** Call `setup-all.ps1` (Win) or `setup-all.sh` (Mac)
+   - Show setup wizard to collect environment variables
+   - Generate `.env` file with user input
+   - Execute script and display progress
    - ~2-3 minutes
 
-2. **Every Launch:** Run `.\run.ps1`
-   - Uses existing `.env`
-   - Starts containers (if not running)
+2. **Every Launch:** Call `run.ps1` (Win) or `run.sh` (Mac)
+   - No user interaction needed
+   - Display "Starting services..." message
    - ~10-30 seconds
 
-3. **Check for Updates:** Periodically run `.\download-typingmind.ps1 -Force`
-   - Downloads latest Typing Mind
-   - Restarts web container
+3. **Check for Updates:** Periodically call `download-typingmind.ps1 -Force`
+   - Run in background (weekly check)
+   - Notify user if update available
 
-4. **Diagnostics:** Run `.\test-docker-stack.ps1 -Verbose`
-   - Checks all services
-   - Shows detailed status
+4. **Diagnostics:** Call `test-docker-stack.ps1 -Verbose`
+   - On error or user request
+   - Display detailed status in UI
 
-### Important Notes
+### Important Persistence
 
-- `.env` file persists between runs (user credentials saved)
-- Docker images persist (no rebuild needed)
-- Only Typing Mind static files update frequently
-- Database data stored in Docker volume (persists)
+**Persists between runs:**
+- `.env` file (user credentials, never regenerated)
+- Docker images (no rebuild unless `-Force`)
+- Docker volumes (database data)
+- Typing Mind static files
+
+**Only user interaction:**
+- Fill out environment variable form (first time only)
+- Everything else is automated
+
+**See `ELECTRON-INTEGRATION.md` for complete code examples.**
 
 ---
 
