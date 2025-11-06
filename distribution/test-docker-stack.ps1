@@ -78,7 +78,34 @@ Push-Location $dockerDir
     function Wait-ForServices {
         Write-Host "`nWaiting for services to be healthy..." -ForegroundColor Yellow
 
+        # First, wait for PostgreSQL to be healthy (MCP-Connector depends on it)
+        Write-Host "`nStep 1: Waiting for PostgreSQL..." -ForegroundColor Cyan
         $maxAttempts = 30
+        $attempt = 0
+
+        while ($attempt -lt $maxAttempts) {
+            $attempt++
+            Write-Host "  Attempt $attempt/$maxAttempts..." -NoNewline
+
+            $postgresHealth = docker inspect --format='{{.State.Health.Status}}' ${POSTGRES_CONTAINER_NAME:-mcp-writing-db} 2>$null
+
+            if ($postgresHealth -eq "healthy") {
+                Write-Host " PostgreSQL: healthy [OK]" -ForegroundColor Green
+                break
+            }
+
+            Write-Host " PostgreSQL: $postgresHealth" -ForegroundColor Gray
+            Start-Sleep -Seconds 2
+        }
+
+        if ($postgresHealth -ne "healthy") {
+            Write-Host "`n[FAIL] PostgreSQL did not become healthy in time" -ForegroundColor Red
+            Write-Host "  MCP-Connector cannot start until PostgreSQL is healthy" -ForegroundColor Yellow
+            return $false
+        }
+
+        # Second, wait for MCP-Connector to be healthy (depends on postgres)
+        Write-Host "`nStep 2: Waiting for MCP-Connector..." -ForegroundColor Cyan
         $attempt = 0
 
         while ($attempt -lt $maxAttempts) {
@@ -88,7 +115,7 @@ Push-Location $dockerDir
             $connectorHealth = docker inspect --format='{{.State.Health.Status}}' mcp-connector 2>$null
 
             if ($connectorHealth -eq "healthy") {
-                Write-Host " [OK]" -ForegroundColor Green
+                Write-Host " MCP Connector: healthy [OK]" -ForegroundColor Green
                 return $true
             }
 
