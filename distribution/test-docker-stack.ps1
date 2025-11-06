@@ -104,7 +104,7 @@ Push-Location $dockerDir
     function Test-Database {
         Write-Host "`nTesting database connection..." -ForegroundColor Yellow
 
-        $result = docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT COUNT(*) FROM migrations;" 2>&1
+        $result = docker exec ${POSTGRES_CONTAINER_NAME:-mcp-writing-db} psql -U writer -d mcp_writing_db -c "SELECT COUNT(*) FROM migrations;" 2>&1
 
         if ($LASTEXITCODE -eq 0) {
             Write-Host " Database is accessible" -ForegroundColor Green
@@ -141,7 +141,7 @@ Push-Location $dockerDir
             Write-Host "================`n" -ForegroundColor Cyan
 
             Write-Host "PostgreSQL Logs:" -ForegroundColor Yellow
-            docker logs mcp-writing-db --tail 20
+            docker logs ${POSTGRES_CONTAINER_NAME:-mcp-writing-db} --tail 20
 
             Write-Host "`nMCP Connector Logs:" -ForegroundColor Yellow
             docker logs mcp-connector --tail 20
