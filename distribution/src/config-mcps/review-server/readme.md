@@ -1,0 +1,10 @@
+writing_validate_chapter_structure
+writing_validate_beat_placement
+writing_check_structure_violations
+world_check_world_consistency
+set_writing_goals
+get_productivity_analytics
+writing_export_manuscript
+
+writing_word_count_tracking
+get_writing_progress

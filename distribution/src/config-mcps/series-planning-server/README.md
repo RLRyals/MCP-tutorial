@@ -1,0 +1,12 @@
+series_create_series
+series_update_series
+series_get_series
+series_list_series
+assign_series_genres
+plot_define_world_system
+world_create_location
+world_create_organization
+world_create_world_element
+world_get_locations
+world_get_world_elements
+world_get_organizations

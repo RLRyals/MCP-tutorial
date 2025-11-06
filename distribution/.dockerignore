@@ -5,7 +5,6 @@
 
 # Documentation
 *.md
-docs/
 README*
 
 # Node modules (will be installed in container)
@@ -18,6 +17,7 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+credentials-backup.txt
 
 # IDE and editor files
 .vscode/
@@ -28,10 +28,8 @@ yarn-error.log*
 .DS_Store
 
 # Test files
-test/
-tests/
-**/*.test.js
-**/*.spec.js
+src/**/*.test.js
+src/**/*.spec.js
 coverage/
 
 # Build artifacts
@@ -39,18 +37,15 @@ dist/
 build/
 *.log
 
-# Distribution artifacts (but keep src and migrations accessible)
-# Exclude docker directory but allow entrypoint script
-distribution/docker/*.yml
-distribution/docker/Dockerfile*
-distribution/docker/init.sql
-distribution/docker/nginx.conf
-scripts/
+# Distribution scripts (not needed in container)
+generate-env.ps1
+test-docker-stack.ps1
+
+# Docker files (keep only entrypoint)
+docker/*.yml
+docker/Dockerfile*
+docker/init.sql
+docker/nginx.conf
 
 # Typing Mind files (managed separately)
 typing-mind-static/
-
-# Docker files (avoid recursion)
-Dockerfile*
-docker-compose*.yml
-.dockerignore

@@ -1,0 +1,173 @@
+// src/shared/database.js - Shared database connection and utilities
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+if (!process.env.DATABASE_URL) {
+    // Find the project root by looking for package.json
+    const projectRoot = path.resolve(__dirname, '../../');
+    const envPath = path.join(projectRoot, '.env');
+    
+    // Completely suppress dotenv output in MCP stdio mode
+    if (process.env.MCP_STDIO_MODE === 'true') {
+        // Temporarily redirect stdout to prevent dotenv pollution
+        const originalWrite = process.stdout.write;
+        process.stdout.write = () => true;
+        
+        try {
+            dotenv.config({ path: envPath, silent: true, debug: false });
+        } finally {
+            // Restore stdout
+            process.stdout.write = originalWrite;
+        }
+    } else {
+        dotenv.config({ path: envPath, silent: true });
+        console.error(`Loading .env from: ${envPath}`);
+    }
+}
+
+export class DatabaseManager {
+    constructor() {
+        try {
+            // Only log errors and critical info during MCP stdio mode
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Constructor starting...');
+
+                // Debug environment variables when MCP server starts
+                console.error('=== DATABASE DEBUG ===');
+                console.error('NODE_ENV:', process.env.NODE_ENV);
+                console.error('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+                console.error('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
+                console.error('DATABASE_URL preview:', process.env.DATABASE_URL?.substring(0, 30) + '...' || 'undefined');
+                console.error('Working directory:', process.cwd());
+                console.error('====================');
+            }
+
+            if (!process.env.DATABASE_URL) {
+                throw new Error('DATABASE_URL environment variable is not set');
+            }
+
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Creating connection pool...');
+            }
+
+            this.pool = new Pool({
+                connectionString: process.env.DATABASE_URL,
+                ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+                // Connection pool optimization
+                max: 20,                        // Maximum pool size
+                min: 2,                         // Keep 2 connections always ready
+                idleTimeoutMillis: 30000,       // Close idle connections after 30s
+                connectionTimeoutMillis: 5000,  // Increased from 2s to 5s for slower systems
+                // Performance optimizations
+                allowExitOnIdle: true,          // Allow process to exit when idle
+                maxUses: 7500,                  // Recycle connections after 7500 uses
+            });
+
+            this.pool.on('error', (err) => {
+                console.error('[DATABASE] Pool error:', err);
+            });
+            
+            // Reduce connection logging in stdio mode
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                this.pool.on('connect', () => {
+                    console.error('[DATABASE] New client connected to pool');
+                });
+                console.error('[DATABASE] Constructor completed successfully');
+            }
+        } catch (error) {
+            console.error('[DATABASE] Constructor failed:', error.message);
+            if (process.env.MCP_STDIO_MODE !== 'true') {
+                console.error('[DATABASE] Stack:', error.stack);
+            }
+            throw error;
+        }
+    }
+
+    async query(text, params = []) {
+        const client = await this.pool.connect();
+        try {
+            const result = await client.query(text, params);
+            return result;
+        } catch (error) {
+            console.error('Database query error:', error);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    async transaction(callback) {
+        const client = await this.pool.connect();
+        try {
+            await client.query('BEGIN');
+            const result = await callback(client);
+            await client.query('COMMIT');
+            return result;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+
+    async healthCheck() {
+        try {
+            const result = await this.query('SELECT NOW()');
+            return { healthy: true, timestamp: result.rows[0].now };
+        } catch (error) {
+            return { healthy: false, error: error.message };
+        }
+    }
+
+    async close() {
+        await this.pool.end();
+    }
+
+    // Common query helpers
+    async findById(table, id) {
+        const result = await this.query(`SELECT * FROM ${table} WHERE id = $1`, [id]);
+        return result.rows[0];
+    }
+
+    async create(table, data) {
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+        const placeholders = keys.map((_, index) => `$${index + 1}`).join(', ');
+        
+        const query = `
+            INSERT INTO ${table} (${keys.join(', ')}) 
+            VALUES (${placeholders}) 
+            RETURNING *
+        `;
+        
+        const result = await this.query(query, values);
+        return result.rows[0];
+    }
+
+    async update(table, id, data) {
+        const keys = Object.keys(data);
+        const values = Object.values(data);
+        const setClause = keys.map((key, index) => `${key} = $${index + 2}`).join(', ');
+        
+        const query = `
+            UPDATE ${table} 
+            SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = $1 
+            RETURNING *
+        `;
+        
+        const result = await this.query(query, [id, ...values]);
+        return result.rows[0];
+    }
+
+    async delete(table, id) {
+        const result = await this.query(`DELETE FROM ${table} WHERE id = $1 RETURNING *`, [id]);
+        return result.rows[0];
+    }
+}

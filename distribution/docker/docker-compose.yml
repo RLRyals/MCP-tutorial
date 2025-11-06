@@ -19,7 +19,6 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - ../../migrations:/migrations:ro
     networks:
       - mcp-network
     healthcheck:
@@ -34,8 +33,8 @@ services:
   # ========================================
   mcp-connector:
     build:
-      context: ../..
-      dockerfile: distribution/docker/Dockerfile.mcp-connector
+      context: ..
+      dockerfile: docker/Dockerfile.mcp-connector
     image: mcp-writing-connector:latest
     container_name: ${MCP_CONNECTOR_CONTAINER_NAME:-mcp-connector}
     restart: unless-stopped
@@ -62,9 +61,6 @@ services:
     ports:
       - "${MCP_CONNECTOR_PORT:-50880}:${MCP_CONNECTOR_PORT:-50880}"
     volumes:
-      # Mount source as read-only for development
-      - ../../src:/app/src:ro
-      - ../../migrations:/app/migrations:ro
       # Preserve node_modules in container
       - /app/node_modules
     networks:

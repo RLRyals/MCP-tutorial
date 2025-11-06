@@ -22,10 +22,9 @@ RUN npm ci --only=production
 
 # Copy MCP server source code
 COPY src/ ./src/
-COPY migrations/ ./migrations/
 
 # Copy entrypoint script
-COPY distribution/docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Create non-root user for security

@@ -1,0 +1,48 @@
+{
+  "name": "mcp-tutorial",
+  "version": "1.0.0",
+  "description": "This is the tutorial version for the MCP book series database",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/stdio-server.js",
+    "start:stdio": "node src/stdio-server.js",
+    "start:http": "node src/http-server.js",
+    "start:author": "node src/mcps/author-server.js --stdio",
+    "start:author:http": "node src/mcps/author-server.js --http --port 3002",
+    "start:series": "node src/mcps/series-server.js --stdio",
+    "start:series:http": "node src/mcps/series-server.js --http --port 3003",
+    "start:book": "node src/mcps/book-server.js --stdio",
+    "start:book:http": "node src/mcps/book-server.js --http --port 3004",
+    "start:timeline": "node src/mcps/timeline-server.js --stdio",
+    "start:timeline:http": "node src/mcps/timeline-server.js --http --port 3005",
+    "start:metadata": "node src/mcps/metadata-server.js --stdio",
+    "start:metadata:http": "node src/mcps/metadata-server.js --http --port 3006",
+    "start:trope": "node src/mcps/trope-server/index.js --stdio",
+    "start:trope:http": "node src/mcps/trope-server/index.js --http --port 3007"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RLRyals/MCP-tutorial.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/RLRyals/MCP-tutorial/issues"
+  },
+  "homepage": "https://github.com/RLRyals/MCP-tutorial#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.5",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "pg": "^8.16.3"
+  }
+}

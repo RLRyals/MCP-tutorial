@@ -27,62 +27,6 @@ wait_for_postgres() {
     echo "✅ PostgreSQL is ready!"
 }
 
-# Function to apply migrations
-apply_migrations() {
-    echo ""
-    echo "📦 Applying database migrations..."
-
-    local migrations_dir="/app/migrations"
-    local applied_count=0
-
-    if [ ! -d "$migrations_dir" ]; then
-        echo "⚠️  No migrations directory found at $migrations_dir"
-        return
-    fi
-
-    # Check if migrations table exists
-    PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tc \
-        "SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'migrations';" | grep -q 1 || {
-        echo "   Creating migrations tracking table..."
-        PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
-            CREATE TABLE IF NOT EXISTS migrations (
-                id SERIAL PRIMARY KEY,
-                filename VARCHAR(255) NOT NULL UNIQUE,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-EOSQL
-    }
-
-    # Apply migrations in order
-    for migration_file in $(ls "$migrations_dir"/*.sql 2>/dev/null | sort); do
-        local filename=$(basename "$migration_file")
-
-        # Check if migration already applied
-        local already_applied=$(PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc \
-            "SELECT COUNT(*) FROM migrations WHERE filename = '$filename';")
-
-        if [ "$already_applied" -eq "0" ]; then
-            echo "   Applying: $filename"
-
-            # Apply migration
-            if PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -f "$migration_file" > /dev/null 2>&1; then
-                # Record successful migration
-                PGPASSWORD=$POSTGRES_PASSWORD psql -h "$POSTGRES_HOST" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c \
-                    "INSERT INTO migrations (filename) VALUES ('$filename');" > /dev/null
-                applied_count=$((applied_count + 1))
-            else
-                echo "   ⚠️  Warning: Migration $filename failed (may be idempotent)"
-            fi
-        fi
-    done
-
-    if [ $applied_count -gt 0 ]; then
-        echo "✅ Applied $applied_count new migration(s)"
-    else
-        echo "✅ All migrations already applied"
-    fi
-}
-
 # Function to discover MCP servers
 discover_mcp_servers() {
     echo ""
@@ -143,7 +87,6 @@ main() {
 
     # Execute startup sequence
     wait_for_postgres
-    apply_migrations
     discover_mcp_servers
     start_mcp_connector
 }

@@ -1,0 +1,7 @@
+book_create_scene
+book_update_scene
+book_get_scene
+book_list_scenes
+character_get_characters_in_chapter
+writing_word_count_tracking
+log_writing_session
