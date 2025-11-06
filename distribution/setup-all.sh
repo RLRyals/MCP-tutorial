@@ -279,8 +279,7 @@ fi
 
 # Wait for MCP Connector
 echo "  Checking MCP Connector..."
-echo "  (Initial startup may take 45-60 seconds)"
-MAX_CONNECTOR_ATTEMPTS=60  # Increased from 30 to allow more time
+MAX_CONNECTOR_ATTEMPTS=30
 ATTEMPT=0
 while [ $ATTEMPT -lt $MAX_CONNECTOR_ATTEMPTS ]; do
     ATTEMPT=$((ATTEMPT + 1))
@@ -292,8 +291,7 @@ while [ $ATTEMPT -lt $MAX_CONNECTOR_ATTEMPTS ]; do
         break
     fi
 
-    # Show progress every 10 attempts or if verbose
-    if [ "$VERBOSE" = true ] || [ $((ATTEMPT % 10)) -eq 0 ]; then
+    if [ "$VERBOSE" = true ]; then
         echo "  Attempt $ATTEMPT/$MAX_CONNECTOR_ATTEMPTS - MCP Connector: $CONNECTOR_HEALTH"
     fi
 

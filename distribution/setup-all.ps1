@@ -223,9 +223,8 @@ if ($postgresHealth -ne "healthy") {
 
 # Wait for MCP Connector
 Write-Host "  Waiting for MCP Connector..." -ForegroundColor Gray
-Write-Host "  (Initial startup may take 45-60 seconds)" -ForegroundColor DarkGray
 $attempt = 0
-$maxConnectorAttempts = 60  # Increased from 30 to allow more time
+$maxConnectorAttempts = 30
 while ($attempt -lt $maxConnectorAttempts) {
     $attempt++
     $connectorHealth = docker inspect --format='{{.State.Health.Status}}' mcp-connector 2>$null
@@ -235,7 +234,7 @@ while ($attempt -lt $maxConnectorAttempts) {
         break
     }
 
-    if ($Verbose -or ($attempt % 10 -eq 0)) {
+    if ($Verbose) {
         Write-Host "  Attempt $attempt/$maxConnectorAttempts - MCP Connector: $connectorHealth" -ForegroundColor DarkGray
     }
 

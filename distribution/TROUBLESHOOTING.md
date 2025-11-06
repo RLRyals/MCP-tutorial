@@ -163,11 +163,32 @@ If you're still experiencing issues:
 
 ## Recent Changes
 
-### Health Check Configuration Update
-The health check timing was updated to allow more time for the MCP connector to start:
-- Increased `start_period` from 30s to 45s
-- Increased `interval` from 30s to 10s (more frequent checks)
-- Increased `retries` from 3 to 5
-- Setup script now waits up to 120 seconds (60 attempts × 2s)
+### Health Check Fix
+Fixed the root cause of health check failures when services were actually running:
 
-This resolves issues where the connector was marked unhealthy during initial startup even though it was functioning correctly.
+**Problem:**
+- Users saw "container mcp-connector is unhealthy" errors even when services were running
+- Docker logs showed no errors, but health checks failed
+- The health check command itself wasn't working properly
+
+**Solution:**
+1. **Replaced wget with curl** - More reliable HTTP client
+   - Old: `wget --no-verbose --tries=1 --spider http://localhost:50880/ping`
+   - New: `curl -f http://127.0.0.1:50880/ping`
+   - The `-f` flag makes curl fail on HTTP errors (4xx/5xx)
+
+2. **Changed localhost to 127.0.0.1** - Avoids DNS/hostname resolution issues
+   - In some container configurations, `localhost` may not resolve correctly
+   - `127.0.0.1` is direct and always works
+
+3. **Removed strict health dependency** - Prevents cascade failures
+   - `typing-mind-web` no longer requires `mcp-connector` to be "healthy" before starting
+   - Services start independently, improving reliability
+
+4. **Kept reasonable timing:**
+   - `start_period`: 30s (grace period before checks begin)
+   - `interval`: 10s (check every 10 seconds)
+   - `retries`: 3 (standard retry count)
+   - `timeout`: 5s (adequate for HTTP request)
+
+The issue was NOT timing - it was that the health check command failed due to wget/localhost incompatibility.
