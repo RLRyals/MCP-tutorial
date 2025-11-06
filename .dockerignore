@@ -45,6 +45,9 @@ distribution/generate-env.ps1
 distribution/*.md
 scripts/
 
+# Explicitly include docker-entrypoint.sh (needed for MCP connector)
+!distribution/docker/docker-entrypoint.sh
+
 # Typing Mind files (managed separately)
 typing-mind-static/
 
