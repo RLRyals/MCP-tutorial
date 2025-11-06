@@ -1,8 +1,28 @@
 # How to Access Typing Mind with MCP Servers
 
+**IMPORTANT:** If you have a **Typing Mind Community License**, you need to set up the local web server.
+👉 **See `TYPING-MIND-SETUP.md` for complete setup instructions!**
+
 You have **two options** for using Typing Mind with your MCP servers:
 
-## Option 1: Use Typing Mind in Your Browser (Recommended)
+## Option 1: Host Typing Mind Locally (Community License - Recommended)
+
+**Best for:** Community license holders who want the full integrated experience
+
+This option is **enabled by default** in the docker-compose.yml.
+
+### Quick Setup:
+
+1. **Download Typing Mind static files** from your account
+2. **Extract into `typing-mind-static/` folder**
+3. **Start Docker:** `docker-compose up -d`
+4. **Access at:** http://localhost:3000
+
+The MCP Connector will be **pre-configured and ready to use!**
+
+📖 **Full instructions:** See `TYPING-MIND-SETUP.md` for detailed setup steps
+
+## Option 2: Use Typing Mind in Your Browser
 
 If you have a Typing Mind license, you can use it in any browser:
 
@@ -25,36 +45,6 @@ If you have a Typing Mind license, you can use it in any browser:
    - Create a new chat
    - The MCP tools will be available in your prompts
 
-## Option 2: Host Typing Mind Locally (Optional)
-
-If you purchased Typing Mind and downloaded the static files:
-
-1. **Download Typing Mind Static Files**
-   - Purchase from: https://www.typingmind.com
-   - Download the static HTML/JS files
-
-2. **Create Local Directory**
-   ```bash
-   # In the distribution folder
-   mkdir typing-mind-static
-   ```
-
-3. **Copy Typing Mind Files**
-   - Extract downloaded files into `distribution/typing-mind-static/`
-
-4. **Enable Web Server**
-   - Edit `distribution/docker/docker-compose.yml`
-   - Uncomment the `typing-mind-web` service (lines 79-94)
-
-5. **Restart Docker Stack**
-   ```bash
-   cd docker
-   docker-compose up -d
-   ```
-
-6. **Access Locally**
-   - Open browser to: http://localhost:3000
-   - Typing Mind will auto-connect to MCP Connector
 
 ## Testing Your Connection
 
