@@ -18,11 +18,11 @@ $TempDir = Join-Path $env:TEMP "typingmind-download-$(Get-Random)"
 
 # Check if files already exist
 if ((Test-Path (Join-Path $TargetDir "index.html")) -and -not $Force) {
-    Write-Host "⚠️  Typing Mind files already exist in $TargetDir" -ForegroundColor Yellow
+    Write-Host "  Typing Mind files already exist in $TargetDir" -ForegroundColor Yellow
     Write-Host ""
     $response = Read-Host "Do you want to re-download and overwrite? (y/N)"
     if ($response -ne "y" -and $response -ne "Y") {
-        Write-Host "❌ Download cancelled" -ForegroundColor Red
+        Write-Host " Download cancelled" -ForegroundColor Red
         exit 0
     }
     Write-Host ""
@@ -32,13 +32,13 @@ if ((Test-Path (Join-Path $TargetDir "index.html")) -and -not $Force) {
 try {
     $gitVersion = git --version
 } catch {
-    Write-Host "❌ Error: git is not installed" -ForegroundColor Red
+    Write-Host " Error: git is not installed" -ForegroundColor Red
     Write-Host "   Please install git first:" -ForegroundColor Yellow
     Write-Host "   Download from: https://git-scm.com/download/win" -ForegroundColor Cyan
     exit 1
 }
 
-Write-Host "📥 Downloading Typing Mind from GitHub..." -ForegroundColor Cyan
+Write-Host " Downloading Typing Mind from GitHub..." -ForegroundColor Cyan
 Write-Host "   Repository: https://github.com/TypingMind/typingmind" -ForegroundColor Gray
 Write-Host ""
 
@@ -57,9 +57,9 @@ try {
     }
 
     Write-Host ""
-    Write-Host "✅ Download complete!" -ForegroundColor Green
+    Write-Host " Download complete!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "📦 Installing files to $TargetDir..." -ForegroundColor Cyan
+    Write-Host " Installing files to $TargetDir..." -ForegroundColor Cyan
 
     # Create target directory if it doesn't exist
     New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
@@ -88,27 +88,27 @@ try {
     $totalSize = (Get-ChildItem -Path $TargetDir -Recurse | Measure-Object -Property Length -Sum).Sum
     $totalSizeMB = [math]::Round($totalSize / 1MB, 2)
 
-    Write-Host "✅ Installation complete!" -ForegroundColor Green
+    Write-Host " Installation complete!" -ForegroundColor Green
     Write-Host ""
-    Write-Host "📊 Statistics:" -ForegroundColor Cyan
+    Write-Host " Statistics:" -ForegroundColor Cyan
     Write-Host "   Files installed: $fileCount" -ForegroundColor Gray
     Write-Host "   Total size: $totalSizeMB MB" -ForegroundColor Gray
     Write-Host "   Location: $TargetDir" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "🎯 Next Steps:" -ForegroundColor Cyan
+    Write-Host " Next Steps:" -ForegroundColor Cyan
     Write-Host "   1. Start Docker: cd docker; docker-compose up -d" -ForegroundColor Yellow
     Write-Host "   2. Access Typing Mind: http://localhost:3000" -ForegroundColor Yellow
     Write-Host "   3. Configure MCP Connector in Typing Mind settings" -ForegroundColor Yellow
     Write-Host ""
-    Write-Host "📖 For detailed instructions, see TYPING-MIND-SETUP.md" -ForegroundColor Gray
+    Write-Host " For detailed instructions, see TYPING-MIND-SETUP.md" -ForegroundColor Gray
     Write-Host ""
     Write-Host "==========================================" -ForegroundColor Green
-    Write-Host "✅ Done!" -ForegroundColor Green
+    Write-Host " Done!" -ForegroundColor Green
     Write-Host "==========================================" -ForegroundColor Green
 
 } catch {
     Write-Host ""
-    Write-Host "❌ Error: $_" -ForegroundColor Red
+    Write-Host " Error: $_" -ForegroundColor Red
     Write-Host ""
     Write-Host "If the error persists, you can manually download:" -ForegroundColor Yellow
     Write-Host "1. Visit: https://github.com/TypingMind/typingmind" -ForegroundColor Cyan
