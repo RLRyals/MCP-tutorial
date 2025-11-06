@@ -279,8 +279,10 @@ fi
 
 # Wait for MCP Connector
 echo "  Checking MCP Connector..."
+echo "  (Initial startup may take 45-60 seconds)"
+MAX_CONNECTOR_ATTEMPTS=60  # Increased from 30 to allow more time
 ATTEMPT=0
-while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+while [ $ATTEMPT -lt $MAX_CONNECTOR_ATTEMPTS ]; do
     ATTEMPT=$((ATTEMPT + 1))
 
     CONNECTOR_HEALTH=$(docker inspect --format='{{.State.Health.Status}}' mcp-connector 2>/dev/null || echo "unknown")
@@ -290,8 +292,9 @@ while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
         break
     fi
 
-    if [ "$VERBOSE" = true ]; then
-        echo "  Attempt $ATTEMPT/$MAX_ATTEMPTS - MCP Connector: $CONNECTOR_HEALTH"
+    # Show progress every 10 attempts or if verbose
+    if [ "$VERBOSE" = true ] || [ $((ATTEMPT % 10)) -eq 0 ]; then
+        echo "  Attempt $ATTEMPT/$MAX_CONNECTOR_ATTEMPTS - MCP Connector: $CONNECTOR_HEALTH"
     fi
 
     sleep 2
@@ -299,6 +302,7 @@ done
 
 if [ "$CONNECTOR_HEALTH" != "healthy" ]; then
     echo "✗ MCP Connector did not become healthy in time"
+    echo "  Check logs with: cd docker && docker-compose logs mcp-connector"
     exit 1
 fi
 
