@@ -80,12 +80,12 @@ CREATE TABLE IF NOT EXISTS series_timeline (
 
 -- Utility function for automatic timestamp updates
 CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $function$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$function$ language 'plpgsql';
 
 -- Create triggers for automatic timestamp updates
 CREATE OR REPLACE TRIGGER update_authors_timestamp
