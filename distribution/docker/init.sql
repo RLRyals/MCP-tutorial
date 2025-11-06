@@ -26,7 +26,6 @@ CREATE TABLE IF NOT EXISTS authors (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- Series table - the top-level container for all content
 CREATE TABLE IF NOT EXISTS series (
     id SERIAL PRIMARY KEY,
@@ -82,8 +81,6 @@ CREATE TABLE IF NOT EXISTS series_timeline (
         CONSTRAINT unique_series_metadata_key UNIQUE (series_id, metadata_key) DEFERRABLE INITIALLY DEFERRED,
         CONSTRAINT unique_book_metadata_key UNIQUE (book_id, metadata_key) DEFERRABLE INITIALLY DEFERRED
     );
-
-
 
 -- Utility function for automatic timestamp updates
 CREATE OR REPLACE FUNCTION update_timestamp()
@@ -161,9 +158,6 @@ INSERT INTO migrations (filename) VALUES ('001_create_core_schema.sql')
     ON CONFLICT (filename) DO NOTHING;
 
 END $$;
-
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -217,10 +211,6 @@ $$;
 -- Migration: 003_add_character_and_chapter_schema
 -- Description: Adds comprehensive character and chapter tracking tables for the MCP system
 -- Date: 2025-09-09
-
-
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -575,12 +565,8 @@ CREATE INDEX IF NOT EXISTS idx_chapter_plot_points_scene ON chapter_plot_points(
 END
 $$;
 
-COMMIT;-- Migration: 004_plot_structure_and_universal_framework
 -- Description: Fixed plot management with dynamic lookup tables (no hardcoded enums)
 -- Date: 2025-09-13
-
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -743,7 +729,6 @@ CREATE TABLE IF NOT EXISTS plot_thread_relationships (
 -- CREATE INDEX IF NOT EXISTS idx_story_analysis_book_id ON story_analysis(book_id);
 -- CREATE INDEX IF NOT EXISTS idx_story_analysis_concern ON story_analysis(story_concern_id);
 
-
 -- =============================================
 -- TRIGGERS FOR AUTOMATIC TIMESTAMP UPDATES
 -- =============================================
@@ -760,7 +745,6 @@ CREATE TRIGGER update_plot_thread_relationships_timestamp
     BEFORE UPDATE ON plot_thread_relationships
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
-
 
 -- =============================================
 -- INDICES FOR PERFORMANCE OPTIMIZATION
@@ -782,7 +766,6 @@ CREATE INDEX IF NOT EXISTS idx_plot_threads_parent ON plot_threads(parent_thread
 CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_thread_a ON plot_thread_relationships(thread_a_id);
 CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_thread_b ON plot_thread_relationships(thread_b_id);
 CREATE INDEX IF NOT EXISTS idx_plot_thread_relationships_type ON plot_thread_relationships(relationship_type_id);
-
 
 -- =============================================
 -- INITIAL LOOKUP DATA
@@ -857,18 +840,12 @@ INSERT INTO story_judgments (judgment_name, judgment_description) VALUES
 ('neutral', 'No strong emotional judgment about the outcome'),
 ('cathartic', 'Emotionally cleansing or purifying outcome');
 
-
-
     -- Record this migration
     INSERT INTO migrations (filename) VALUES ('004_plot_structure_and_universal_framework_fixed.sql')
     ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
-
-COMMIT;
--- Migration to remove NOT NULL and UNIQUE constraints from email field in authors table
-BEGIN;
 
 -- Check if migration was already applied and execute migration if needed
 DO $$
@@ -892,12 +869,9 @@ ALTER TABLE authors
 END
 $$;
 
-COMMIT;-- Migration 006: Add book metadata plot thread and tropes tables
 -- This migration adds missing fields to the books table for cover images and genres
 -- It also ensures plot thread related tables are properly set up
 -- and adds universal trope tracking tables and relationship enhancement tables for polyamorous support.
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -1008,7 +982,6 @@ CREATE TABLE trope_scenes (
     UNIQUE(instance_id, scene_type_id) -- each trope scene type appears once per instance
 );
 
-
 -- Create appropriate triggers for timestamp updates
 -- Record this migration
 INSERT INTO migrations (filename) VALUES ('006_add_book_metadata_plot_thread_and_tropes_tables.sql')
@@ -1016,9 +989,6 @@ INSERT INTO migrations (filename) VALUES ('006_add_book_metadata_plot_thread_and
 
 END
 $$;
-
-COMMIT;-- Migration to remove NOT NULL and UNIQUE constraints from email field in authors table
-BEGIN;
 
 -- Check if migration was already applied and execute migration if needed
 DO $$
@@ -1140,16 +1110,12 @@ FROM
 GROUP BY 
     t.id;
 
-
 -- Record this migration
     INSERT INTO migrations (filename) VALUES ('007_add_event_chapter_mapping.sql')
     ON CONFLICT (filename) DO NOTHING;
 
 END
 $$;
-
-COMMIT;-- Migration to add worldbuilding tables for locations, world elements, organizations, and usage tracking
-BEGIN;
 
 -- Check if migration was already applied and execute migration if needed 
 DO $$ 
@@ -1306,12 +1272,9 @@ INSERT INTO migrations (filename) VALUES ('008_add_world_schema.sql')
 
 END $$;  
 
-COMMIT;-- Migration: 009_writing_migration.sql
 -- Description: Adds writing sessions, goals, validation, and export tracking for AI writing team
 -- Date: 2025-09-16
 -- Check if migration was already applied and execute migration if needed 
-BEGIN;
-
 DO $$ 
 BEGIN     
     -- Check if migration was already applied     
@@ -1319,7 +1282,6 @@ BEGIN
         RAISE NOTICE 'Migration 009_writing_migration.sql already applied, skipping.';         
         RETURN;     
     END IF;  
-
 
 -- =============================================
 -- WRITING SESSIONS TABLE
@@ -1511,7 +1473,6 @@ CREATE TABLE validation_results (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- =============================================
 -- WORD COUNT TRACKING TABLE
 -- =============================================
@@ -1565,7 +1526,6 @@ CREATE TRIGGER update_validation_rules_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_timestamp();
 
-
 -- =============================================
 -- INDICES FOR PERFORMANCE OPTIMIZATION
 -- =============================================
@@ -1592,8 +1552,6 @@ CREATE INDEX IF NOT EXISTS idx_validation_rules_auto ON validation_rules(auto_ch
 CREATE INDEX IF NOT EXISTS idx_validation_results_book ON validation_results(book_id, validation_date DESC);
 CREATE INDEX IF NOT EXISTS idx_validation_results_unresolved ON validation_results(resolved, acknowledged) WHERE resolved = false;
 CREATE INDEX IF NOT EXISTS idx_validation_results_chapter ON validation_results(chapter_id, result_status);
-
-
 
 -- Word count tracking indices
 CREATE INDEX IF NOT EXISTS idx_word_count_snapshots_book_date ON word_count_snapshots(book_id, snapshot_date DESC);
@@ -1635,16 +1593,11 @@ CREATE INDEX IF NOT EXISTS idx_session_chapters_chapter ON session_chapters(chap
 --     '{"check_chapter_targets": true, "check_book_targets": true, "variance_warning_percent": 25}', 
 --     'info', true, 'Monitors progress against author goals, not rigid requirements');
 
-
 -- Record this migration
 INSERT INTO migrations (filename) VALUES ('009_writing_migration.sql')
     ON CONFLICT (filename) DO NOTHING;
 
-
 END $$;  
-
-COMMIT;-- Migration to remove NOT NULL and UNIQUE constraints from email field in authors table
-BEGIN;
 
 -- Check if migration was already applied and execute migration if needed
 DO $$
@@ -1662,7 +1615,6 @@ ALTER TABLE books
     ADD COLUMN IF NOT EXISTS pitch TEXT,
     ADD COLUMN IF NOT EXISTS hook TEXT;
 
-
 -- Record this migration
     INSERT INTO migrations (filename) VALUES ('010_update_table_schema.sql')
     ON CONFLICT (filename) DO NOTHING;
@@ -1670,16 +1622,12 @@ ALTER TABLE books
 END
 $$;
 
-COMMIT;
--- // ============================================================================
 -- // PART 1: SCHEMA MIGRATIONS - REPLACING RIGID TABLES WITH UNIVERSAL STRUCTURES
 -- // ============================================================================
 
 /**
  * SQL migration to replace rigid romance/case/magic tables with universal alternatives
  */
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -1899,16 +1847,13 @@ CREATE INDEX IF NOT EXISTS idx_system_abilities_system_id ON system_abilities(sy
 CREATE INDEX IF NOT EXISTS idx_character_system_progression_character ON character_system_progression(character_id);
 CREATE INDEX IF NOT EXISTS idx_character_system_progression_system ON character_system_progression(system_id);
 
-
 -- Record this migration
 INSERT INTO migrations (filename) VALUES ('011_Universal_Schema_Migrations.sql')
     ON CONFLICT (filename) DO NOTHING;
 END
 $$;
-COMMIT;-- Scene Implementation: Essential Fields for Book Writing
--- Add intensity_level to chapter_scenes table
-BEGIN;
 
+-- Add intensity_level to chapter_scenes table
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -1917,7 +1862,6 @@ BEGIN
         RAISE NOTICE 'Migration 013_alter_scene_tracking_schema.sql already applied, skipping.';
         RETURN;
     END IF;
-
 
 ALTER TABLE chapter_scenes ADD COLUMN IF NOT EXISTS intensity_level INTEGER CHECK (intensity_level BETWEEN 1 AND 10);
 
@@ -1945,9 +1889,6 @@ CREATE INDEX IF NOT EXISTS idx_trope_scenes_elements ON trope_scenes USING GIN(s
 END
 $$;
 
-COMMIT;-- Migration to add target_word_count and scene_elements to chapter_scenes
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -1974,8 +1915,6 @@ COMMENT ON COLUMN chapter_scenes.scene_outline IS 'Detailed scene planning, beat
 COMMENT ON COLUMN chapter_scenes.scene_content IS 'The actual written content of the scene';
 COMMENT ON COLUMN chapter_scenes.scene_revisions IS 'Array of previous versions for tracking major revisions';
 
-
-
 -- Record this migration
     INSERT INTO migrations (filename) VALUES ('014_Scene_Schema_updates.sql')
     ON CONFLICT (filename) DO NOTHING;
@@ -1983,12 +1922,8 @@ COMMENT ON COLUMN chapter_scenes.scene_revisions IS 'Array of previous versions 
 END
 $$;
 
-COMMIT;-- Migration: 015_normalize_genre_relationships
 -- Description: Normalizes genre storage using junction tables instead of text arrays
 -- Date: 2025-10-04
-
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -2145,13 +2080,8 @@ INSERT INTO migrations (filename) VALUES ('015_normalize_genre_relationships.sql
 END
 $$;
 
-COMMIT;
--- Migration: 016_fix_world_elements_schema
 -- Description: Adds missing columns to world_elements table to match world server expectations
 -- Date: 2025-10-05
-
-BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -2233,8 +2163,6 @@ INSERT INTO migrations (filename) VALUES ('016_fix_world_elements_schema.sql')
 
 END $$;
 
-COMMIT;
--- Migration: Add missing columns for world-building features
 -- Created: 2025-10-06
 -- Purpose: Add purpose, allies, and enemies columns for organizations needed for:
 --   - Organization relationship tracking
@@ -2264,15 +2192,12 @@ COMMENT ON COLUMN organizations.purpose IS 'Purpose/mission of the organization'
 COMMENT ON COLUMN organizations.allies IS 'Array of allied organization IDs';
 COMMENT ON COLUMN organizations.enemies IS 'Array of enemy organization IDs';
 
-
 -- Record this migration     
 INSERT INTO migrations (filename) VALUES ('017_add_missing_feature_columns.sql')
     ON CONFLICT (filename) DO NOTHING;  
 
 END $$;  
 
-COMMIT;
--- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
     -- Check if migration was already applied
@@ -2395,12 +2320,7 @@ BEGIN
 END
 $$;
 
-COMMIT;
-
--- Migration 019: Add optional relationship between world_elements and world_systems
 -- This allows world_elements to optionally belong to a parent world_system
- BEGIN;
-
 -- Check if migration was already applied and execute migration if needed
 DO $$
 BEGIN
@@ -2420,11 +2340,8 @@ CREATE INDEX IF NOT EXISTS idx_world_elements_system_id ON world_elements(system
 -- Add comment explaining the relationship
 COMMENT ON COLUMN world_elements.system_id IS 'Optional foreign key to world_systems table. Links a specific world element (e.g., "Fire Blast Spell") to its parent system (e.g., "Elemental Magic System")';
 
-
 END $$;  
 
-COMMIT;
--- =============================================
 -- Migration 020: Flexible Timeline Dates
 -- =============================================
 -- Migration: 020_flexible_timeline_dates
