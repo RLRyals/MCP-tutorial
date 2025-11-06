@@ -2426,5 +2426,3 @@ ON CONFLICT (status_name) DO NOTHING;
 -- Record this migration
 INSERT INTO migrations (filename) VALUES ('021_add_scene_lookup_tables.sql')
 ON CONFLICT DO NOTHING;
-
-END $$;
