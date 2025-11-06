@@ -180,8 +180,8 @@ When building the Electron app, you'll:
 
 3. **MCP Connector Test:**
    ```bash
-   curl http://localhost:50880/health
-   # Should return 200 OK
+   curl http://localhost:50880/ping
+   # Should return {"status":"ok"}
    ```
 
 4. **Typing Mind Integration:**

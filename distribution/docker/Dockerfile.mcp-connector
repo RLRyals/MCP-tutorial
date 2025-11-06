@@ -39,9 +39,9 @@ USER mcp
 # Expose MCP Connector port
 EXPOSE 50880
 
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:50880/health || exit 1
+# Health check endpoint (uses /ping endpoint)
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:50880/ping || exit 1
 
 # Use entrypoint script to handle startup
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

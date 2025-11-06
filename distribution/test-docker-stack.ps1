@@ -121,7 +121,7 @@ Push-Location $dockerDir
         Write-Host "`nTesting MCP Connector..." -ForegroundColor Yellow
 
         try {
-            $response = Invoke-WebRequest -Uri "http://localhost:50880/health" -TimeoutSec 5 -UseBasicParsing
+            $response = Invoke-WebRequest -Uri "http://localhost:50880/ping" -TimeoutSec 5 -UseBasicParsing
             if ($response.StatusCode -eq 200) {
                 Write-Host " MCP Connector is responding" -ForegroundColor Green
                 Write-Host "  Endpoint: http://localhost:50880" -ForegroundColor Gray
