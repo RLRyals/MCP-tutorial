@@ -33,8 +33,9 @@ function New-SecureToken {
 # Function to generate secure password
 function New-SecurePassword {
     param([int]$Length = 24)
-    # Include special characters for database password
-    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*"
+    # Use alphanumeric only to avoid shell/URL escaping issues
+    # Special characters like @, &, !, etc. can break DATABASE_URL and shell scripts
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
     $password = -join ((1..$Length) | ForEach-Object { $chars[(Get-Random -Maximum $chars.Length)] })
     return $password
 }
