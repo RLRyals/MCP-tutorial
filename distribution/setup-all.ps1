@@ -223,9 +223,8 @@ if ($postgresHealth -ne "healthy") {
 
 # Wait for MCP Connector
 Write-Host "  Waiting for MCP Connector..." -ForegroundColor Gray
-Write-Host "  (This may take up to 2 minutes on first startup)" -ForegroundColor DarkGray
 $attempt = 0
-$maxConnectorAttempts = 60
+$maxConnectorAttempts = 30
 while ($attempt -lt $maxConnectorAttempts) {
     $attempt++
     $connectorHealth = docker inspect --format='{{.State.Health.Status}}' mcp-connector 2>$null
@@ -235,33 +234,17 @@ while ($attempt -lt $maxConnectorAttempts) {
         break
     }
 
-    # During start_period, health will be "starting"
-    if ($connectorHealth -eq "starting" -and $attempt -eq 1) {
-        Write-Host "  MCP Connector is starting..." -ForegroundColor DarkGray
-    }
-
-    if ($Verbose -or ($attempt % 15 -eq 0)) {
-        Write-Host "  Attempt $attempt/$maxConnectorAttempts - Status: $connectorHealth" -ForegroundColor DarkGray
+    if ($Verbose) {
+        Write-Host "  Attempt $attempt/$maxConnectorAttempts - MCP Connector: $connectorHealth" -ForegroundColor DarkGray
     }
 
     Start-Sleep -Seconds 2
 }
 
 if ($connectorHealth -ne "healthy") {
-    Write-Host "  WARNING: MCP Connector health check did not pass" -ForegroundColor Yellow
-    Write-Host "  Attempting to verify connector is actually running..." -ForegroundColor Gray
-
-    # Try to connect to the endpoint directly
-    try {
-        $response = Invoke-WebRequest -Uri "http://localhost:50880/ping" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
-        if ($response.StatusCode -eq 200) {
-            Write-Host "  MCP Connector IS responding (health check may be misconfigured)" -ForegroundColor Green
-        }
-    } catch {
-        Write-Host "  ERROR: MCP Connector is not responding to requests" -ForegroundColor Red
-        Write-Host "  Check logs with: cd docker && docker-compose logs mcp-connector" -ForegroundColor Yellow
-        exit 1
-    }
+    Write-Host "  ERROR: MCP Connector did not become healthy" -ForegroundColor Red
+    Write-Host "  Check logs with: cd docker && docker-compose logs mcp-connector" -ForegroundColor Yellow
+    exit 1
 }
 
 # Check Typing Mind if not skipped

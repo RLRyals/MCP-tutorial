@@ -66,11 +66,11 @@ services:
     networks:
       - mcp-network
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:50880/ping || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 60s
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:50880/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
   # ========================================
   # Typing Mind Static Web Server

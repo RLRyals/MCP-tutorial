@@ -163,31 +163,32 @@ If you're still experiencing issues:
 
 ## Recent Changes
 
-### Health Check Configuration Update (Latest)
-The health check has been significantly improved to be more robust and handle edge cases:
+### Health Check Fix
+Fixed the root cause of health check failures when services were actually running:
 
-**Docker Compose Changes:**
-- **Removed strict health dependency** - `typing-mind-web` no longer requires `mcp-connector` to be "healthy" before starting
-  - This prevents "dependency failed to start: container mcp-connector is unhealthy" errors
-  - Services can start independently, improving reliability
-- **Updated health check timing:**
-  - `start_period`: 60s (grace period before health checks begin)
-  - `interval`: 5s (check every 5 seconds once started)
-  - `retries`: 10 (allow 10 failures)
-  - `timeout`: 3s
-  - Total grace period: up to 110 seconds before marking unhealthy
+**Problem:**
+- Users saw "container mcp-connector is unhealthy" errors even when services were running
+- Docker logs showed no errors, but health checks failed
+- The health check command itself wasn't working properly
 
-**Setup Script Improvements:**
-- Scripts now wait up to 120 seconds for health check to pass
-- **Fallback verification**: If health check doesn't pass, scripts attempt direct connection to `/ping` endpoint
-- Only fail if the endpoint truly doesn't respond
-- Better progress messages and user feedback
+**Solution:**
+1. **Replaced wget with curl** - More reliable HTTP client
+   - Old: `wget --no-verbose --tries=1 --spider http://localhost:50880/ping`
+   - New: `curl -f http://127.0.0.1:50880/ping`
+   - The `-f` flag makes curl fail on HTTP errors (4xx/5xx)
 
-**Why These Changes:**
-The MCP connector needs time to:
-1. Wait for PostgreSQL to become healthy (up to 30s)
-2. Discover MCP servers (a few seconds)
-3. Install and start @typingmind/mcp package (30-60s on first run)
-4. Listen on port and make /ping endpoint available
+2. **Changed localhost to 127.0.0.1** - Avoids DNS/hostname resolution issues
+   - In some container configurations, `localhost` may not resolve correctly
+   - `127.0.0.1` is direct and always works
 
-The previous configuration was too strict and would fail during normal startup, even when the service was functioning correctly.
+3. **Removed strict health dependency** - Prevents cascade failures
+   - `typing-mind-web` no longer requires `mcp-connector` to be "healthy" before starting
+   - Services start independently, improving reliability
+
+4. **Kept reasonable timing:**
+   - `start_period`: 30s (grace period before checks begin)
+   - `interval`: 10s (check every 10 seconds)
+   - `retries`: 3 (standard retry count)
+   - `timeout`: 5s (adequate for HTTP request)
+
+The issue was NOT timing - it was that the health check command failed due to wget/localhost incompatibility.
