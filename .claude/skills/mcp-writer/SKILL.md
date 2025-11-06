@@ -1,8 +1,6 @@
 ---
 name: mcp-writer
 description: Interact with MCP writing tool servers through code execution for efficient token usage
-tags: [mcp, writing, database, code-execution]
-version: 1.0.0
 ---
 
 # MCP Writer Skill
