@@ -7,6 +7,7 @@ This distribution provides a **complete standalone setup** with PostgreSQL datab
 - Builds and runs **PostgreSQL database** (`mcp-writing-db`)
 - Builds and runs **MCP Connector** with all 9 MCP servers
 - Runs MCP Connector on port 50880
+- Runs **Typing Mind web server** on port 3000 (requires setup - see below)
 - Automatically applies all database migrations
 - Ready for Typing Mind integration
 
@@ -42,7 +43,8 @@ cd ..
 
 # Or check manually
 docker ps
-# You should see: mcp-writing-db and mcp-connector
+# You should see: mcp-writing-db, mcp-connector, and typing-mind-web
+# (typing-mind-web requires setup first - see Step 4 below)
 ```
 
 ## 🧪 Test It
@@ -87,16 +89,31 @@ SUCCESS: All tests passed!
 ========================================
 ```
 
-## 📋 Connection Info for Typing Mind
+## 📋 Step 4: Set Up Typing Mind (Optional but Recommended)
 
-After successful start:
+You have two options for accessing Typing Mind:
+
+### Option 1: Local Typing Mind (Community License) - RECOMMENDED ⭐
+
+**Best for:** Community license holders who want the full integrated experience
+
+👉 **See `TYPING-MIND-SETUP.md` for complete instructions**
+
+Quick version:
+1. Download Typing Mind static files from your account
+2. Extract into `distribution/typing-mind-static/` folder
+3. Restart Docker: `docker-compose down && docker-compose up -d`
+4. Access at: **http://localhost:3000**
+5. MCP Connector is pre-configured!
+
+### Option 2: Browser-Based (Any License)
 
 **MCP Connector Endpoint:**
 - URL: `http://localhost:50880`
 - Auth Token: (from your `.env` file - look for `MCP_AUTH_TOKEN`)
 
 **To configure Typing Mind:**
-1. Open Typing Mind in browser
+1. Open Typing Mind in browser (https://custom.typingmind.com)
 2. Go to Settings → Advanced → Model Context Protocol
 3. Click "Add MCP Connector"
 4. Enter:
