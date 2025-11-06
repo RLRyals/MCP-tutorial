@@ -40,7 +40,11 @@ build/
 *.log
 
 # Distribution artifacts (but keep src and migrations accessible)
-distribution/docker/
+# Exclude docker directory but allow entrypoint script
+distribution/docker/*.yml
+distribution/docker/Dockerfile*
+distribution/docker/init.sql
+distribution/docker/nginx.conf
 scripts/
 
 # Typing Mind files (managed separately)
