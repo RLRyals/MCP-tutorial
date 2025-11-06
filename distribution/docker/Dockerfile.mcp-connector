@@ -40,8 +40,9 @@ USER mcp
 EXPOSE 50880
 
 # Health check endpoint (uses /ping endpoint)
+# Note: docker-compose.yml overrides this with proper PORT variable
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -f http://127.0.0.1:50880/ping || exit 1
+    CMD sh -c 'curl -f http://127.0.0.1:${PORT:-50880}/ping || exit 1'
 
 # Use entrypoint script to handle startup
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
