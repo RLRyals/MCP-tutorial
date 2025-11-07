@@ -42,7 +42,13 @@ Write-Host " Downloading Typing Mind from GitHub..." -ForegroundColor Cyan
 Write-Host "   Repository: https://github.com/TypingMind/typingmind" -ForegroundColor Gray
 Write-Host ""
 
-# Create temp directory
+# Remove temp directory if it exists from previous failed run
+if (Test-Path $TempDir) {
+    Write-Host "   Cleaning up previous temp directory..." -ForegroundColor DarkGray
+    Remove-Item -Path $TempDir -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Create fresh temp directory
 try {
     New-Item -ItemType Directory -Path $TempDir -Force -ErrorAction Stop | Out-Null
     Write-Host "   Created temp directory: $TempDir" -ForegroundColor DarkGray

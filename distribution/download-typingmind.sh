@@ -40,7 +40,13 @@ echo "📥 Downloading Typing Mind from GitHub..."
 echo "   Repository: https://github.com/TypingMind/typingmind"
 echo ""
 
-# Create temp directory
+# Remove temp directory if it exists from previous failed run
+if [ -d "$TEMP_DIR" ]; then
+    echo "   Cleaning up previous temp directory..."
+    rm -rf "$TEMP_DIR"
+fi
+
+# Create fresh temp directory
 mkdir -p "$TEMP_DIR"
 
 # Clone the repository
