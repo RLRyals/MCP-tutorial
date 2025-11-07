@@ -1,12 +1,6 @@
-# MCP Writing System - All-in-One Configuration
-# This file includes ALL components for convenience
-#
-# For modular deployment, use individual files:
-# - docker-compose.core.yml           (Required: Database + MCP Servers)
-# - docker-compose.mcp-connector.yml  (Optional: HTTP bridge for web clients)
-# - docker-compose.typing-mind.yml    (Optional: Typing Mind web UI)
-#
-# See ARCHITECTURE.md for details
+# Core MCP Writing System
+# PostgreSQL Database + MCP Servers
+# This is the foundation - always required
 
 services:
   # ========================================
@@ -39,23 +33,24 @@ services:
       start_period: 10s
 
   # ========================================
-  # MCP Connector (runs all MCP servers)
+  # MCP Servers (Core System)
   # ========================================
-  mcp-connector:
+  # All 9 MCP servers for writing/planning
+  # Can be accessed via:
+  # - MCP Connector (HTTP)
+  # - Claude Desktop (stdio)
+  # - Custom clients (stdio/HTTP)
+  mcp-servers:
     build:
       context: ..
       dockerfile: docker/Dockerfile.mcp-connector
-    image: mcp-writing-connector:latest
-    container_name: ${MCP_CONNECTOR_CONTAINER_NAME:-mcp-connector}
+    image: mcp-writing-servers:latest
+    container_name: ${MCP_SERVERS_CONTAINER_NAME:-mcp-servers}
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      # MCP Connector authentication
-      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
-      PORT: ${MCP_CONNECTOR_PORT:-50880}
-
       # Database connection
       DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME:-mcp-writing-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-mcp_writing_db}
       POSTGRES_HOST: ${POSTGRES_CONTAINER_NAME:-mcp-writing-db}
@@ -67,52 +62,18 @@ services:
       # MCP server configuration
       NODE_ENV: ${NODE_ENV:-development}
       INCLUDE_AUTHOR_SERVER: ${INCLUDE_AUTHOR_SERVER:-true}
-      MCP_STDIO_MODE: ${MCP_STDIO_MODE:-false}
-    ports:
-      - "${MCP_CONNECTOR_PORT:-50880}:${MCP_CONNECTOR_PORT:-50880}"
+      MCP_STDIO_MODE: ${MCP_STDIO_MODE:-true}
     volumes:
       # Preserve node_modules in container
       - /app/node_modules
     networks:
       - mcp-network
     healthcheck:
-      test: ["CMD-SHELL", "nc -z $$(hostname -i) $${PORT:-50880} || exit 1"]
+      test: ["CMD-SHELL", "pgrep -f 'node' > /dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 30s
-
-  # ========================================
-  # Typing Mind Static Web Server
-  # ========================================
-  # Serves Typing Mind static files via nginx
-  # Files are mounted from host (easy updates without rebuilding)
-  # For Electron app: Set TYPING_MIND_DIR to absolute path in user's app data
-  typing-mind-web:
-    image: nginx:alpine
-    container_name: ${TYPING_MIND_CONTAINER_NAME:-typing-mind-web}
-    restart: unless-stopped
-    depends_on:
-      - mcp-connector
-    ports:
-      - "${TYPING_MIND_PORT:-3000}:80"
-    volumes:
-      # Mount typing-mind-static from host
-      # Development: ../typing-mind-static (relative path)
-      # Electron App: /absolute/path/to/app-data/typing-mind-static (absolute path from .env)
-      - ${TYPING_MIND_DIR:-../typing-mind-static}:/usr/share/nginx/html:ro
-      # Mount nginx config
-      # Development: ./nginx.conf (relative path)
-      # Electron App: /absolute/path/to/app-data/docker/nginx.conf (absolute path from .env)
-      - ${NGINX_CONF_PATH:-./nginx.conf}:/etc/nginx/nginx.conf:ro
-    networks:
-      - mcp-network
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/ 2>&1 | grep -qE '(200 OK|403 Forbidden|connected)' || exit 1"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 10s
 
 volumes:
   postgres-data:

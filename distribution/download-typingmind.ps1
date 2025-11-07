@@ -14,7 +14,7 @@ Write-Host ""
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $TargetDir = Join-Path $ScriptDir "typing-mind-static"
-$TempDir = Join-Path $env:TEMP "typingmind-download-$(Get-Random)"
+$TempDir = Join-Path $ScriptDir ".tmp-typingmind-download"
 
 # Check if files already exist
 if ((Test-Path (Join-Path $TargetDir "index.html")) -and -not $Force) {
@@ -43,17 +43,35 @@ Write-Host "   Repository: https://github.com/TypingMind/typingmind" -Foreground
 Write-Host ""
 
 # Create temp directory
-New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+try {
+    New-Item -ItemType Directory -Path $TempDir -Force -ErrorAction Stop | Out-Null
+    Write-Host "   Created temp directory: $TempDir" -ForegroundColor DarkGray
+} catch {
+    Write-Host " Error creating temp directory: $_" -ForegroundColor Red
+    exit 1
+}
 
 try {
     # Clone the repository
     Write-Host "   Cloning repository..." -ForegroundColor Gray
-    git clone --depth 1 https://github.com/TypingMind/typingmind.git $TempDir 2>&1 | ForEach-Object {
+    $gitOutput = git clone --depth 1 https://github.com/TypingMind/typingmind.git "$TempDir" 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        throw "Git clone failed with exit code $LASTEXITCODE. Output: $gitOutput"
+    }
+    $gitOutput | ForEach-Object {
         Write-Host "   $_" -ForegroundColor DarkGray
     }
 
     if (-not (Test-Path (Join-Path $TempDir "src"))) {
-        throw "Failed to download Typing Mind files - src folder not found"
+        Write-Host ""
+        Write-Host " Error: The cloned repository does not contain a 'src' folder" -ForegroundColor Red
+        Write-Host ""
+        Write-Host " Repository structure found:" -ForegroundColor Yellow
+        Get-ChildItem -Path $TempDir | ForEach-Object {
+            Write-Host "   - $($_.Name)" -ForegroundColor Gray
+        }
+        Write-Host ""
+        throw "Failed to download Typing Mind files - src folder not found in repository"
     }
 
     Write-Host ""

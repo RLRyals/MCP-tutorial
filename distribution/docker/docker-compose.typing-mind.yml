@@ -1,0 +1,38 @@
+# Typing Mind Web Client (Optional)
+# Web-based UI for accessing MCP servers
+# Requires: mcp-connector to be running
+
+services:
+  # ========================================
+  # Typing Mind Static Web Server
+  # ========================================
+  # Serves Typing Mind web interface
+  # Files are NOT included - user must download separately
+  typing-mind-web:
+    image: nginx:alpine
+    container_name: ${TYPING_MIND_CONTAINER_NAME:-typing-mind-web}
+    restart: unless-stopped
+    depends_on:
+      - mcp-connector
+    ports:
+      - "${TYPING_MIND_PORT:-3000}:80"
+    volumes:
+      # Mount typing-mind-static from host
+      # User must download files first using download-typingmind script
+      - ${TYPING_MIND_DIR:-../typing-mind-static}:/usr/share/nginx/html:ro
+      # Mount nginx config
+      - ${NGINX_CONF_PATH:-./nginx.conf}:/etc/nginx/nginx.conf:ro
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/ 2>&1 | grep -qE '(200 OK|403 Forbidden|connected)' || exit 1"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  mcp-network:
+    name: ${MCP_NETWORK_NAME:-mcp-network}
+    driver: bridge
+    external: true

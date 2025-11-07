@@ -1,0 +1,53 @@
+# MCP Connector Client (Optional)
+# HTTP bridge for web-based clients like Typing Mind
+# Only needed if user wants web-based access
+
+services:
+  # ========================================
+  # MCP Connector
+  # ========================================
+  # HTTP API bridge to MCP servers
+  # Allows web clients (Typing Mind, custom web apps) to access MCP tools
+  mcp-connector:
+    image: mcp-writing-servers:latest
+    container_name: ${MCP_CONNECTOR_CONTAINER_NAME:-mcp-connector}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # MCP Connector authentication
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
+      PORT: ${MCP_CONNECTOR_PORT:-50880}
+
+      # Database connection
+      DATABASE_URL: postgresql://${POSTGRES_USER:-writer}:${POSTGRES_PASSWORD}@${POSTGRES_CONTAINER_NAME:-mcp-writing-db}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_HOST: ${POSTGRES_CONTAINER_NAME:-mcp-writing-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-mcp_writing_db}
+      POSTGRES_USER: ${POSTGRES_USER:-writer}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+      # MCP server configuration
+      NODE_ENV: ${NODE_ENV:-development}
+      INCLUDE_AUTHOR_SERVER: ${INCLUDE_AUTHOR_SERVER:-true}
+      MCP_STDIO_MODE: ${MCP_STDIO_MODE:-false}
+    ports:
+      - "${MCP_CONNECTOR_PORT:-50880}:${MCP_CONNECTOR_PORT:-50880}"
+    volumes:
+      # Preserve node_modules in container
+      - /app/node_modules
+    networks:
+      - mcp-network
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z $$(hostname -i) $${PORT:-50880} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  mcp-network:
+    name: ${MCP_NETWORK_NAME:-mcp-network}
+    driver: bridge
+    external: true

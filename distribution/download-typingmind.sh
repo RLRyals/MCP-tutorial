@@ -11,7 +11,7 @@ echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TARGET_DIR="$SCRIPT_DIR/typing-mind-static"
-TEMP_DIR="/tmp/typingmind-download-$$"
+TEMP_DIR="$SCRIPT_DIR/.tmp-typingmind-download"
 
 # Check if files already exist
 if [ -f "$TARGET_DIR/index.html" ]; then
