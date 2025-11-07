@@ -106,3 +106,4 @@ curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 ---
 
 **Full Documentation:** See `TYPING-MIND-SETUP.md` in parent directory
+

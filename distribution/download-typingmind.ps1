@@ -60,13 +60,24 @@ try {
 try {
     # Clone the repository
     Write-Host "   Cloning repository..." -ForegroundColor Gray
-    $gitOutput = git clone --depth 1 https://github.com/TypingMind/typingmind.git "$TempDir" 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        throw "Git clone failed with exit code $LASTEXITCODE. Output: $gitOutput"
+
+    # Git writes progress to stderr, which PowerShell treats as errors
+    # We need to suppress error handling for this specific command
+    $ErrorActionPreference = "Continue"
+
+    # Redirect stderr to stdout and suppress PowerShell's error handling
+    & git clone --depth 1 https://github.com/TypingMind/typingmind.git "$TempDir" 2>&1 | Out-Null
+    $gitExitCode = $LASTEXITCODE
+
+    # Restore error handling
+    $ErrorActionPreference = "Stop"
+
+    # Check if clone actually failed (exit code non-zero)
+    if ($gitExitCode -ne 0) {
+        throw "Git clone failed with exit code $gitExitCode"
     }
-    $gitOutput | ForEach-Object {
-        Write-Host "   $_" -ForegroundColor DarkGray
-    }
+
+    Write-Host "   Clone completed successfully" -ForegroundColor DarkGray
 
     if (-not (Test-Path (Join-Path $TempDir "src"))) {
         Write-Host ""
