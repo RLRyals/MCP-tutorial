@@ -27,9 +27,10 @@ EXPOSE 3003
 EXPOSE 3004
 EXPOSE 3005
 
-# Health check
+# Health check (using curl, which is more reliable than wget)
+# Note: If this server requires authentication, update with auth header
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:${MCP_PORT}/health || exit 1
+  CMD sh -c 'curl -f http://127.0.0.1:${MCP_PORT}/health || exit 1'
 
 # Start the application
 CMD ["npm", "start"]
