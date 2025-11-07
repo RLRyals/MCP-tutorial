@@ -121,8 +121,9 @@ docker ps
 # Test PostgreSQL
 docker exec mcp-writing-db psql -U writer -d mcp_writing_db -c "SELECT 1;"
 
-# Test MCP Connector
-curl http://localhost:50880/ping
+# Test MCP Connector (requires authentication)
+AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" .env | cut -d'=' -f2)
+curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 # Should return: {"status":"ok"}
 
 # Test Typing Mind Web
@@ -164,8 +165,9 @@ docker-compose logs mcp-connector
 # Verify auth token matches
 cat .env | grep MCP_AUTH_TOKEN
 
-# Test health endpoint
-curl http://localhost:50880/ping
+# Test health endpoint (requires authentication)
+AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" .env | cut -d'=' -f2)
+curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 ```
 
 ### typing-mind-web Container Keeps Restarting

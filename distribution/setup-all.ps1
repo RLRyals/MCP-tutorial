@@ -298,7 +298,12 @@ if ($LASTEXITCODE -eq 0) {
 # Test MCP Connector
 Write-Host "  Testing MCP Connector..." -ForegroundColor Gray
 try {
-    $response = Invoke-WebRequest -Uri "http://localhost:50880/ping" -TimeoutSec 5 -UseBasicParsing
+    # Get auth token for the request
+    $authToken = (Select-String -Path $envFile -Pattern "MCP_AUTH_TOKEN=(.+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+    $headers = @{
+        "Authorization" = "Bearer $authToken"
+    }
+    $response = Invoke-WebRequest -Uri "http://localhost:50880/ping" -Headers $headers -TimeoutSec 5 -UseBasicParsing
     if ($response.StatusCode -eq 200) {
         Write-Host "  MCP Connector is responding" -ForegroundColor Green
     }

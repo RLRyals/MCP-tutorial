@@ -51,8 +51,9 @@ If you have a Typing Mind license, you can use it in any browser:
 Test that the MCP Connector is running:
 
 ```bash
-# Should return {"status":"ok"}
-curl http://localhost:50880/ping
+# Get auth token and test endpoint (should return {"status":"ok"})
+AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" .env | cut -d'=' -f2)
+curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 ```
 
 Test with authentication:
@@ -90,9 +91,10 @@ Get-Content .env | Select-String "MCP_AUTH_TOKEN"
    docker-compose logs mcp-connector
    ```
 
-3. Test health endpoint:
+3. Test health endpoint (requires authentication):
    ```bash
-   curl http://localhost:50880/ping
+   AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" .env | cut -d'=' -f2)
+   curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
    ```
 
 ### "Unauthorized" Error

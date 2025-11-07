@@ -326,7 +326,9 @@ fi
 # Test MCP Connector
 echo "  Testing MCP Connector..."
 if command -v curl &> /dev/null; then
-    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:50880/ping)
+    # Get auth token from .env file
+    AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" "$SCRIPT_DIR/.env" | cut -d'=' -f2)
+    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping)
     if [ "$RESPONSE" = "200" ]; then
         echo "✓ MCP Connector is responding"
     else

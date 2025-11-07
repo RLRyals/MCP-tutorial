@@ -108,8 +108,8 @@ docker ps
 - **Port:** 50880
 - **Purpose:** Runs all MCP servers and exposes REST API
 - **Servers:** 9 MCP servers for writing (book planning, character planning, etc.)
-- **Auth:** Bearer token authentication
-- **Health Check:** http://localhost:50880/ping
+- **Auth:** Bearer token authentication (required for all endpoints including /ping)
+- **Health Check:** http://localhost:50880/ping (requires Authorization header)
 
 ## Available MCP Servers
 
@@ -188,8 +188,10 @@ docker-compose restart
 
 ### Can't connect to MCP Connector?
 ```bash
-# Test health endpoint
-curl http://localhost:50880/ping
+# Test health endpoint (requires authentication)
+# Get your auth token from .env first
+AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" .env | cut -d'=' -f2)
+curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 
 # Check if port is in use
 netstat -an | findstr 50880  # Windows

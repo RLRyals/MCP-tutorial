@@ -96,9 +96,10 @@ This is normal. You need to enter your license key in the Typing Mind UI on firs
 
 ### Can't connect to MCP Connector
 
-Check that MCP Connector is running:
+Check that MCP Connector is running (requires authentication):
 ```bash
-curl http://localhost:50880/ping
+AUTH_TOKEN=$(grep "^MCP_AUTH_TOKEN=" ../.env | cut -d'=' -f2)
+curl -H "Authorization: Bearer $AUTH_TOKEN" http://localhost:50880/ping
 # Should return: {"status":"ok"}
 ```
 
