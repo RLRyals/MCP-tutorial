@@ -108,8 +108,8 @@ docker ps
 - **Port:** 50880
 - **Purpose:** Runs all MCP servers and exposes REST API
 - **Servers:** 9 MCP servers for writing (book planning, character planning, etc.)
-- **Auth:** Bearer token authentication (required for all endpoints including /ping)
-- **Health Check:** http://localhost:50880/ping (requires Authorization header)
+- **Auth:** Bearer token authentication (required for all API endpoints)
+- **Health Check:** Port connectivity test (checks if port 50880 is listening)
 
 ## Available MCP Servers
 

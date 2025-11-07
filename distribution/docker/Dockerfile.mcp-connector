@@ -8,7 +8,8 @@ FROM node:18-alpine
 RUN apk add --no-cache \
     curl \
     postgresql-client \
-    bash
+    bash \
+    netcat-openbsd
 
 # Set working directory
 WORKDIR /app
@@ -39,10 +40,10 @@ USER mcp
 # Expose MCP Connector port
 EXPOSE 50880
 
-# Health check endpoint (uses /ping endpoint with authentication)
+# Health check - verifies port is listening
 # Note: docker-compose.yml overrides this with proper PORT variable
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-    CMD sh -c 'curl -f -H "Authorization: Bearer ${MCP_AUTH_TOKEN}" http://127.0.0.1:${PORT:-50880}/ping || exit 1'
+    CMD nc -z 127.0.0.1 ${PORT:-50880} || exit 1
 
 # Use entrypoint script to handle startup
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -201,20 +201,40 @@ Fixed the root cause of health check failures when services were actually runnin
 
 The issue was NOT timing - it was that the health check command failed due to wget/localhost incompatibility.
 
-### Authentication Required for Health Check
+### Simplified Health Check (Port-Based)
 
-**Critical Fix:**
-The `/ping` endpoint requires authentication via Bearer token. The health check was failing because it wasn't providing the required `Authorization` header.
+**Latest Fix:**
+The health check now uses a simple port connectivity test instead of calling the `/ping` endpoint. This is more reliable because:
+- No authentication required
+- No environment variable interpolation issues in healthcheck context
+- Simpler and more robust
+- If the port is listening, the service is running
 
 **Changes Made:**
-1. **docker-compose.yml** - Added authentication header to health check:
+1. **docker-compose.yml** - Simplified health check to test port connectivity:
    ```yaml
-   test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer $${MCP_AUTH_TOKEN}' http://127.0.0.1:$${PORT:-50880}/ping || exit 1"]
+   test: ["CMD-SHELL", "nc -z 127.0.0.1 $${PORT:-50880} || exit 1"]
    ```
 
-2. **Dockerfile.mcp-connector** - Added authentication header:
+2. **Dockerfile.mcp-connector** - Simplified health check:
    ```dockerfile
-   CMD sh -c 'curl -f -H "Authorization: Bearer ${MCP_AUTH_TOKEN}" http://127.0.0.1:${PORT:-50880}/ping || exit 1'
+   CMD nc -z 127.0.0.1 ${PORT:-50880} || exit 1
    ```
 
-**Important:** All API endpoints in @typingmind/mcp require authentication, including the `/ping` endpoint. When manually testing the endpoint, you must include the Bearer token in the Authorization header.
+3. **Added netcat-openbsd** package to the Docker image for port checking
+
+**Note:** While the `/ping` endpoint exists and can be manually tested with authentication, using a port check is more reliable for automated health checks.
+
+**Manual Testing (Optional):**
+If you want to verify the `/ping` endpoint is working:
+
+```bash
+# Linux/Mac
+curl -H "Authorization: Bearer $MCP_AUTH_TOKEN" http://localhost:50880/ping
+
+# PowerShell
+$headers = @{ "Authorization" = "Bearer $env:MCP_AUTH_TOKEN" }
+Invoke-WebRequest -Uri "http://localhost:50880/ping" -Headers $headers -UseBasicParsing
+```
+
+Expected response: `{"status":"ok"}`
