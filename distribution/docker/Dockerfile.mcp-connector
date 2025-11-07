@@ -40,10 +40,11 @@ USER mcp
 # Expose MCP Connector port
 EXPOSE 50880
 
-# Health check - verifies port is listening
+# Health check - tests if port is accepting connections
+# Uses hostname -i to get container IP since service binds to container IP, not localhost
 # Note: docker-compose.yml overrides this with proper PORT variable
 HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
-    CMD nc -z 127.0.0.1 ${PORT:-50880} || exit 1
+    CMD nc -z $(hostname -i) ${PORT:-50880} || exit 1
 
 # Use entrypoint script to handle startup
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
