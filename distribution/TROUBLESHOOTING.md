@@ -43,11 +43,18 @@ docker-compose logs -f
 
 #### Manual Health Check
 ```powershell
-# Test the ping endpoint directly
-curl http://localhost:50880/ping
+# Test the ping endpoint directly (requires authentication)
+# First get your auth token from .env file
+$authToken = (Select-String -Path ../.env -Pattern "MCP_AUTH_TOKEN=(.+)" | ForEach-Object { $_.Matches.Groups[1].Value })
+
+# Test with authentication
+curl -H "Authorization: Bearer $authToken" http://localhost:50880/ping
 
 # Or using PowerShell
-Invoke-WebRequest -Uri "http://localhost:50880/ping" -UseBasicParsing
+$headers = @{
+    "Authorization" = "Bearer $authToken"
+}
+Invoke-WebRequest -Uri "http://localhost:50880/ping" -Headers $headers -UseBasicParsing
 ```
 
 #### Reset and Rebuild
@@ -174,8 +181,9 @@ Fixed the root cause of health check failures when services were actually runnin
 **Solution:**
 1. **Replaced wget with curl** - More reliable HTTP client
    - Old: `wget --no-verbose --tries=1 --spider http://localhost:50880/ping`
-   - New: `curl -f http://127.0.0.1:50880/ping`
+   - New: `curl -f -H 'Authorization: Bearer ${MCP_AUTH_TOKEN}' http://127.0.0.1:50880/ping`
    - The `-f` flag makes curl fail on HTTP errors (4xx/5xx)
+   - Added authentication header as required by the /ping endpoint
 
 2. **Changed localhost to 127.0.0.1** - Avoids DNS/hostname resolution issues
    - In some container configurations, `localhost` may not resolve correctly
@@ -192,3 +200,21 @@ Fixed the root cause of health check failures when services were actually runnin
    - `timeout`: 5s (adequate for HTTP request)
 
 The issue was NOT timing - it was that the health check command failed due to wget/localhost incompatibility.
+
+### Authentication Required for Health Check
+
+**Critical Fix:**
+The `/ping` endpoint requires authentication via Bearer token. The health check was failing because it wasn't providing the required `Authorization` header.
+
+**Changes Made:**
+1. **docker-compose.yml** - Added authentication header to health check:
+   ```yaml
+   test: ["CMD-SHELL", "curl -f -H 'Authorization: Bearer $${MCP_AUTH_TOKEN}' http://127.0.0.1:$${PORT:-50880}/ping || exit 1"]
+   ```
+
+2. **Dockerfile.mcp-connector** - Added authentication header:
+   ```dockerfile
+   CMD sh -c 'curl -f -H "Authorization: Bearer ${MCP_AUTH_TOKEN}" http://127.0.0.1:${PORT:-50880}/ping || exit 1'
+   ```
+
+**Important:** All API endpoints in @typingmind/mcp require authentication, including the `/ping` endpoint. When manually testing the endpoint, you must include the Bearer token in the Authorization header.
